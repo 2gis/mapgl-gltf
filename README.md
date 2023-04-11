@@ -1,2 +1,3 @@
 # mapgl-threejs
-Three.js plugin for @2gis/mapgl 
+
+Three.js плагин для MapGL
