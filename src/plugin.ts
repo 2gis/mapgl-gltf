@@ -2,21 +2,15 @@ import * as THREE from 'three';
 import type { Map } from '@2gis/mapgl/types';
 
 export class ThreeJsPlugin {
-
-    private renderer: THREE.Renderer;
-    private scene: THREE.Scene;
-    private camera: THREE.Camera;
+    private renderer = new THREE.WebGLRenderer();
+    private camera = new THREE.PerspectiveCamera();
+    private scene = new THREE.Scene();
+    private mesh = new THREE.Mesh();
+    private tmpMatrix = new THREE.Matrix4();
     private map: Map;
-    private mesh: THREE.Mesh;
-    private tmpMatrix: THREE.Matrix4;
 
     constructor(map: Map) {
         this.map = map;
-        this.renderer = new THREE.WebGLRenderer();
-        this.camera = new THREE.PerspectiveCamera();
-        this.scene = new THREE.Scene();
-        this.mesh = new THREE.Mesh();
-        this.tmpMatrix = new THREE.Matrix4();
 
         map.once('idle', () => {
             map.addLayer({
@@ -40,7 +34,6 @@ export class ThreeJsPlugin {
         this.camera.matrix.copy(this.camera.matrixWorld);
         this.camera.matrix.decompose(this.camera.position, this.camera.quaternion, this.camera.scale);
 
-        // @ts-ignore
         this.renderer.resetState();
         this.renderer.render(this.scene, this.camera);
     }
@@ -53,7 +46,6 @@ export class ThreeJsPlugin {
             context: this.map.getWebGLContext(),
             antialias: window.devicePixelRatio < 2,
         });
-        // @ts-ignore
         this.renderer.autoClear = false;
 
         const light = new THREE.AmbientLight(0x404040);
