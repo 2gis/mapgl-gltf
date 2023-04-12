@@ -1,5 +1,7 @@
+import * as THREE from 'three';
+
 export class ThreeJsPlugin {
     constructor() {
-        console.log('inited!');
+        console.log('inited!', THREE);
     }
 }
