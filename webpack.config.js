@@ -63,6 +63,9 @@ module.exports = function (env) {
             devServer: {
                 compress: true,
                 port: 3700,
+                client: {
+                    overlay: false,
+                },
             },
             watch: true,
         };

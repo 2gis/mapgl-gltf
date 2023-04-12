@@ -11,11 +11,7 @@ async function start() {
         pitch: 45,
     });
 
-    const marker = new mapglAPI.Marker(map, {
-        coordinates: [55.31878, 25.23584],
-    });
-
-    new ThreeJsPlugin();
+    new ThreeJsPlugin(map);
 }
 
 start();
