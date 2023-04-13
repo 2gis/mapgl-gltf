@@ -1,4 +1,5 @@
 const path = require('path');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
@@ -44,6 +45,11 @@ module.exports = function (env) {
             },
             resolve: {
                 extensions: ['.ts', '.js'],
+                // Обход ворнинга
+                // Multiple instances of Three.js being imported
+                alias: {
+                    three: path.resolve('./node_modules/three')
+                },
             },
             module: {
                 rules: [
@@ -59,12 +65,24 @@ module.exports = function (env) {
                     template: './demo/index.html',
                     filename: 'index.html',
                 }),
+                new CopyWebpackPlugin({
+                    patterns: [{
+                        from: 'static',
+                        to: 'static',
+                    }, {
+                        from: 'demo/models',
+                        to: 'models'
+                    }],
+                })
             ],
             devServer: {
                 compress: true,
                 port: 3700,
                 client: {
                     overlay: false,
+                },
+                devMiddleware: {
+                    writeToDisk: true,
                 },
             },
             watch: true,

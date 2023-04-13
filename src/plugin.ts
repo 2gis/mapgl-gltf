@@ -1,24 +1,29 @@
 import * as THREE from 'three';
+import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import type { Map } from '@2gis/mapgl/types';
 
-import { mapPointFromLngLat } from './utils';
+import { mapPointFromLngLat, triggerMapRerender } from './utils';
 
 interface PluginOptions {
     posLngLat: number[];
+    modelUrl: string;
 }
 
 export class ThreeJsPlugin {
     private renderer = new THREE.WebGLRenderer();
     private camera = new THREE.PerspectiveCamera();
     private scene = new THREE.Scene();
-    private mesh = new THREE.Mesh();
+    private model = new THREE.Mesh();
     private tmpMatrix = new THREE.Matrix4();
     private map: Map;
     private meshPosition: number[];
+    private modelUrl: string;
 
     constructor(map: Map, options: PluginOptions) {
         this.map = map;
         this.meshPosition = mapPointFromLngLat(options.posLngLat);
+        this.modelUrl = options.modelUrl;
 
         map.once('idle', () => {
             map.addLayer({
@@ -56,21 +61,32 @@ export class ThreeJsPlugin {
         });
         this.renderer.autoClear = false;
 
-        const light = new THREE.AmbientLight(0x404040);
+        const light = new THREE.AmbientLight(0x777777);
 
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(0, 0, 1);
 
         this.scene.add(light, directionalLight);
 
-        const geometry = new THREE.BoxGeometry( 0.2, 0.2, 0.2 );
-        const material = new THREE.MeshNormalMaterial();
-
-        this.mesh = new THREE.Mesh( geometry, material );
-        const mapPointCenter = [this.meshPosition[0], this.meshPosition[1], 0];
-        const k = 20000;
-        this.mesh.scale.set(k, k, k);
-        this.mesh.position.set(mapPointCenter[0], mapPointCenter[1], k / 2);
-        this.scene.add( this.mesh );
+        const loadingManager = new THREE.LoadingManager();
+        const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath(
+            'static/libs/draco/',
+        );
+        const loader = new GLTFLoader().setDRACOLoader(dracoLoader);
+        loader.load(
+            this.modelUrl,
+            (gltf: GLTF) => {
+                this.model.add(gltf.scene);
+                this.model.rotateX(Math.PI / 2);
+                const mapPointCenter = [this.meshPosition[0], this.meshPosition[1], 0];
+                const k = 1000;
+                this.model.scale.set(k, k, k);
+                this.model.position.set(mapPointCenter[0], mapPointCenter[1], k / 2);
+                this.scene.add( this.model );
+                triggerMapRerender(this.map);
+            },
+            () => {},
+            () => {},
+        );
     }
 }

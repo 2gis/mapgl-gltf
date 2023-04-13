@@ -1,3 +1,4 @@
+import type { Map } from '@2gis/mapgl/types';
 // https://github.com/Trufi/utils/blob/main/src/mapPoint/fromLngLat.ts
 
 /**
@@ -26,4 +27,8 @@ export function mapPointFromLngLat(lngLat: number[]): number[] {
 
     const worldHalf = worldSize / 2;
     return [clamp(x, -worldHalf, worldHalf), clamp(y, -worldHalf, worldHalf)];
+}
+
+export function triggerMapRerender(map: Map) {
+    map.setZoom(map.getZoom() - 0.00000001);
 }
