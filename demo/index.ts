@@ -11,7 +11,9 @@ async function start() {
         pitch: 45,
     });
 
-    new ThreeJsPlugin(map);
+    new ThreeJsPlugin(map, {
+        posLngLat: [55.31878, 25.23584],
+    });
 }
 
 start();

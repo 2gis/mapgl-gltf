@@ -1,6 +1,12 @@
 import * as THREE from 'three';
 import type { Map } from '@2gis/mapgl/types';
 
+import { mapPointFromLngLat } from './utils';
+
+interface PluginOptions {
+    posLngLat: number[];
+}
+
 export class ThreeJsPlugin {
     private renderer = new THREE.WebGLRenderer();
     private camera = new THREE.PerspectiveCamera();
@@ -8,9 +14,11 @@ export class ThreeJsPlugin {
     private mesh = new THREE.Mesh();
     private tmpMatrix = new THREE.Matrix4();
     private map: Map;
+    private meshPosition: number[];
 
-    constructor(map: Map) {
+    constructor(map: Map, options: PluginOptions) {
         this.map = map;
+        this.meshPosition = mapPointFromLngLat(options.posLngLat);
 
         map.once('idle', () => {
             map.addLayer({
@@ -59,7 +67,7 @@ export class ThreeJsPlugin {
         const material = new THREE.MeshNormalMaterial();
 
         this.mesh = new THREE.Mesh( geometry, material );
-        const mapPointCenter = [659978752.6517191, 311310264.49060047, 0];
+        const mapPointCenter = [this.meshPosition[0], this.meshPosition[1], 0];
         const k = 20000;
         this.mesh.scale.set(k, k, k);
         this.mesh.position.set(mapPointCenter[0], mapPointCenter[1], k / 2);
