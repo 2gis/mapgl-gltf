@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
-import type { Map } from '@2gis/mapgl/types';
+import type { Map as MapGL} from '@2gis/mapgl/types';
 
 import { mapPointFromLngLat, triggerMapRerender, degToRad, concatUrl } from './utils';
 
@@ -35,14 +35,14 @@ export class ThreeJsPlugin {
     private scene = new THREE.Scene();
     private model = new THREE.Mesh();
     private tmpMatrix = new THREE.Matrix4();
-    private map: Map;
+    private map: MapGL;
     private modelPosition: number[];
-    private options: Required<PluginOptions>;
+    private options = defaultOptions;
 
-    constructor(map: Map, options: PluginOptions) {
+    constructor(map: MapGL, pluginOptions: PluginOptions) {
         this.map = map;
-        this.modelPosition = mapPointFromLngLat(options.position);
-        this.options = {...defaultOptions, ...options};
+        this.modelPosition = mapPointFromLngLat(pluginOptions.position);
+        this.options = {...this.options, ...pluginOptions};
 
         map.once('idle', () => {
             map.addLayer({
