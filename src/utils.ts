@@ -1,5 +1,4 @@
 import type { Map } from '@2gis/mapgl/types';
-// https://github.com/Trufi/utils/blob/main/src/mapPoint/fromLngLat.ts
 
 /**
  * World size in map points
@@ -18,6 +17,7 @@ export function degToRad(degrees: number): number {
 
 /**
  * Projects point in geographical coordinates to point in map coordinates.
+ * https://github.com/Trufi/utils/blob/main/src/mapPoint/fromLngLat.ts
  */
 export function mapPointFromLngLat(lngLat: number[]): number[] {
     const sin = Math.sin(degToRad(lngLat[1]));

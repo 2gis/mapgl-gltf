@@ -3,11 +3,24 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import type { Map } from '@2gis/mapgl/types';
 
-import { mapPointFromLngLat, triggerMapRerender } from './utils';
+import { mapPointFromLngLat, triggerMapRerender, degToRad } from './utils';
 
 interface PluginOptions {
-    posLngLat: number[];
-    modelUrl: string;
+    position: number[];
+    url: string;
+    rotateX?: number;
+    rotateY?: number;
+    rotateZ?: number;
+    scale?: number;
+    light?: THREE.Light[];
+}
+
+const defaultOptions = {
+    rotateX: 0,
+    rotateY: 0,
+    rotateZ: 0,
+    scale: 1,
+    light: [new THREE.AmbientLight(0xffffff, 2.9)],
 }
 
 export class ThreeJsPlugin {
@@ -17,17 +30,17 @@ export class ThreeJsPlugin {
     private model = new THREE.Mesh();
     private tmpMatrix = new THREE.Matrix4();
     private map: Map;
-    private meshPosition: number[];
-    private modelUrl: string;
+    private modelPosition: number[];
+    private options: Required<PluginOptions>;
 
     constructor(map: Map, options: PluginOptions) {
         this.map = map;
-        this.meshPosition = mapPointFromLngLat(options.posLngLat);
-        this.modelUrl = options.modelUrl;
+        this.modelPosition = mapPointFromLngLat(options.position);
+        this.options = {...defaultOptions, ...options};
 
         map.once('idle', () => {
             map.addLayer({
-                id: 'my',
+                id: 'threeJsLayer',
                 type: 'custom',
                 onAdd: () => this.initThree(),
                 render: () => this.render(),
@@ -52,6 +65,8 @@ export class ThreeJsPlugin {
     }
 
     private initThree() {
+        const { rotateX, rotateY, rotateZ, scale, light, url } = this.options;
+
         this.camera = new THREE.PerspectiveCamera();
 
         this.renderer = new THREE.WebGLRenderer({
@@ -60,13 +75,10 @@ export class ThreeJsPlugin {
             antialias: window.devicePixelRatio < 2,
         });
         this.renderer.autoClear = false;
+        this.renderer.outputEncoding = THREE.sRGBEncoding;
+        this.renderer.useLegacyLights = false;
 
-        const light = new THREE.AmbientLight(0x777777);
-
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(0, 0, 1);
-
-        this.scene.add(light, directionalLight);
+        this.scene.add(...light);
 
         const loadingManager = new THREE.LoadingManager();
         const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath(
@@ -74,14 +86,18 @@ export class ThreeJsPlugin {
         );
         const loader = new GLTFLoader().setDRACOLoader(dracoLoader);
         loader.load(
-            this.modelUrl,
+            url,
             (gltf: GLTF) => {
                 this.model.add(gltf.scene);
-                this.model.rotateX(Math.PI / 2);
-                const mapPointCenter = [this.meshPosition[0], this.meshPosition[1], 0];
-                const k = 1000;
-                this.model.scale.set(k, k, k);
-                this.model.position.set(mapPointCenter[0], mapPointCenter[1], k / 2);
+                // rotation
+                this.model.rotateX(degToRad(90 + rotateX));
+                this.model.rotateY(degToRad(rotateY));
+                this.model.rotateZ(degToRad(rotateZ));
+                // scaling
+                this.model.scale.set(scale, scale, scale);
+                // position
+                const mapPointCenter = [this.modelPosition[0], this.modelPosition[1], 0];
+                this.model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
                 this.scene.add( this.model );
                 triggerMapRerender(this.map);
             },
@@ -90,3 +106,5 @@ export class ThreeJsPlugin {
         );
     }
 }
+
+export { THREE };

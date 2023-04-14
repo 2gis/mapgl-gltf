@@ -1,5 +1,5 @@
 import { load } from '@2gis/mapgl';
-import { ThreeJsPlugin } from '../src/index';
+import { ThreeJsPlugin, THREE } from '../src/index';
 
 async function start() {
     const mapglAPI = await load();
@@ -12,9 +12,16 @@ async function start() {
         pitch: 45,
     });
 
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.7);
+    directionalLight.position.set(0.5, 1, 0.5);
+
     new ThreeJsPlugin(map, {
-        posLngLat: mapCenter,
-        modelUrl: 'models/cube_draco.glb',
+        position: mapCenter,
+        url: 'models/cube_draco.glb',
+        scale: 1000,
+        light: [ambientLight, directionalLight],
     });
 }
 
