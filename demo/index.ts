@@ -19,7 +19,7 @@ async function start() {
 
     new ThreeJsPlugin(map, {
         position: mapCenter,
-        url: 'models/cube_draco.glb',
+        modelPath: 'models/cube_draco.glb',
         scale: 1000,
         light: [ambientLight, directionalLight],
     });

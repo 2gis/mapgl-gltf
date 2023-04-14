@@ -3,24 +3,30 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import type { Map } from '@2gis/mapgl/types';
 
-import { mapPointFromLngLat, triggerMapRerender, degToRad } from './utils';
+import { mapPointFromLngLat, triggerMapRerender, degToRad, concatUrl } from './utils';
 
 interface PluginOptions {
     position: number[];
-    url: string;
+    modelPath: string;
     rotateX?: number;
     rotateY?: number;
     rotateZ?: number;
     scale?: number;
     light?: THREE.Light[];
+    scriptsBaseUrl?: string;
+    modelsBaseUrl?: string;
 }
 
-const defaultOptions = {
+const defaultOptions: Required<PluginOptions> = {
+    position: [],
+    modelPath: '',
     rotateX: 0,
     rotateY: 0,
     rotateZ: 0,
     scale: 1,
     light: [new THREE.AmbientLight(0xffffff, 2.9)],
+    scriptsBaseUrl: '',
+    modelsBaseUrl: '',
 }
 
 export class ThreeJsPlugin {
@@ -65,7 +71,7 @@ export class ThreeJsPlugin {
     }
 
     private initThree() {
-        const { rotateX, rotateY, rotateZ, scale, light, url } = this.options;
+        const { rotateX, rotateY, rotateZ, scale, light, modelPath, scriptsBaseUrl, modelsBaseUrl } = this.options;
 
         this.camera = new THREE.PerspectiveCamera();
 
@@ -81,12 +87,13 @@ export class ThreeJsPlugin {
         this.scene.add(...light);
 
         const loadingManager = new THREE.LoadingManager();
-        const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath(
-            'static/libs/draco/',
-        );
+        let dracoUrl = concatUrl(scriptsBaseUrl, 'static/libs/draco/');
+        const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath(dracoUrl);
         const loader = new GLTFLoader().setDRACOLoader(dracoLoader);
+        const modelUrl = concatUrl(modelsBaseUrl, modelPath);
+
         loader.load(
-            url,
+            modelUrl,
             (gltf: GLTF) => {
                 this.model.add(gltf.scene);
                 // rotation
@@ -102,7 +109,7 @@ export class ThreeJsPlugin {
                 triggerMapRerender(this.map);
             },
             () => {},
-            () => {},
+            (e) => {console.error(`Loading of the model failed.`, e)},
         );
     }
 }

@@ -20,6 +20,11 @@ module.exports = function (env) {
             },
             resolve: {
                 extensions: ['.ts', '.js'],
+                // Fix warning
+                // Multiple instances of Three.js being imported
+                alias: {
+                    three: path.resolve('./node_modules/three')
+                },
             },
             module: {
                 rules: [
@@ -29,6 +34,22 @@ module.exports = function (env) {
                     },
                 ],
             },
+            plugins: [
+                new CleanWebpackPlugin(),
+                new HtmlWebpackPlugin({
+                    template: './demo/index.html',
+                    filename: 'index.html',
+                }),
+                new CopyWebpackPlugin({
+                    patterns: [{
+                        from: 'static',
+                        to: 'static',
+                    }, {
+                        from: 'demo/models',
+                        to: 'models'
+                    }],
+                })
+            ],
         };
     }
 
@@ -45,7 +66,7 @@ module.exports = function (env) {
             },
             resolve: {
                 extensions: ['.ts', '.js'],
-                // Обход ворнинга
+                // Fix warning
                 // Multiple instances of Three.js being imported
                 alias: {
                     three: path.resolve('./node_modules/three')

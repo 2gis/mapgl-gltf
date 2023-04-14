@@ -32,3 +32,15 @@ export function mapPointFromLngLat(lngLat: number[]): number[] {
 export function triggerMapRerender(map: Map) {
     map.setZoom(map.getZoom() - 0.00000001);
 }
+
+export function concatUrl(baseUrl: string, path: string) {
+    if (baseUrl.length === 0) {
+        return path;
+    }
+
+    if (baseUrl[baseUrl.length - 1] === '/') {
+        return baseUrl + path;
+    }
+
+    return baseUrl + '/' + path;
+}
