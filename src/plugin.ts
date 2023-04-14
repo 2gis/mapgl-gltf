@@ -112,6 +112,8 @@ export class ThreeJsPlugin {
             (e) => {console.error(`Loading of the model failed.`, e)},
         );
     }
+
+    static THREE = THREE;
 }
 
 export { THREE };
