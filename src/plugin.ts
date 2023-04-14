@@ -50,7 +50,7 @@ export class ThreeJsPlugin {
                 type: 'custom',
                 onAdd: () => this.initThree(),
                 render: () => this.render(),
-                onRemove: () => console.log('remove custom layer external callback'),
+                onRemove: () => {},
             });
         });
     }
