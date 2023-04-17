@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "",
   "main": "dist/bundle.js",
+  "typings": "dist/types/index.d.ts",
   "scripts": {
-    "build": "npm run build:bundle && npm run build:typings",
+    "build": "npm run build:bundle && npm run build:typings && npm run build:transpile",
     "build:bundle": "webpack --env type=production",
     "build:typings": "tsc -p tsconfig.typings.json --declaration --emitDeclarationOnly",
+    "build:transpile": "tsc -p tsconfig.transpile.json --declaration",
     "dev": "webpack-dev-server --env type=development",
     "demo": "webpack --env type=demo",
     "prettier": "prettier --check \"./**/*.{ts,js,html,css}\"",
@@ -16,14 +18,14 @@
   "license": "ISC",
   "peerDependencies": {
     "@2gis/mapgl": "^1.35.1",
-    "@types/three": "^0.150.1"
+    "@types/three": "^0.150.1",
+    "three": "^0.151.3"
   },
   "devDependencies": {
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.0",
     "prettier": "^2.8.7",
-    "three": "^0.151.3",
     "ts-loader": "^9.4.2",
     "typescript": "^4.9.4",
     "webpack": "^5.75.0",
