@@ -4,8 +4,9 @@
   "description": "",
   "main": "dist/bundle.js",
   "scripts": {
-    "build": "webpack --env production",
-    "dev": "webpack-dev-server"
+    "build": "webpack --env type=production",
+    "dev": "webpack-dev-server --env type=development",
+    "demo": "webpack --env type=demo"
   },
   "author": "",
   "license": "ISC",
