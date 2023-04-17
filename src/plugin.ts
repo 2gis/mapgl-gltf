@@ -115,7 +115,7 @@ export class ThreeJsPlugin {
             (gltf: GLTF) => {
                 this.model.add(gltf.scene);
                 // rotation
-                this.model.rotateX(degToRad(90 + rotateX));
+                this.model.rotateX(degToRad(rotateX));
                 this.model.rotateY(degToRad(rotateY));
                 this.model.rotateZ(degToRad(rotateZ));
                 // scaling
