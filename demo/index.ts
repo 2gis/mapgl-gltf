@@ -10,6 +10,7 @@ async function start() {
         zoom: 18,
         key: 'cb20c5bf-34d3-4f0e-9b2b-33e9b8edb57f',
         pitch: 45,
+        rotation: 330,
     });
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 2);
