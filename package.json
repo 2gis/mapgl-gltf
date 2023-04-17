@@ -6,7 +6,9 @@
   "scripts": {
     "build": "webpack --env type=production",
     "dev": "webpack-dev-server --env type=development",
-    "demo": "webpack --env type=demo"
+    "demo": "webpack --env type=demo",
+    "prettier": "prettier --check \"./**/*.{ts,js,html,css}\"",
+    "prettier:write": "prettier --write \"./**/*.{ts,js,html,css}\""
   },
   "author": "",
   "license": "ISC",
@@ -19,6 +21,7 @@
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.0",
+    "prettier": "^2.8.7",
     "ts-loader": "^9.4.2",
     "tsconfig-paths-webpack-plugin": "^4.0.0",
     "typescript": "^4.9.4",
