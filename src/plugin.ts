@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
-import type { Map as MapGL} from '@2gis/mapgl/types';
+import type { Map as MapGL } from '@2gis/mapgl/types';
 
 import { mapPointFromLngLat, triggerMapRerender, degToRad, concatUrl } from './utils';
 
@@ -27,7 +27,7 @@ const defaultOptions: Required<PluginOptions> = {
     light: [new THREE.AmbientLight(0xffffff, 2.9)],
     scriptsBaseUrl: '',
     modelsBaseUrl: '',
-}
+};
 
 export class ThreeJsPlugin {
     private renderer = new THREE.WebGLRenderer();
@@ -42,7 +42,7 @@ export class ThreeJsPlugin {
     constructor(map: MapGL, pluginOptions: PluginOptions) {
         this.map = map;
         this.modelPosition = mapPointFromLngLat(pluginOptions.position);
-        this.options = {...this.options, ...pluginOptions};
+        this.options = { ...this.options, ...pluginOptions };
 
         map.once('idle', () => {
             map.addLayer({
@@ -56,22 +56,40 @@ export class ThreeJsPlugin {
     }
 
     private render() {
-        this.camera.projectionMatrix.fromArray((this.map as any)._impl.modules.camera.projectionMatrix);
+        this.camera.projectionMatrix.fromArray(
+            (this.map as any)._impl.modules.camera.projectionMatrix,
+        );
         this.camera.projectionMatrixInverse.copy(this.camera.projectionMatrix).invert();
 
         this.tmpMatrix.fromArray(this.map.getProjectionMatrix());
-        this.camera.matrixWorldInverse.multiplyMatrices(this.camera.projectionMatrixInverse, this.tmpMatrix);
+        this.camera.matrixWorldInverse.multiplyMatrices(
+            this.camera.projectionMatrixInverse,
+            this.tmpMatrix,
+        );
 
         this.camera.matrixWorld.copy(this.camera.matrixWorldInverse).invert();
         this.camera.matrix.copy(this.camera.matrixWorld);
-        this.camera.matrix.decompose(this.camera.position, this.camera.quaternion, this.camera.scale);
+        this.camera.matrix.decompose(
+            this.camera.position,
+            this.camera.quaternion,
+            this.camera.scale,
+        );
 
         this.renderer.resetState();
         this.renderer.render(this.scene, this.camera);
     }
 
     private initThree() {
-        const { rotateX, rotateY, rotateZ, scale, light, modelPath, scriptsBaseUrl, modelsBaseUrl } = this.options;
+        const {
+            rotateX,
+            rotateY,
+            rotateZ,
+            scale,
+            light,
+            modelPath,
+            scriptsBaseUrl,
+            modelsBaseUrl,
+        } = this.options;
 
         this.camera = new THREE.PerspectiveCamera();
 
@@ -105,11 +123,13 @@ export class ThreeJsPlugin {
                 // position
                 const mapPointCenter = [this.modelPosition[0], this.modelPosition[1], 0];
                 this.model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
-                this.scene.add( this.model );
+                this.scene.add(this.model);
                 triggerMapRerender(this.map);
             },
             () => {},
-            (e) => {console.error(`Loading of the model failed.`, e)},
+            (e) => {
+                console.error(`Loading of the model failed.`, e);
+            },
         );
     }
 

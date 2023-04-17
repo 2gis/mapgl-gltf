@@ -12,7 +12,6 @@ async function start() {
         pitch: 45,
     });
 
-
     const ambientLight = new THREE.AmbientLight(0xffffff, 2);
     const directionalLight = new THREE.DirectionalLight(0xffffff, 1.7);
     directionalLight.position.set(0.5, 1, 0.5);

@@ -18,7 +18,7 @@ module.exports = function (env, _argv) {
         // Fix warning
         // Multiple instances of Three.js being imported
         alias: {
-            three: path.resolve('./node_modules/three')
+            three: path.resolve('./node_modules/three'),
         },
     };
 
@@ -34,11 +34,13 @@ module.exports = function (env, _argv) {
     const productionPluginsConfig = [
         new CleanWebpackPlugin(),
         new CopyWebpackPlugin({
-            patterns: [{
-                from: 'static',
-                to: 'static',
-            }],
-        })
+            patterns: [
+                {
+                    from: 'static',
+                    to: 'static',
+                },
+            ],
+        }),
     ];
 
     const developmentPluginsConfig = [
@@ -48,14 +50,17 @@ module.exports = function (env, _argv) {
             filename: 'index.html',
         }),
         new CopyWebpackPlugin({
-            patterns: [{
-                from: 'static',
-                to: 'static',
-            }, {
-                from: 'demo/models',
-                to: 'models'
-            }],
-        })
+            patterns: [
+                {
+                    from: 'static',
+                    to: 'static',
+                },
+                {
+                    from: 'demo/models',
+                    to: 'models',
+                },
+            ],
+        }),
     ];
 
     if (env.type === 'production') {
@@ -101,4 +106,4 @@ module.exports = function (env, _argv) {
             plugins: developmentPluginsConfig,
         };
     }
-}
+};

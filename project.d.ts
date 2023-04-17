@@ -1,5 +1,5 @@
 import * as _mapgl from '@2gis/mapgl/types';
-import { ThreeJsPlugin } from './src'
+import { ThreeJsPlugin } from './src';
 
 declare module '@2gis/mapgl/types' {
     export { ThreeJsPlugin };
