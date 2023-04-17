@@ -11,6 +11,7 @@ async function start() {
         key: 'cb20c5bf-34d3-4f0e-9b2b-33e9b8edb57f',
         pitch: 45,
         rotation: 330,
+        enableTrackResize: true,
     });
 
     const ambientLight = new THREE.AmbientLight(0xffffff, 2);
