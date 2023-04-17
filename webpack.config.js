@@ -25,7 +25,7 @@ module.exports = function (env, _argv) {
     const moduleConfig = {
         rules: [
             {
-                test: /\.tsx?$/,
+                test: /\.ts$/,
                 loader: 'ts-loader',
             },
         ],
