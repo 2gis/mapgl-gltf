@@ -77,6 +77,7 @@ module.exports = function (env, _argv) {
             resolve: resolveConfig,
             module: moduleConfig,
             plugins: developmentPluginsConfig,
+            devtool: 'eval-source-map',
             devServer: {
                 compress: true,
                 port: 3700,

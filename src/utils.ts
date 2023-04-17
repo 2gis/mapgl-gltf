@@ -3,7 +3,7 @@ import type { Map } from '@2gis/mapgl/types';
 /**
  * World size in map points
  */
-export const worldSize = 2 ** 32;
+const worldSize = 2 ** 32;
 
 export function clamp(value: number, min: number, max: number): number {
     value = Math.max(value, min);
