@@ -105,7 +105,7 @@ export class ThreeJsPlugin {
         this.scene.add(...light);
 
         const loadingManager = new THREE.LoadingManager();
-        let dracoUrl = concatUrl(scriptsBaseUrl, 'static/libs/draco/');
+        let dracoUrl = concatUrl(scriptsBaseUrl, 'libs/draco/');
         const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath(dracoUrl);
         const loader = new GLTFLoader().setDRACOLoader(dracoLoader);
         const modelUrl = concatUrl(modelsBaseUrl, modelPath);

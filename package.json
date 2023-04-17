@@ -4,7 +4,8 @@
   "description": "",
   "main": "dist/bundle.js",
   "scripts": {
-    "build": "webpack --env type=production",
+    "build": "npm run build:bundle && npm run build:typings",
+    "build:bundle": "webpack --env type=production",
     "build:typings": "tsc -p tsconfig.typings.json --declaration --emitDeclarationOnly",
     "dev": "webpack-dev-server --env type=development",
     "demo": "webpack --env type=demo",

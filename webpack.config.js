@@ -36,8 +36,8 @@ module.exports = function (env, _argv) {
         new CopyWebpackPlugin({
             patterns: [
                 {
-                    from: 'static',
-                    to: 'static',
+                    from: 'node_modules/three/examples/jsm/libs/draco',
+                    to: 'libs/draco',
                 },
             ],
         }),
@@ -52,8 +52,8 @@ module.exports = function (env, _argv) {
         new CopyWebpackPlugin({
             patterns: [
                 {
-                    from: 'static',
-                    to: 'static',
+                    from: 'node_modules/three/examples/jsm/libs/draco',
+                    to: 'libs/draco',
                 },
                 {
                     from: 'demo/models',
