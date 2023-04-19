@@ -57,6 +57,7 @@ export class ThreeJsPlugin {
 
     private render() {
         this.camera.projectionMatrix.fromArray(
+            // TODO: TILES-5247 need to add public method
             (this.map as any)._impl.modules.camera.projectionMatrix,
         );
         this.camera.projectionMatrixInverse.copy(this.camera.projectionMatrix).invert();
