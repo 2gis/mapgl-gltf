@@ -29,10 +29,6 @@ export function mapPointFromLngLat(lngLat: number[]): number[] {
     return [clamp(x, -worldHalf, worldHalf), clamp(y, -worldHalf, worldHalf)];
 }
 
-export function triggerMapRerender(map: Map) {
-    map.setZoom(map.getZoom() - 0.00000001);
-}
-
 export function concatUrl(baseUrl: string, path: string) {
     if (baseUrl.length === 0) {
         return path;

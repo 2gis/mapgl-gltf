@@ -3,7 +3,7 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import type { Map as MapGL } from '@2gis/mapgl/types';
 
-import { mapPointFromLngLat, triggerMapRerender, degToRad, concatUrl } from './utils';
+import { mapPointFromLngLat, degToRad, concatUrl } from './utils';
 
 interface PluginOptions {
     position: number[];
@@ -114,6 +114,7 @@ export class ThreeJsPlugin {
             modelUrl,
             (gltf: GLTF) => {
                 this.model.add(gltf.scene);
+
                 // rotation
                 this.model.rotateX(degToRad(rotateX));
                 this.model.rotateY(degToRad(rotateY));
@@ -123,8 +124,9 @@ export class ThreeJsPlugin {
                 // position
                 const mapPointCenter = [this.modelPosition[0], this.modelPosition[1], 0];
                 this.model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
+
                 this.scene.add(this.model);
-                triggerMapRerender(this.map);
+                this.map.triggerRerender();
             },
             () => {},
             (e) => {
