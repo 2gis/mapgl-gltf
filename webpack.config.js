@@ -8,7 +8,7 @@ module.exports = function (env, _argv) {
         path: path.resolve(__dirname, 'dist'),
         filename: 'bundle.js',
         library: {
-            name: 'mapglThreeJsPlugin',
+            name: 'mapglGltfPlugin',
             type: 'umd',
         },
     };

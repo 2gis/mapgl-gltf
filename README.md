@@ -1,3 +1,3 @@
-# mapgl-threejs
+# mapgl-gltf
 
-Three.js плагин для MapGL
+Plugin for the rendering glTF models with MapGL
