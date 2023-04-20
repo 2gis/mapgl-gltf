@@ -38,6 +38,9 @@ async function start() {
         ])
         .then(() => {
             console.log('Models are loaded');
+        })
+        .catch((e) => {
+            console.error(e);
         });
 }
 

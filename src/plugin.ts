@@ -99,7 +99,18 @@ export class GltfPlugin {
                         const mapPointCenter = [modelPosition[0], modelPosition[1], 0];
                         model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
 
-                        this.models.set(String(id), model);
+                        const modelId = String(id);
+                        try {
+                            if (this.models.has(modelId)) {
+                                throw new Error(
+                                    `Model with id "${modelId}" already exists. Please use different identifiers for models`,
+                                );
+                            }
+                        } catch (e) {
+                            reject(e);
+                            return;
+                        }
+                        this.models.set(modelId, model);
 
                         if (this.options.modelsLoadStrategy === 'dontWaitAll') {
                             this.scene.add(model);
