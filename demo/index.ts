@@ -13,7 +13,7 @@ async function start() {
         enableTrackResize: true,
     });
 
-    const plugin = new GltfPlugin(map);
+    const plugin = new GltfPlugin(map, { modelsLoadStrategy: 'dontWaitAll' });
 
     plugin
         .addModels([

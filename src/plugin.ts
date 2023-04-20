@@ -9,10 +9,11 @@ interface PluginOptions {
     light?: THREE.Light[];
     scriptsBaseUrl?: string;
     modelsBaseUrl?: string;
+    modelsLoadStrategy?: 'dontWaitAll' | 'waitAll';
 }
 
 interface ModelOptions {
-    id: number;
+    id: number | string;
     coordinates: number[];
     modelPath: string;
     rotateX?: number;
@@ -25,6 +26,7 @@ const defaultOptions: Required<PluginOptions> = {
     light: [new THREE.AmbientLight(0xffffff, 2.9)],
     scriptsBaseUrl: '',
     modelsBaseUrl: '',
+    modelsLoadStrategy: 'waitAll',
 };
 
 export class GltfPlugin {
@@ -37,6 +39,7 @@ export class GltfPlugin {
     private loader = new GLTFLoader();
     private onThreeJsInit = () => {};
     private waitForThreeJsInit = new Promise<void>((resolve) => (this.onThreeJsInit = resolve));
+    private models = new Map<string, THREE.Mesh>();
 
     constructor(map: MapGL, pluginOptions?: PluginOptions) {
         this.map = map;
@@ -60,6 +63,7 @@ export class GltfPlugin {
 
         const loadedModels = models.map((model) => {
             const {
+                id,
                 coordinates,
                 modelPath,
                 rotateX = 0,
@@ -87,8 +91,13 @@ export class GltfPlugin {
                         const mapPointCenter = [modelPosition[0], modelPosition[1], 0];
                         model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
 
-                        this.scene.add(model);
-                        this.map.triggerRerender();
+                        this.models.set(String(id), model);
+
+                        if (this.options.modelsLoadStrategy === 'dontWaitAll') {
+                            this.scene.add(model);
+                            this.map.triggerRerender();
+                        }
+
                         resolve();
                     },
                     () => {},
@@ -99,7 +108,14 @@ export class GltfPlugin {
             });
         });
 
-        return Promise.all(loadedModels);
+        return Promise.all(loadedModels).then(() => {
+            if (this.options.modelsLoadStrategy === 'waitAll') {
+                for (let [_id, model] of this.models) {
+                    this.scene.add(model);
+                }
+                this.map.triggerRerender();
+            }
+        });
     }
 
     private render() {
