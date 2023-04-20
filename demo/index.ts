@@ -19,7 +19,7 @@ async function start() {
     directionalLight.position.set(0.5, 1, 0.5);
 
     new ThreeJsPlugin(map, {
-        position: mapCenter,
+        coordinates: mapCenter,
         modelPath: 'models/cube_draco.glb',
         rotateX: 90,
         scale: 1000,

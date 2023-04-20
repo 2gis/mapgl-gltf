@@ -6,7 +6,7 @@ import type { Map as MapGL } from '@2gis/mapgl/types';
 import { mapPointFromLngLat, degToRad, concatUrl } from './utils';
 
 interface PluginOptions {
-    position: number[];
+    coordinates: number[];
     modelPath: string;
     rotateX?: number;
     rotateY?: number;
@@ -18,7 +18,7 @@ interface PluginOptions {
 }
 
 const defaultOptions: Required<PluginOptions> = {
-    position: [],
+    coordinates: [],
     modelPath: '',
     rotateX: 0,
     rotateY: 0,
@@ -33,16 +33,13 @@ export class ThreeJsPlugin {
     private renderer = new THREE.WebGLRenderer();
     private camera = new THREE.PerspectiveCamera();
     private scene = new THREE.Scene();
-    private model = new THREE.Mesh();
     private tmpMatrix = new THREE.Matrix4();
     private map: MapGL;
-    private modelPosition: number[];
     private options = defaultOptions;
     private loader = new GLTFLoader();
 
     constructor(map: MapGL, pluginOptions: PluginOptions) {
         this.map = map;
-        this.modelPosition = mapPointFromLngLat(pluginOptions.position);
         this.options = { ...this.options, ...pluginOptions };
 
         this.initLoader();
@@ -84,7 +81,7 @@ export class ThreeJsPlugin {
     }
 
     private initThree() {
-        const { rotateX, rotateY, rotateZ, scale, light, modelPath, modelsBaseUrl } = this.options;
+        const { coordinates, rotateX, rotateY, rotateZ, scale, light, modelPath, modelsBaseUrl } = this.options;
 
         this.camera = new THREE.PerspectiveCamera();
 
@@ -99,24 +96,26 @@ export class ThreeJsPlugin {
 
         this.scene.add(...light);
 
+        const modelPosition = mapPointFromLngLat(coordinates);
         const modelUrl = concatUrl(modelsBaseUrl, modelPath);
 
         this.loader.load(
             modelUrl,
             (gltf: GLTF) => {
-                this.model.add(gltf.scene);
+                const model = new THREE.Mesh();
+                model.add(gltf.scene);
 
                 // rotation
-                this.model.rotateX(degToRad(rotateX));
-                this.model.rotateY(degToRad(rotateY));
-                this.model.rotateZ(degToRad(rotateZ));
+                model.rotateX(degToRad(rotateX));
+                model.rotateY(degToRad(rotateY));
+                model.rotateZ(degToRad(rotateZ));
                 // scaling
-                this.model.scale.set(scale, scale, scale);
+                model.scale.set(scale, scale, scale);
                 // position
-                const mapPointCenter = [this.modelPosition[0], this.modelPosition[1], 0];
-                this.model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
+                const mapPointCenter = [modelPosition[0], modelPosition[1], 0];
+                model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
 
-                this.scene.add(this.model);
+                this.scene.add(model);
                 this.map.triggerRerender();
             },
             () => {},
