@@ -5,8 +5,13 @@ import type { Map as MapGL } from '@2gis/mapgl/types';
 
 import { mapPointFromLngLat, degToRad, concatUrl } from './utils';
 
+interface AmbientLightOptions {
+    color: THREE.ColorRepresentation;
+    intencity: number;
+}
+
 interface PluginOptions {
-    light?: THREE.Light[];
+    ambientLight?: AmbientLightOptions;
     scriptsBaseUrl?: string;
     modelsBaseUrl?: string;
     modelsLoadStrategy?: 'dontWaitAll' | 'waitAll';
@@ -23,7 +28,10 @@ interface ModelOptions {
 }
 
 const defaultOptions: Required<PluginOptions> = {
-    light: [new THREE.AmbientLight(0xffffff, 2.9)],
+    ambientLight: {
+        color: 0xffffff,
+        intencity: 2.9,
+    },
     scriptsBaseUrl: '',
     modelsBaseUrl: '',
     modelsLoadStrategy: 'waitAll',
@@ -37,7 +45,7 @@ export class GltfPlugin {
     private map: MapGL;
     private options = defaultOptions;
     private loader = new GLTFLoader();
-    private onThreeJsInit = () => {};
+    private onThreeJsInit = () => {}; // resolve of waitForThreeJsInit
     private waitForThreeJsInit = new Promise<void>((resolve) => (this.onThreeJsInit = resolve));
     private models = new Map<string, THREE.Mesh>();
 
@@ -144,8 +152,6 @@ export class GltfPlugin {
     }
 
     private initThree() {
-        const { light } = this.options;
-
         this.camera = new THREE.PerspectiveCamera();
 
         this.renderer = new THREE.WebGLRenderer({
@@ -157,7 +163,9 @@ export class GltfPlugin {
         this.renderer.outputEncoding = THREE.sRGBEncoding;
         this.renderer.useLegacyLights = false;
 
-        this.scene.add(...light);
+        const { color, intencity } = this.options.ambientLight;
+        const light = new THREE.AmbientLight(color, intencity);
+        this.scene.add(light);
 
         this.onThreeJsInit();
     }

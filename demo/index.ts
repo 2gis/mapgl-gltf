@@ -13,7 +13,10 @@ async function start() {
         enableTrackResize: true,
     });
 
-    const plugin = new GltfPlugin(map, { modelsLoadStrategy: 'dontWaitAll' });
+    const plugin = new GltfPlugin(map, {
+        modelsLoadStrategy: 'waitAll',
+        ambientLight: { color: 'white', intencity: 2.5 },
+    });
 
     plugin
         .addModels([
