@@ -12,7 +12,7 @@ interface AmbientLightOptions {
 
 interface PluginOptions {
     ambientLight?: AmbientLightOptions;
-    scriptsBaseUrl?: string;
+    dracoScriptsUrl?: string;
     modelsBaseUrl?: string;
     modelsLoadStrategy?: 'dontWaitAll' | 'waitAll';
 }
@@ -32,7 +32,7 @@ const defaultOptions: Required<PluginOptions> = {
         color: 0xffffff,
         intencity: 2.9,
     },
-    scriptsBaseUrl: '',
+    dracoScriptsUrl: 'libs/draco/',
     modelsBaseUrl: '',
     modelsLoadStrategy: 'waitAll',
 };
@@ -183,8 +183,9 @@ export class GltfPlugin {
 
     private initLoader() {
         const loadingManager = new THREE.LoadingManager();
-        let dracoUrl = concatUrl(this.options.scriptsBaseUrl, 'libs/draco/');
-        const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath(dracoUrl);
+        const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath(
+            this.options.dracoScriptsUrl,
+        );
         this.loader.setDRACOLoader(dracoLoader);
     }
 }
