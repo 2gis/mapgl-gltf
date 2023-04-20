@@ -6,24 +6,22 @@ import type { Map as MapGL } from '@2gis/mapgl/types';
 import { mapPointFromLngLat, degToRad, concatUrl } from './utils';
 
 interface PluginOptions {
+    light?: THREE.Light[];
+    scriptsBaseUrl?: string;
+    modelsBaseUrl?: string;
+}
+
+interface ModelOptions {
+    id: number,
     coordinates: number[];
     modelPath: string;
     rotateX?: number;
     rotateY?: number;
     rotateZ?: number;
     scale?: number;
-    light?: THREE.Light[];
-    scriptsBaseUrl?: string;
-    modelsBaseUrl?: string;
 }
 
 const defaultOptions: Required<PluginOptions> = {
-    coordinates: [],
-    modelPath: '',
-    rotateX: 0,
-    rotateY: 0,
-    rotateZ: 0,
-    scale: 1,
     light: [new THREE.AmbientLight(0xffffff, 2.9)],
     scriptsBaseUrl: '',
     modelsBaseUrl: '',
@@ -37,6 +35,8 @@ export class ThreeJsPlugin {
     private map: MapGL;
     private options = defaultOptions;
     private loader = new GLTFLoader();
+    private onThreeJsInit = () => {};
+    private waitForThreeJsInit = new Promise<void>((resolve) => (this.onThreeJsInit = resolve));
 
     constructor(map: MapGL, pluginOptions: PluginOptions) {
         this.map = map;
@@ -53,6 +53,53 @@ export class ThreeJsPlugin {
                 onRemove: () => {},
             });
         });
+    }
+
+    public async addModels(models: ModelOptions[]) {
+        await this.waitForThreeJsInit;
+
+        const loadedModels = models.map((model) => {
+            const {
+                coordinates,
+                modelPath,
+                rotateX = 0,
+                rotateY = 0,
+                rotateZ = 0,
+                scale = 1,
+            } = model;
+            const modelPosition = mapPointFromLngLat(coordinates);
+            const modelUrl = concatUrl(this.options.modelsBaseUrl, modelPath);
+
+            return new Promise<void>((resolve, reject) => {
+                this.loader.load(
+                    modelUrl,
+                    (gltf: GLTF) => {
+                        const model = new THREE.Mesh();
+                        model.add(gltf.scene);
+
+                        // rotation
+                        model.rotateX(degToRad(rotateX));
+                        model.rotateY(degToRad(rotateY));
+                        model.rotateZ(degToRad(rotateZ));
+                        // scaling
+                        model.scale.set(scale, scale, scale);
+                        // position
+                        const mapPointCenter = [modelPosition[0], modelPosition[1], 0];
+                        model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
+
+                        this.scene.add(model);
+                        this.map.triggerRerender();
+                        resolve();
+                    },
+                    () => {},
+                    (e) => {
+                        reject(e);
+                    },
+                );
+            });
+        });
+
+        return Promise.all(loadedModels);
     }
 
     private render() {
@@ -81,7 +128,7 @@ export class ThreeJsPlugin {
     }
 
     private initThree() {
-        const { coordinates, rotateX, rotateY, rotateZ, scale, light, modelPath, modelsBaseUrl } = this.options;
+        const { light } = this.options;
 
         this.camera = new THREE.PerspectiveCamera();
 
@@ -96,33 +143,7 @@ export class ThreeJsPlugin {
 
         this.scene.add(...light);
 
-        const modelPosition = mapPointFromLngLat(coordinates);
-        const modelUrl = concatUrl(modelsBaseUrl, modelPath);
-
-        this.loader.load(
-            modelUrl,
-            (gltf: GLTF) => {
-                const model = new THREE.Mesh();
-                model.add(gltf.scene);
-
-                // rotation
-                model.rotateX(degToRad(rotateX));
-                model.rotateY(degToRad(rotateY));
-                model.rotateZ(degToRad(rotateZ));
-                // scaling
-                model.scale.set(scale, scale, scale);
-                // position
-                const mapPointCenter = [modelPosition[0], modelPosition[1], 0];
-                model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
-
-                this.scene.add(model);
-                this.map.triggerRerender();
-            },
-            () => {},
-            (e) => {
-                console.error(`Loading of the model failed.`, e);
-            },
-        );
+        this.onThreeJsInit();
     }
 
     private initLoader() {
