@@ -38,11 +38,14 @@ export class ThreeJsPlugin {
     private map: MapGL;
     private modelPosition: number[];
     private options = defaultOptions;
+    private loader = new GLTFLoader();
 
     constructor(map: MapGL, pluginOptions: PluginOptions) {
         this.map = map;
         this.modelPosition = mapPointFromLngLat(pluginOptions.position);
         this.options = { ...this.options, ...pluginOptions };
+
+        this.initLoader();
 
         map.once('idle', () => {
             map.addLayer({
@@ -81,16 +84,7 @@ export class ThreeJsPlugin {
     }
 
     private initThree() {
-        const {
-            rotateX,
-            rotateY,
-            rotateZ,
-            scale,
-            light,
-            modelPath,
-            scriptsBaseUrl,
-            modelsBaseUrl,
-        } = this.options;
+        const { rotateX, rotateY, rotateZ, scale, light, modelPath, modelsBaseUrl } = this.options;
 
         this.camera = new THREE.PerspectiveCamera();
 
@@ -105,13 +99,9 @@ export class ThreeJsPlugin {
 
         this.scene.add(...light);
 
-        const loadingManager = new THREE.LoadingManager();
-        let dracoUrl = concatUrl(scriptsBaseUrl, 'libs/draco/');
-        const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath(dracoUrl);
-        const loader = new GLTFLoader().setDRACOLoader(dracoLoader);
         const modelUrl = concatUrl(modelsBaseUrl, modelPath);
 
-        loader.load(
+        this.loader.load(
             modelUrl,
             (gltf: GLTF) => {
                 this.model.add(gltf.scene);
@@ -134,6 +124,13 @@ export class ThreeJsPlugin {
                 console.error(`Loading of the model failed.`, e);
             },
         );
+    }
+
+    private initLoader() {
+        const loadingManager = new THREE.LoadingManager();
+        let dracoUrl = concatUrl(this.options.scriptsBaseUrl, 'libs/draco/');
+        const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath(dracoUrl);
+        this.loader.setDRACOLoader(dracoLoader);
     }
 
     static THREE = THREE;
