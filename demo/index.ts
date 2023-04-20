@@ -1,5 +1,5 @@
 import { load } from '@2gis/mapgl';
-import { ThreeJsPlugin } from '../src/index';
+import { GltfPlugin } from '../src/index';
 
 async function start() {
     const mapglAPI = await load();
@@ -13,7 +13,7 @@ async function start() {
         enableTrackResize: true,
     });
 
-    const plugin = new ThreeJsPlugin(map);
+    const plugin = new GltfPlugin(map);
 
     plugin
         .addModels([

@@ -1,12 +1,12 @@
 import * as _mapgl from '@2gis/mapgl/types';
-import { ThreeJsPlugin } from './src';
+import { GltfPlugin } from './src';
 
 declare module '@2gis/mapgl/types' {
-    export { ThreeJsPlugin };
+    export { GltfPlugin };
 }
 
 interface MapglPluginsRegistry {
-    ThreeJsPlugin: typeof ThreeJsPlugin;
+    GltfPlugin: typeof GltfPlugin;
 }
 
 declare global {

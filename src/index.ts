@@ -1,8 +1,8 @@
-import { ThreeJsPlugin } from './plugin';
+import { GltfPlugin } from './plugin';
 
 if (typeof window !== 'undefined') {
     if ('mapgl' in window) {
-        mapgl.ThreeJsPlugin = ThreeJsPlugin;
+        mapgl.GltfPlugin = GltfPlugin;
     } else {
         // Если так вышло, что плагин инициализирован раньше
         // mapgl, поместим его во временную переменную
@@ -11,8 +11,8 @@ if (typeof window !== 'undefined') {
             window.__mapglPlugins = {};
         }
 
-        window.__mapglPlugins.ThreeJsPlugin = ThreeJsPlugin;
+        window.__mapglPlugins.GltfPlugin = GltfPlugin;
     }
 }
 
-export { ThreeJsPlugin };
+export { GltfPlugin };

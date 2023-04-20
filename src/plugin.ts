@@ -27,7 +27,7 @@ const defaultOptions: Required<PluginOptions> = {
     modelsBaseUrl: '',
 };
 
-export class ThreeJsPlugin {
+export class GltfPlugin {
     private renderer = new THREE.WebGLRenderer();
     private camera = new THREE.PerspectiveCamera();
     private scene = new THREE.Scene();
