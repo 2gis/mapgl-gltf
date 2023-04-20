@@ -1,4 +1,4 @@
-import { ThreeJsPlugin, THREE } from './plugin';
+import { ThreeJsPlugin } from './plugin';
 
 if (typeof window !== 'undefined') {
     if ('mapgl' in window) {
@@ -15,4 +15,4 @@ if (typeof window !== 'undefined') {
     }
 }
 
-export { ThreeJsPlugin, THREE };
+export { ThreeJsPlugin };

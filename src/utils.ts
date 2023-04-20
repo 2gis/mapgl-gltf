@@ -1,5 +1,3 @@
-import type { Map } from '@2gis/mapgl/types';
-
 /**
  * World size in map points
  */

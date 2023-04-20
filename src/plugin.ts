@@ -12,7 +12,7 @@ interface PluginOptions {
 }
 
 interface ModelOptions {
-    id: number,
+    id: number;
     coordinates: number[];
     modelPath: string;
     rotateX?: number;
@@ -38,7 +38,7 @@ export class ThreeJsPlugin {
     private onThreeJsInit = () => {};
     private waitForThreeJsInit = new Promise<void>((resolve) => (this.onThreeJsInit = resolve));
 
-    constructor(map: MapGL, pluginOptions: PluginOptions) {
+    constructor(map: MapGL, pluginOptions?: PluginOptions) {
         this.map = map;
         this.options = { ...this.options, ...pluginOptions };
 
@@ -152,8 +152,4 @@ export class ThreeJsPlugin {
         const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath(dracoUrl);
         this.loader.setDRACOLoader(dracoLoader);
     }
-
-    static THREE = THREE;
 }
-
-export { THREE };

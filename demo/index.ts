@@ -1,5 +1,5 @@
 import { load } from '@2gis/mapgl';
-import { ThreeJsPlugin, THREE } from '../src/index';
+import { ThreeJsPlugin } from '../src/index';
 
 async function start() {
     const mapglAPI = await load();
@@ -13,13 +13,7 @@ async function start() {
         enableTrackResize: true,
     });
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, 2);
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1.7);
-    directionalLight.position.set(0.5, 1, 0.5);
-
-    const plugin = new ThreeJsPlugin(map, {
-        light: [ambientLight, directionalLight],
-    });
+    const plugin = new ThreeJsPlugin(map);
 
     plugin
         .addModels([
