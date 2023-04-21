@@ -4,6 +4,9 @@
   "description": "Plugin for the rendering glTF models with MapGL",
   "main": "dist/bundle.js",
   "typings": "dist/types/index.d.ts",
+  "files": [
+    "dist/*"
+  ],
   "scripts": {
     "build": "npm run build:bundle && npm run build:typings && npm run build:transpile",
     "build:bundle": "webpack --env type=production",
@@ -14,8 +17,8 @@
     "prettier": "prettier --check \"./**/*.{ts,js,html,css}\"",
     "prettier:write": "prettier --write \"./**/*.{ts,js,html,css}\""
   },
-  "author": "",
-  "license": "ISC",
+  "author": "2GIS WebMaps Team",
+  "license": "BSD-2-Clause",
   "peerDependencies": {
     "@2gis/mapgl": "^1.35.1",
     "@types/three": "^0.150.1",
