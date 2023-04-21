@@ -32,7 +32,7 @@ const defaultOptions: Required<PluginOptions> = {
         color: 0xffffff,
         intencity: 2.9,
     },
-    dracoScriptsUrl: 'libs/draco/',
+    dracoScriptsUrl: 'https://unpkg.com/@2gis/mapgl-gltf@^1/dist/libs/draco/',
     modelsBaseUrl: '',
     modelsLoadStrategy: 'waitAll',
 };
@@ -139,7 +139,6 @@ export class GltfPlugin {
 
     private render() {
         this.camera.projectionMatrix.fromArray(
-            // TODO: TILES-5247 need to add public method
             (this.map as any)._impl.modules.camera.projectionMatrix,
         );
         this.camera.projectionMatrixInverse.copy(this.camera.projectionMatrix).invert();
