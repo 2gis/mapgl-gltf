@@ -1,2 +1,3 @@
-# mapgl-threejs
-Three.js plugin for @2gis/mapgl 
+# mapgl-gltf
+
+Plugin for the rendering glTF models with MapGL
