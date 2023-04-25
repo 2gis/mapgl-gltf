@@ -24,14 +24,14 @@ async function start() {
             {
                 id: 1,
                 coordinates: [82.886554, 54.980988],
-                modelPath: 'models/cube_draco.glb',
+                modelUrl: 'models/cube_draco.glb',
                 rotateX: 90,
                 scale: 1000,
             },
             {
                 id: 2,
                 coordinates: [82.886454, 54.980388],
-                modelPath: 'models/cube_draco.glb',
+                modelUrl: 'models/cube_draco.glb',
                 rotateX: 90,
                 rotateY: 31,
                 scale: 700,

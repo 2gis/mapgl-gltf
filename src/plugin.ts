@@ -3,7 +3,7 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import type { Map as MapGL } from '@2gis/mapgl/types';
 
-import { mapPointFromLngLat, degToRad, concatUrl } from './utils';
+import { mapPointFromLngLat, degToRad, concatUrl, isAbsoluteUrl } from './utils';
 
 interface AmbientLightOptions {
     color: THREE.ColorRepresentation;
@@ -20,7 +20,7 @@ interface PluginOptions {
 interface ModelOptions {
     id: number | string;
     coordinates: number[];
-    modelPath: string;
+    modelUrl: string;
     rotateX?: number;
     rotateY?: number;
     rotateZ?: number;
@@ -73,18 +73,21 @@ export class GltfPlugin {
             const {
                 id,
                 coordinates,
-                modelPath,
+                modelUrl,
                 rotateX = 0,
                 rotateY = 0,
                 rotateZ = 0,
                 scale = 1,
             } = model;
             const modelPosition = mapPointFromLngLat(coordinates);
-            const modelUrl = concatUrl(this.options.modelsBaseUrl, modelPath);
+
+            let actualModelUrl = isAbsoluteUrl(modelUrl)
+                ? modelUrl
+                : concatUrl(this.options.modelsBaseUrl, modelUrl);
 
             return new Promise<void>((resolve, reject) => {
                 this.loader.load(
-                    modelUrl,
+                    actualModelUrl,
                     (gltf: GLTF) => {
                         const model = new THREE.Mesh();
                         model.add(gltf.scene);

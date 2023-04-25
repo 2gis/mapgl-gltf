@@ -38,3 +38,13 @@ export function concatUrl(baseUrl: string, path: string) {
 
     return baseUrl + '/' + path;
 }
+
+/**
+ * Checks whether passed url is absolute, i.e. it begins
+ * with http://, https:// or //
+ *
+ * @param url - checked url
+ */
+export function isAbsoluteUrl(url: string): boolean {
+    return /^https?:\/\//i.test(url);
+}
