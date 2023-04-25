@@ -8,8 +8,9 @@
     "dist/*"
   ],
   "scripts": {
-    "build": "npm run build:bundle && npm run build:typings && npm run build:transpile",
+    "build": "npm run build:bundle && npm run build:typings && npm run build:transpile && npm run build:docs",
     "build:bundle": "webpack --env type=production",
+    "build:docs": "node build/documentalist",
     "build:typings": "tsc -p tsconfig.typings.json --declaration --emitDeclarationOnly",
     "build:transpile": "tsc -p tsconfig.transpile.json --declaration",
     "dev": "webpack-dev-server --env type=development",
@@ -25,6 +26,7 @@
     "three": "^0.151.3"
   },
   "devDependencies": {
+    "@documentalist/compiler": "^2.8.1",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
     "html-webpack-plugin": "^5.5.0",
