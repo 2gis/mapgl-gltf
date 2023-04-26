@@ -21,7 +21,7 @@
   "author": "2GIS WebMaps Team",
   "license": "BSD-2-Clause",
   "peerDependencies": {
-    "@2gis/mapgl": "^1.35.1",
+    "@2gis/mapgl": "~1.36.0",
     "@types/three": "^0.150.1",
     "three": "^0.151.3"
   },

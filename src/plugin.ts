@@ -26,7 +26,7 @@ export class GltfPlugin {
     private loader = new GLTFLoader();
     private onThreeJsInit = () => {}; // resolve of waitForThreeJsInit
     private waitForThreeJsInit = new Promise<void>((resolve) => (this.onThreeJsInit = resolve));
-    private models = new Map<string, THREE.Mesh>();
+    private meshes = new Map<string, THREE.Mesh>();
 
     /**
      * Example:
@@ -80,6 +80,7 @@ export class GltfPlugin {
                 id,
                 coordinates,
                 modelUrl,
+                linkedIds,
                 rotateX = 0,
                 rotateY = 0,
                 rotateZ = 0,
@@ -95,22 +96,22 @@ export class GltfPlugin {
                 this.loader.load(
                     actualModelUrl,
                     (gltf: GLTF) => {
-                        const model = new THREE.Mesh();
-                        model.add(gltf.scene);
+                        const mesh = new THREE.Mesh();
+                        mesh.add(gltf.scene);
 
                         // rotation
-                        model.rotateX(degToRad(rotateX));
-                        model.rotateY(degToRad(rotateY));
-                        model.rotateZ(degToRad(rotateZ));
+                        mesh.rotateX(degToRad(rotateX));
+                        mesh.rotateY(degToRad(rotateY));
+                        mesh.rotateZ(degToRad(rotateZ));
                         // scaling
-                        model.scale.set(scale, scale, scale);
+                        mesh.scale.set(scale, scale, scale);
                         // position
                         const mapPointCenter = [modelPosition[0], modelPosition[1], 0];
-                        model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
+                        mesh.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
 
                         const modelId = String(id);
                         try {
-                            if (this.models.has(modelId)) {
+                            if (this.meshes.has(modelId)) {
                                 throw new Error(
                                     `Model with id "${modelId}" already exists. Please use different identifiers for models`,
                                 );
@@ -119,10 +120,13 @@ export class GltfPlugin {
                             reject(e);
                             return;
                         }
-                        this.models.set(modelId, model);
+                        this.meshes.set(modelId, mesh);
 
                         if (this.options.modelsLoadStrategy === 'dontWaitAll') {
-                            this.scene.add(model);
+                            if (linkedIds) {
+                                this.map.setHiddenObjects(linkedIds);
+                            }
+                            this.scene.add(mesh);
                             this.map.triggerRerender();
                         }
 
@@ -138,8 +142,13 @@ export class GltfPlugin {
 
         return Promise.all(loadedModels).then(() => {
             if (this.options.modelsLoadStrategy === 'waitAll') {
-                for (let [_id, model] of this.models) {
-                    this.scene.add(model);
+                for (let model of models) {
+                    if (model.linkedIds) {
+                        this.map.setHiddenObjects(model.linkedIds);
+                    }
+                }
+                for (let [_id, mesh] of this.meshes) {
+                    this.scene.add(mesh);
                 }
                 this.map.triggerRerender();
             }
@@ -147,9 +156,7 @@ export class GltfPlugin {
     }
 
     private render() {
-        this.camera.projectionMatrix.fromArray(
-            (this.map as any)._impl.modules.camera.projectionMatrix,
-        );
+        this.camera.projectionMatrix.fromArray(this.map.getProjectionMatrixForGltfPlugin());
         this.camera.projectionMatrixInverse.copy(this.camera.projectionMatrix).invert();
 
         this.tmpMatrix.fromArray(this.map.getProjectionMatrix());

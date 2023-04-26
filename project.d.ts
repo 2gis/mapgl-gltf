@@ -3,6 +3,11 @@ import { GltfPlugin } from './src';
 
 declare module '@2gis/mapgl/types' {
     export { GltfPlugin };
+
+    export interface Map {
+        getProjectionMatrixForGltfPlugin(): number[];
+        setHiddenObjects(ids: string[]): void;
+    }
 }
 
 interface MapglPluginsRegistry {

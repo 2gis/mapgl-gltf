@@ -69,4 +69,8 @@ export interface ModelOptions {
      * Scale of the model
      */
     scale?: number;
+    /**
+     * List of buildings' identifiers that should be hidden
+     */
+    linkedIds?: string[];
 }
