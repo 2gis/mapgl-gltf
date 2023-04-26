@@ -8,7 +8,7 @@ import { mapPointFromLngLat, degToRad, concatUrl, isAbsoluteUrl } from './utils'
 /**
  * Options for an ambient light
  */
-interface AmbientLightOptions {
+export interface AmbientLightOptions {
     color: THREE.ColorRepresentation;
     intencity: number;
 }
@@ -16,7 +16,7 @@ interface AmbientLightOptions {
 /**
  * Options for the plugin
  */
-interface PluginOptions {
+export interface PluginOptions {
     /**
      * Settings for an ambient light
      */
@@ -40,7 +40,7 @@ interface PluginOptions {
 /**
  * Options for a model
  */
-interface ModelOptions {
+export interface ModelOptions {
     /**
      * Identifier should be unique for every model
      */
