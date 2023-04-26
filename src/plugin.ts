@@ -4,76 +4,11 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import type { Map as MapGL } from '@2gis/mapgl/types';
 
 import { mapPointFromLngLat, degToRad, concatUrl, isAbsoluteUrl } from './utils';
-
-/**
- * Options for an ambient light
- */
-export interface AmbientLightOptions {
-    color: THREE.ColorRepresentation;
-    intencity: number;
-}
-
-/**
- * Options for the plugin
- */
-export interface PluginOptions {
-    /**
-     * Settings for an ambient light
-     */
-    ambientLight?: AmbientLightOptions;
-    /**
-     * The url where scripts for the draco decoder are located
-     */
-    dracoScriptsUrl?: string;
-    /**
-     * The url which is used for resolving of a model's relative url
-     */
-    modelsBaseUrl?: string;
-    /**
-     * Strategies for the loading of models:
-     * - dontWaitAll - show models as soon as possible
-     * - waitAll - show models only when all models are ready for the rendering
-     */
-    modelsLoadStrategy?: 'dontWaitAll' | 'waitAll';
-}
-
-/**
- * Options for a model
- */
-export interface ModelOptions {
-    /**
-     * Identifier should be unique for every model
-     */
-    id: number | string;
-    /**
-     * Geographical coordinates [longitude, latitude]
-     */
-    coordinates: number[];
-    /**
-     * Url where the model is located
-     */
-    modelUrl: string;
-    /**
-     * Rotation of the model in degrees about the X axis
-     */
-    rotateX?: number;
-    /**
-     * Rotation of the model in degrees about the Y axis
-     */
-    rotateY?: number;
-    /**
-     * Rotation of the model in degrees about the Z axis
-     */
-    rotateZ?: number;
-    /**
-     * Scale of the model
-     */
-    scale?: number;
-}
+import { PluginOptions, ModelOptions } from './types';
 
 const defaultOptions: Required<PluginOptions> = {
     ambientLight: {
-        color: 0xffffff,
+        color: '#ffffff',
         intencity: 2.9,
     },
     dracoScriptsUrl: 'https://unpkg.com/@2gis/mapgl-gltf@^1/dist/libs/draco/',
@@ -92,7 +27,6 @@ export class GltfPlugin {
     private onThreeJsInit = () => {}; // resolve of waitForThreeJsInit
     private waitForThreeJsInit = new Promise<void>((resolve) => (this.onThreeJsInit = resolve));
     private models = new Map<string, THREE.Mesh>();
-
 
     /**
      * Example:

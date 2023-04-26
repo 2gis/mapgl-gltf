@@ -6,7 +6,7 @@ mkdirSync('dist', {
 });
 
 new Documentalist()
-    .use(/\.ts$/, new TypescriptPlugin({excludePaths: ['src/utils.ts']}))
+    .use(/\.ts$/, new TypescriptPlugin({ excludePaths: ['src/utils.ts'] }))
     .documentGlobs('src/**/*')
     .then((docs) => JSON.stringify(docs))
     .then((json) => writeFileSync('dist/docs.json', json))
