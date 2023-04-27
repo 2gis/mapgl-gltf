@@ -27,6 +27,7 @@ export class GltfPlugin {
     private onThreeJsInit = () => {}; // resolve of waitForThreeJsInit
     private waitForThreeJsInit = new Promise<void>((resolve) => (this.onThreeJsInit = resolve));
     private models = new Map<string, THREE.Object3D>();
+    private sources = new Map<string, GLTF>();
 
     /**
      * Example:
@@ -121,6 +122,7 @@ export class GltfPlugin {
                             return;
                         }
                         this.models.set(modelId, model);
+                        this.sources.set(modelId, gltf);
 
                         if (this.options.modelsLoadStrategy === 'dontWaitAll') {
                             if (linkedIds) {
@@ -153,6 +155,14 @@ export class GltfPlugin {
                 this.map.triggerRerender();
             }
         });
+    }
+
+    public getModel(id: number) {
+        return this.models.get(String(id));
+    }
+
+    public getSource(id: number) {
+        return this.sources.get(String(id));
     }
 
     private render() {
