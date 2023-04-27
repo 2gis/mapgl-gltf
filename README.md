@@ -35,6 +35,18 @@ plugin.addModels([{
 }]);
 ```
 
+## Release
+
+1. Update the package version by running `npm version patch|minor|major`. This command returns a new package version. Let assume it's 1.2.3
+1. Push changes to github and merge them to the «master» branch
+1. Go to https://github.com/2gis/mapgl-gltf/releases/new
+1. Click the «Choose tag» button and create a new tag according to the version in package.json, for example v1.2.3
+1. Make sure the release target is the «master» branch
+1. Paste the release tag into the «Release title» field, for example v1.2.3
+1. Add a release description
+1. Click the «Publish release» button 
+1. Go to https://github.com/2gis/mapgl-gltf/actions and wait for completing the release workflow
+
 ## Documentation
 
 You can find the more information in the official [documentation](https://docs.2gis.ru/en/mapgl/examples/gltf).
