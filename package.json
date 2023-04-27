@@ -21,11 +21,11 @@
   "author": "2GIS WebMaps Team",
   "license": "BSD-2-Clause",
   "peerDependencies": {
-    "@types/three": "~0.150.1",
     "three": "~0.151.3"
   },
   "devDependencies": {
     "@2gis/mapgl": "1.36.0",
+    "@types/three": "~0.150.1",
     "@documentalist/compiler": "^2.8.1",
     "clean-webpack-plugin": "^4.0.0",
     "copy-webpack-plugin": "^11.0.0",
