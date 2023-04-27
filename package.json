@@ -1,9 +1,13 @@
 {
-  "name": "mapgl-gltf",
+  "name": "@2gis/mapgl-gltf",
   "version": "1.0.0",
   "description": "Plugin for the rendering glTF models with MapGL",
   "main": "dist/bundle.js",
   "typings": "dist/types/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/2gis/mapgl-gltf.git"
+  },
   "files": [
     "dist/*"
   ],
