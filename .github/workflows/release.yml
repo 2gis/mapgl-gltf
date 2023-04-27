@@ -1,8 +1,8 @@
 name: Release mapgl-gltf
 
-on: push
-  #  release:
-  #  types: [created]
+on:
+  release:
+    types: [created]
 
 jobs:
 
@@ -16,6 +16,6 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: npm ci
       - run: npm run build
-      - run: npm publish --access public --dry-run
+      - run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
