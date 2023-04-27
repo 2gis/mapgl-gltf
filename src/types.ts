@@ -9,7 +9,15 @@ export type ColorRepresentation = ColorModelString | HexColorString | number;
  * Options for an ambient light
  */
 export interface AmbientLightOptions {
+    /**
+     * Numeric value of the RGB component of the color.
+     * Default is 0xffffff
+     */
     color: ColorRepresentation;
+    /**
+     * Numeric value of the light's strength/intensity.
+     * Default is 1
+     */
     intencity: number;
 }
 

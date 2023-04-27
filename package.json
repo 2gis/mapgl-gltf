@@ -22,8 +22,8 @@
   "license": "BSD-2-Clause",
   "peerDependencies": {
     "@2gis/mapgl": "~1.36.0",
-    "@types/three": "^0.150.1",
-    "three": "^0.151.3"
+    "@types/three": "~0.150.1",
+    "three": "~0.151.3"
   },
   "devDependencies": {
     "@documentalist/compiler": "^2.8.1",

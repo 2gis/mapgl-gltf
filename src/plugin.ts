@@ -9,7 +9,7 @@ import { PluginOptions, ModelOptions } from './types';
 const defaultOptions: Required<PluginOptions> = {
     ambientLight: {
         color: '#ffffff',
-        intencity: 2.9,
+        intencity: 1,
     },
     dracoScriptsUrl: 'https://unpkg.com/@2gis/mapgl-gltf@^1/dist/libs/draco/',
     modelsBaseUrl: '',
@@ -26,7 +26,7 @@ export class GltfPlugin {
     private loader = new GLTFLoader();
     private onThreeJsInit = () => {}; // resolve of waitForThreeJsInit
     private waitForThreeJsInit = new Promise<void>((resolve) => (this.onThreeJsInit = resolve));
-    private meshes = new Map<string, THREE.Mesh>();
+    private models = new Map<string, THREE.Object3D>();
 
     /**
      * Example:
@@ -70,12 +70,12 @@ export class GltfPlugin {
     /**
      * Add models to the map
      *
-     * @param models An array of models' options
+     * @param modelOptions An array of models' options
      */
-    public async addModels(models: ModelOptions[]) {
+    public async addModels(modelOptions: ModelOptions[]) {
         await this.waitForThreeJsInit;
 
-        const loadedModels = models.map((model) => {
+        const loadedModels = modelOptions.map((options) => {
             const {
                 id,
                 coordinates,
@@ -85,7 +85,7 @@ export class GltfPlugin {
                 rotateY = 0,
                 rotateZ = 0,
                 scale = 1,
-            } = model;
+            } = options;
             const modelPosition = mapPointFromLngLat(coordinates);
 
             let actualModelUrl = isAbsoluteUrl(modelUrl)
@@ -96,22 +96,22 @@ export class GltfPlugin {
                 this.loader.load(
                     actualModelUrl,
                     (gltf: GLTF) => {
-                        const mesh = new THREE.Mesh();
-                        mesh.add(gltf.scene);
+                        const model = new THREE.Object3D();
+                        model.add(gltf.scene);
 
                         // rotation
-                        mesh.rotateX(degToRad(rotateX));
-                        mesh.rotateY(degToRad(rotateY));
-                        mesh.rotateZ(degToRad(rotateZ));
+                        model.rotateX(degToRad(rotateX));
+                        model.rotateY(degToRad(rotateY));
+                        model.rotateZ(degToRad(rotateZ));
                         // scaling
-                        mesh.scale.set(scale, scale, scale);
+                        model.scale.set(scale, scale, scale);
                         // position
                         const mapPointCenter = [modelPosition[0], modelPosition[1], 0];
-                        mesh.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
+                        model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
 
                         const modelId = String(id);
                         try {
-                            if (this.meshes.has(modelId)) {
+                            if (this.models.has(modelId)) {
                                 throw new Error(
                                     `Model with id "${modelId}" already exists. Please use different identifiers for models`,
                                 );
@@ -120,13 +120,13 @@ export class GltfPlugin {
                             reject(e);
                             return;
                         }
-                        this.meshes.set(modelId, mesh);
+                        this.models.set(modelId, model);
 
                         if (this.options.modelsLoadStrategy === 'dontWaitAll') {
                             if (linkedIds) {
                                 this.map.setHiddenObjects(linkedIds);
                             }
-                            this.scene.add(mesh);
+                            this.scene.add(model);
                             this.map.triggerRerender();
                         }
 
@@ -142,13 +142,13 @@ export class GltfPlugin {
 
         return Promise.all(loadedModels).then(() => {
             if (this.options.modelsLoadStrategy === 'waitAll') {
-                for (let model of models) {
-                    if (model.linkedIds) {
-                        this.map.setHiddenObjects(model.linkedIds);
+                for (let options of modelOptions) {
+                    if (options.linkedIds) {
+                        this.map.setHiddenObjects(options.linkedIds);
                     }
                 }
-                for (let [_id, mesh] of this.meshes) {
-                    this.scene.add(mesh);
+                for (let [_id, model] of this.models) {
+                    this.scene.add(model);
                 }
                 this.map.triggerRerender();
             }
