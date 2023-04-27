@@ -14,9 +14,13 @@ async function start() {
     });
 
     const plugin = new GltfPlugin(map, {
-        modelsLoadStrategy: 'waitAll',
+        modelsLoadStrategy: 'dontWaitAll',
         dracoScriptsUrl: 'libs/draco/',
-        ambientLight: { color: 'white', intencity: 2.5 },
+        ambientLight: { color: '#ffffff', intencity: 2.5 },
+    });
+
+    map.on('click', (e) => {
+        console.log(e);
     });
 
     plugin
@@ -24,17 +28,19 @@ async function start() {
             {
                 id: 1,
                 coordinates: [82.886554, 54.980988],
-                modelPath: 'models/cube_draco.glb',
+                modelUrl: 'models/cube_draco.glb',
                 rotateX: 90,
                 scale: 1000,
+                linkedIds: ['141373143530065', '70030076379181421'],
             },
             {
                 id: 2,
                 coordinates: [82.886454, 54.980388],
-                modelPath: 'models/cube_draco.glb',
+                modelUrl: 'models/cube_draco.glb',
                 rotateX: 90,
                 rotateY: 31,
                 scale: 700,
+                linkedIds: ['141373143530064', '70030076379180575'],
             },
         ])
         .then(() => {

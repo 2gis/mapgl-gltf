@@ -3,34 +3,13 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import type { Map as MapGL } from '@2gis/mapgl/types';
 
-import { mapPointFromLngLat, degToRad, concatUrl } from './utils';
-
-interface AmbientLightOptions {
-    color: THREE.ColorRepresentation;
-    intencity: number;
-}
-
-interface PluginOptions {
-    ambientLight?: AmbientLightOptions;
-    dracoScriptsUrl?: string;
-    modelsBaseUrl?: string;
-    modelsLoadStrategy?: 'dontWaitAll' | 'waitAll';
-}
-
-interface ModelOptions {
-    id: number | string;
-    coordinates: number[];
-    modelPath: string;
-    rotateX?: number;
-    rotateY?: number;
-    rotateZ?: number;
-    scale?: number;
-}
+import { mapPointFromLngLat, degToRad, concatUrl, isAbsoluteUrl } from './utils';
+import { PluginOptions, ModelOptions } from './types';
 
 const defaultOptions: Required<PluginOptions> = {
     ambientLight: {
-        color: 0xffffff,
-        intencity: 2.9,
+        color: '#ffffff',
+        intencity: 1,
     },
     dracoScriptsUrl: 'https://unpkg.com/@2gis/mapgl-gltf@^1/dist/libs/draco/',
     modelsBaseUrl: '',
@@ -47,8 +26,30 @@ export class GltfPlugin {
     private loader = new GLTFLoader();
     private onThreeJsInit = () => {}; // resolve of waitForThreeJsInit
     private waitForThreeJsInit = new Promise<void>((resolve) => (this.onThreeJsInit = resolve));
-    private models = new Map<string, THREE.Mesh>();
+    private models = new Map<string, THREE.Object3D>();
 
+    /**
+     * Example:
+     * ```js
+     * const plugin = new GltfPlugin (map, {
+     *     modelsLoadStrategy: 'waitAll',
+     *     dracoScriptsUrl: 'libs/draco/',
+     *     ambientLight: { color: 'white', intencity: 2.5 },
+     * });
+     *
+     * plugin.addModels([
+     *     {
+     *         id: 1,
+     *         coordinates: [82.886554, 54.980988],
+     *         modelUrl: 'models/cube_draco.glb',
+     *         rotateX: 90,
+     *         scale: 1000,
+     *     },
+     * ]);
+     * ```
+     * @param map The map instance
+     * @param pluginOptions GltfPlugin initialization options
+     */
     constructor(map: MapGL, pluginOptions?: PluginOptions) {
         this.map = map;
         this.options = { ...this.options, ...pluginOptions };
@@ -66,27 +67,36 @@ export class GltfPlugin {
         });
     }
 
-    public async addModels(models: ModelOptions[]) {
+    /**
+     * Add models to the map
+     *
+     * @param modelOptions An array of models' options
+     */
+    public async addModels(modelOptions: ModelOptions[]) {
         await this.waitForThreeJsInit;
 
-        const loadedModels = models.map((model) => {
+        const loadedModels = modelOptions.map((options) => {
             const {
                 id,
                 coordinates,
-                modelPath,
+                modelUrl,
+                linkedIds,
                 rotateX = 0,
                 rotateY = 0,
                 rotateZ = 0,
                 scale = 1,
-            } = model;
+            } = options;
             const modelPosition = mapPointFromLngLat(coordinates);
-            const modelUrl = concatUrl(this.options.modelsBaseUrl, modelPath);
+
+            let actualModelUrl = isAbsoluteUrl(modelUrl)
+                ? modelUrl
+                : concatUrl(this.options.modelsBaseUrl, modelUrl);
 
             return new Promise<void>((resolve, reject) => {
                 this.loader.load(
-                    modelUrl,
+                    actualModelUrl,
                     (gltf: GLTF) => {
-                        const model = new THREE.Mesh();
+                        const model = new THREE.Object3D();
                         model.add(gltf.scene);
 
                         // rotation
@@ -113,6 +123,9 @@ export class GltfPlugin {
                         this.models.set(modelId, model);
 
                         if (this.options.modelsLoadStrategy === 'dontWaitAll') {
+                            if (linkedIds) {
+                                this.map.setHiddenObjects(linkedIds);
+                            }
                             this.scene.add(model);
                             this.map.triggerRerender();
                         }
@@ -129,6 +142,11 @@ export class GltfPlugin {
 
         return Promise.all(loadedModels).then(() => {
             if (this.options.modelsLoadStrategy === 'waitAll') {
+                for (let options of modelOptions) {
+                    if (options.linkedIds) {
+                        this.map.setHiddenObjects(options.linkedIds);
+                    }
+                }
                 for (let [_id, model] of this.models) {
                     this.scene.add(model);
                 }
@@ -138,9 +156,7 @@ export class GltfPlugin {
     }
 
     private render() {
-        this.camera.projectionMatrix.fromArray(
-            (this.map as any)._impl.modules.camera.projectionMatrix,
-        );
+        this.camera.projectionMatrix.fromArray(this.map.getProjectionMatrixForGltfPlugin());
         this.camera.projectionMatrixInverse.copy(this.camera.projectionMatrix).invert();
 
         this.tmpMatrix.fromArray(this.map.getProjectionMatrix());
