@@ -37,4 +37,4 @@ plugin.addModels([{
 
 ## Documentation
 
-You can find the more information in the official [documentation](https://docs.2gis.ru/en/mapgl/examples/gltf).
+You can find the more information in the official [documentation](https://docs.2gis.ru/ru/mapgl/examples/gltf-plugin).
