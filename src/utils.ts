@@ -3,6 +3,22 @@
  */
 const worldSize = 2 ** 32;
 
+/**
+ * Spheroid radius
+ * https://epsg.io/3857
+ */
+export const MERCATOR_EARTH_RADIUS = 6378137;
+
+/**
+ * Size of equator
+ */
+export const EARTH_CIRCUMFERENCE = 2 * Math.PI * MERCATOR_EARTH_RADIUS;
+
+/**
+ * How many map points in one meter of web mercator
+ */
+export const MAP_POINTS_IN_METER = worldSize / EARTH_CIRCUMFERENCE;
+
 export function clamp(value: number, min: number, max: number): number {
     value = Math.max(value, min);
     value = Math.min(value, max);
@@ -25,6 +41,17 @@ export function mapPointFromLngLat(lngLat: number[]): number[] {
 
     const worldHalf = worldSize / 2;
     return [clamp(x, -worldHalf, worldHalf), clamp(y, -worldHalf, worldHalf)];
+}
+
+function projectionScaleFactor(latitude: number): number {
+    return 1 / Math.cos(degToRad(latitude));
+}
+
+/**
+ * Translation of the distance from meters to map points
+ */
+export function geoToMapDistance(point: number[], distance: number): number {
+    return distance * MAP_POINTS_IN_METER * projectionScaleFactor(point[1]);
 }
 
 export function concatUrl(baseUrl: string, path: string) {

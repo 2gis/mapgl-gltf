@@ -3,7 +3,7 @@ import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import type { Map as MapGL } from '@2gis/mapgl/types';
 
-import { mapPointFromLngLat, degToRad, concatUrl, isAbsoluteUrl } from './utils';
+import { mapPointFromLngLat, degToRad, concatUrl, isAbsoluteUrl, geoToMapDistance } from './utils';
 import { PluginOptions, ModelOptions } from './types';
 
 const defaultOptions: Required<PluginOptions> = {
@@ -85,8 +85,16 @@ export class GltfPlugin {
                 rotateY = 0,
                 rotateZ = 0,
                 scale = 1,
+                offsetX = 0,
+                offsetY = 0,
+                offsetZ = 0,
             } = options;
             const modelPosition = mapPointFromLngLat(coordinates);
+            const mapPointsOffsetX = geoToMapDistance(coordinates, offsetX);
+            const mapPointsOffsetY = geoToMapDistance(coordinates, offsetY);
+            const mapPointsOffsetZ = geoToMapDistance(coordinates, offsetZ);
+
+            console.log('====>', mapPointsOffsetX, mapPointsOffsetY, mapPointsOffsetZ);
 
             let actualModelUrl = isAbsoluteUrl(modelUrl)
                 ? modelUrl
@@ -106,8 +114,12 @@ export class GltfPlugin {
                         // scaling
                         model.scale.set(scale, scale, scale);
                         // position
-                        const mapPointCenter = [modelPosition[0], modelPosition[1], 0];
-                        model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
+                        const mapPointCenter = [
+                            modelPosition[0] + mapPointsOffsetX,
+                            modelPosition[1] + mapPointsOffsetY,
+                            mapPointsOffsetZ,
+                        ];
+                        model.position.set(mapPointCenter[0], mapPointCenter[1], mapPointCenter[2]);
 
                         const modelId = String(id);
                         try {

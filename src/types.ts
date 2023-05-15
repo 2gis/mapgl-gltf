@@ -74,6 +74,18 @@ export interface ModelOptions {
      */
     rotateZ?: number;
     /**
+     * Offset of the model along the X axis in meters
+     */
+    offsetX?: number;
+    /**
+     * Offset of the model along the Y axis in meters
+     */
+    offsetY?: number;
+    /**
+     * Offset of the model along the Z axis in meters
+     */
+    offsetZ?: number;
+    /**
      * Scale of the model
      */
     scale?: number;

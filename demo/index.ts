@@ -41,6 +41,7 @@ async function start() {
                 rotateY: 31,
                 scale: 700,
                 linkedIds: ['141373143530064', '70030076379180575'],
+                offsetX: 30,
             },
         ])
         .then(() => {
