@@ -94,8 +94,6 @@ export class GltfPlugin {
             const mapPointsOffsetY = geoToMapDistance(coordinates, offsetY);
             const mapPointsOffsetZ = geoToMapDistance(coordinates, offsetZ);
 
-            console.log('====>', mapPointsOffsetX, mapPointsOffsetY, mapPointsOffsetZ);
-
             let actualModelUrl = isAbsoluteUrl(modelUrl)
                 ? modelUrl
                 : concatUrl(this.options.modelsBaseUrl, modelUrl);
