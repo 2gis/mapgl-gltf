@@ -76,77 +76,18 @@ export class GltfPlugin {
         await this.waitForThreeJsInit;
 
         const loadedModels = modelOptions.map((options) => {
-            const {
-                id,
-                coordinates,
-                modelUrl,
-                linkedIds,
-                rotateX = 0,
-                rotateY = 0,
-                rotateZ = 0,
-                scale = 1,
-                offsetX = 0,
-                offsetY = 0,
-                offsetZ = 0,
-            } = options;
-            const modelPosition = mapPointFromLngLat(coordinates);
-            const mapPointsOffsetX = geoToMapDistance(coordinates, offsetX);
-            const mapPointsOffsetY = geoToMapDistance(coordinates, offsetY);
-            const mapPointsOffsetZ = geoToMapDistance(coordinates, offsetZ);
+            return this.loadModel(options).then(() => {
+                if (this.options.modelsLoadStrategy === 'dontWaitAll') {
+                    if (options.linkedIds) {
+                        this.map.setHiddenObjects(options.linkedIds);
+                    }
 
-            let actualModelUrl = isAbsoluteUrl(modelUrl)
-                ? modelUrl
-                : concatUrl(this.options.modelsBaseUrl, modelUrl);
-
-            return new Promise<void>((resolve, reject) => {
-                this.loader.load(
-                    actualModelUrl,
-                    (gltf: GLTF) => {
-                        const model = new THREE.Object3D();
-                        model.add(gltf.scene);
-
-                        // rotation
-                        model.rotateX(degToRad(rotateX));
-                        model.rotateY(degToRad(rotateY));
-                        model.rotateZ(degToRad(rotateZ));
-                        // scaling
-                        model.scale.set(scale, scale, scale);
-                        // position
-                        const mapPointCenter = [
-                            modelPosition[0] + mapPointsOffsetX,
-                            modelPosition[1] + mapPointsOffsetY,
-                            mapPointsOffsetZ,
-                        ];
-                        model.position.set(mapPointCenter[0], mapPointCenter[1], mapPointCenter[2]);
-
-                        const modelId = String(id);
-                        try {
-                            if (this.models.has(modelId)) {
-                                throw new Error(
-                                    `Model with id "${modelId}" already exists. Please use different identifiers for models`,
-                                );
-                            }
-                        } catch (e) {
-                            reject(e);
-                            return;
-                        }
-                        this.models.set(modelId, model);
-
-                        if (this.options.modelsLoadStrategy === 'dontWaitAll') {
-                            if (linkedIds) {
-                                this.map.setHiddenObjects(linkedIds);
-                            }
-                            this.scene.add(model);
-                            this.map.triggerRerender();
-                        }
-
-                        resolve();
-                    },
-                    () => {},
-                    (e) => {
-                        reject(e);
-                    },
-                );
+                    const model = this.models.get(String(options.id));
+                    if (model !== undefined) {
+                        this.scene.add(model);
+                    }
+                    this.map.triggerRerender();
+                }
             });
         });
 
@@ -162,6 +103,87 @@ export class GltfPlugin {
                 }
                 this.map.triggerRerender();
             }
+        });
+    }
+
+    public async addModel(options: ModelOptions) {
+        await this.waitForThreeJsInit;
+        return this.loadModel(options).then(() => {
+            if (options.linkedIds) {
+                this.map.setHiddenObjects(options.linkedIds);
+            }
+
+            const model = this.models.get(String(options.id));
+            if (model !== undefined) {
+                this.scene.add(model);
+            }
+            this.map.triggerRerender();
+        });
+    }
+
+    private loadModel(modelOptions: ModelOptions) {
+        const {
+            id,
+            coordinates,
+            modelUrl,
+            rotateX = 0,
+            rotateY = 0,
+            rotateZ = 0,
+            scale = 1,
+            offsetX = 0,
+            offsetY = 0,
+            offsetZ = 0,
+        } = modelOptions;
+        const modelPosition = mapPointFromLngLat(coordinates);
+        const mapPointsOffsetX = geoToMapDistance(coordinates, offsetX);
+        const mapPointsOffsetY = geoToMapDistance(coordinates, offsetY);
+        const mapPointsOffsetZ = geoToMapDistance(coordinates, offsetZ);
+
+        let actualModelUrl = isAbsoluteUrl(modelUrl)
+            ? modelUrl
+            : concatUrl(this.options.modelsBaseUrl, modelUrl);
+
+        return new Promise<void>((resolve, reject) => {
+            this.loader.load(
+                actualModelUrl,
+                (gltf: GLTF) => {
+                    const model = new THREE.Object3D();
+                    model.add(gltf.scene);
+
+                    // rotation
+                    model.rotateX(degToRad(rotateX));
+                    model.rotateY(degToRad(rotateY));
+                    model.rotateZ(degToRad(rotateZ));
+                    // scaling
+                    model.scale.set(scale, scale, scale);
+                    // position
+                    const mapPointCenter = [
+                        modelPosition[0] + mapPointsOffsetX,
+                        modelPosition[1] + mapPointsOffsetY,
+                        mapPointsOffsetZ,
+                    ];
+                    model.position.set(mapPointCenter[0], mapPointCenter[1], mapPointCenter[2]);
+
+                    const modelId = String(id);
+                    try {
+                        if (this.models.has(modelId)) {
+                            throw new Error(
+                                `Model with id "${modelId}" already exists. Please use different identifiers for models`,
+                            );
+                        }
+                    } catch (e) {
+                        reject(e);
+                        return;
+                    }
+                    this.models.set(modelId, model);
+
+                    resolve();
+                },
+                () => {},
+                (e) => {
+                    reject(e);
+                },
+            );
         });
     }
 
