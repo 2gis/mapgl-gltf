@@ -121,6 +121,15 @@ export class GltfPlugin {
         });
     }
 
+    public removeModel(id: string | number) {
+        const model = this.models.get(String(id));
+        if (model === undefined) {
+            return;
+        }
+        this.scene.remove(model);
+        this.map.triggerRerender();
+    }
+
     private loadModel(modelOptions: ModelOptions) {
         const {
             id,
