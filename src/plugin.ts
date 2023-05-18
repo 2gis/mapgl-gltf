@@ -35,8 +35,8 @@ export class GltfPlugin {
     private map: MapGL;
     private options = defaultOptions;
     private loader = new GLTFLoader();
-    private onThreeJsInit = () => {}; // resolve of waitForThreeJsInit
-    private waitForThreeJsInit = new Promise<void>((resolve) => (this.onThreeJsInit = resolve));
+    private onPluginInit = () => {}; // resolve of waitForPluginInit
+    private waitForPluginInit = new Promise<void>((resolve) => (this.onPluginInit = resolve));
     private models = new Map<string, THREE.Object3D>();
     private poiSources = new Map<string, GeoJsonSource>();
 
@@ -79,7 +79,7 @@ export class GltfPlugin {
      * @param modelOptions An array of models' options
      */
     public async addModels(modelOptions: ModelOptions[]) {
-        await this.waitForThreeJsInit;
+        await this.waitForPluginInit;
 
         const loadedModels = modelOptions.map((options) => {
             return this.loadModel(options).then(() => {
@@ -113,7 +113,7 @@ export class GltfPlugin {
     }
 
     public async addModel(options: ModelOptions) {
-        await this.waitForThreeJsInit;
+        await this.waitForPluginInit;
         return this.loadModel(options).then(() => {
             if (options.linkedIds) {
                 this.map.setHiddenObjects(options.linkedIds);
@@ -136,31 +136,45 @@ export class GltfPlugin {
         this.map.triggerRerender();
     }
 
-    public addPoiGroup(poiGroup: {
+    public async addPoiGroup({
+        id,
+        type,
+        data,
+        minZoom = -Infinity,
+        maxZoom = +Infinity,
+    }: {
         id: string | number;
         type: 'primary' | 'secondary';
         data: FeatureCollection;
         minZoom?: number;
         maxZoom?: number;
     }) {
-        const actualId = String(poiGroup.id);
+        await this.waitForPluginInit;
+
+        const actualId = String(id);
         if (this.poiSources.get(actualId) !== undefined) {
             throw new Error(
-                `Poi layer with id "${actualId}" already exists. Please use different identifiers for poi layers`,
+                `Poi group with id "${actualId}" already exists. Please use different identifiers for poi groups`,
             );
         }
+
+        // create source with poi
         const source = new mapgl.GeoJsonSource(this.map, {
-            data: poiGroup.data,
+            data: data,
             attributes: {
                 dataType: actualId,
             }
         });
         this.poiSources.set(actualId, source)
+
+        // add style layer for poi
+        this.addPoiStyleLayer(actualId, type, minZoom, maxZoom);
     }
 
     public removePoiGroup(id: string | number) {
         const source = this.poiSources.get(String(id));
         source?.destroy();
+        this.map.removeLayer('plugin-poi-' + String(id));
     }
 
     private loadModel(modelOptions: ModelOptions) {
@@ -267,7 +281,7 @@ export class GltfPlugin {
         const light = new THREE.AmbientLight(color, intencity);
         this.scene.add(light);
 
-        this.onThreeJsInit();
+        this.onPluginInit();
     }
 
     private initLoader() {
@@ -289,7 +303,8 @@ export class GltfPlugin {
         });
 
         this.map.addIcon('no_image', {
-            url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/No_image.svg/1px-No_image.svg.png',
+            // TODO: need to add empty svg
+            url: 'https://disk.2gis.com/styles/d7e8aed1-4d3f-472a-a1e4-337f4b31ab8a/empty',
         });
 
         this.map.addLayer({
@@ -299,71 +314,16 @@ export class GltfPlugin {
             render: () => this.render(),
             onRemove: () => {},
         });
-
-        this.map.addLayer({
-            type: 'point',
-            id: 'primary-poi',
-            filter: [
-                'match', ['get', 'type'], ['primary_immersive_poi'], true, false
-            ],
-            style: {
-                iconPriority: 9000,
-                iconLabelingGroup: '__overlappedPrimary',
-                allowElevation: true,
-                elevation: ['get', 'elevation'],
-                iconImage: 'km_pillar_gray_border',
-                iconAnchor: [0.5, 1],
-                iconOffset: [0, 0],
-                iconTextFont: 'Noto_Sans',
-                iconTextColor: this.options.poiConfig.primary?.fontColor,
-                iconTextField: ['get', 'label'],
-                iconTextPadding: [5, 10, 5, 10],
-                iconTextFontSize: this.options.poiConfig.primary?.fontSize,
-                duplicationSpacing: 1,
-            },
-            minzoom: 14,
-        });
-
-        this.map.addLayer({
-            type: 'point',
-            id: 'secondary-poi',
-            filter: [
-                'match', ['get', 'type'], ['secondary_immersive_poi'], true, false
-            ],
-            style: {
-                iconPriority: 5000,
-                iconLabelingGroup: '__overlappedSecondary',
-                allowElevation: true,
-                elevation: ['get', 'elevation'],
-
-                iconImage: 'no_image',
-                iconAnchor: [0.5, 1],
-                iconOffset: [0, 0],
-                iconTextFont: 'Noto_Sans',
-                iconTextColor: this.options.poiConfig.secondary?.fontColor,
-                iconTextField: ['get', 'label'],
-                iconTextPadding: [5, 10, 5, 10],
-                iconTextFontSize: this.options.poiConfig.secondary?.fontSize,
-
-                /*
-                textFont: 'Noto_Sans',
-                textFontSize: this.options.poiConfig.secondary?.fontSize,
-                textColor: this.options.poiConfig.secondary?.fontColor,
-                textField: ['get', 'label'],
-                */
-            },
-            minzoom: 15,
-        });
     }
 
-    private getPoiStyleLayerData(
-        id: string | number,
+    private addPoiStyleLayer(
+        id: string,
         type: 'primary' | 'secondary',
         minzoom: number,
         maxzoom: number
     ) {
         const isPrimary = type === 'primary';
-        const iconPriority = isPrimary ? 9000 : 5000;
+        const iconPriority = isPrimary ? 7000 : 6000;
         const iconLabelingGroup = isPrimary ? '__overlappedPrimary' : '__overlappedSecondary';
         const iconImage = isPrimary ? 'km_pillar_gray_border' : 'no_image';
         const iconTextColor = isPrimary
@@ -373,11 +333,13 @@ export class GltfPlugin {
             ? this.options.poiConfig.primary?.fontSize
             : this.options.poiConfig.secondary?.fontSize;
 
-        return {
+        this.map.addLayer({
             type: 'point',
-            id: 'primary-poi-' + id,
+            id: 'plugin-poi-' + id,
             filter: [
-                'match', ['get', 'type'], ['primary_immersive_poi'], true, false
+                'all',
+                ['match', ['sourceAttr', 'dataType'], [id], true, false],
+                ['match', ['get', 'type'], ['immersive_poi'], true, false],
             ],
             style: {
                 iconPriority,
@@ -396,6 +358,6 @@ export class GltfPlugin {
             },
             minzoom,
             maxzoom,
-        }
+        });
     }
 }

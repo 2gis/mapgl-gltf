@@ -62,6 +62,7 @@ async function start() {
     plugin.addPoiGroup({
         id: 1,
         type: 'primary',
+        minZoom: 17,
         data: {
             type: 'FeatureCollection',
             features: [
@@ -69,7 +70,7 @@ async function start() {
                     type: 'Feature',
                     properties: {
                         elevation: 30,
-                        type: 'primary_immersive_poi',
+                        type: 'immersive_poi',
                         label: '3к\n78.4 м²',
                         url: 'https://a101.ru/kvartiry/360810/',
                     },
@@ -78,11 +79,30 @@ async function start() {
                         coordinates: [82.886454, 54.980388],
                     },
                 },
+            ],
+        },
+    });
+
+    setTimeout(() => {
+        plugin.removePoiGroup(1);
+    }, 5000);
+
+    setTimeout(() => {
+        plugin.removePoiGroup(2);
+    }, 6000);
+
+    plugin.addPoiGroup({
+        id: 2,
+        type: 'secondary',
+        minZoom: 17,
+        data: {
+            type: 'FeatureCollection',
+            features: [
                 {
                     type: 'Feature',
                     properties: {
                         elevation: 30,
-                        type: 'secondary_immersive_poi',
+                        type: 'immersive_poi',
                         label: '10 м²',
                         url: 'https://a101.ru/kvartiry/360810/',
                     },
