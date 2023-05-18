@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
-import type { Map as MapGL } from '@2gis/mapgl/types';
+import type { Map as MapGL, GeoJsonSource } from '@2gis/mapgl/types';
+import type { FeatureCollection } from 'geojson';
 
 import { mapPointFromLngLat, degToRad, concatUrl, isAbsoluteUrl, geoToMapDistance } from './utils';
 import { PluginOptions, ModelOptions } from './types';
@@ -14,6 +15,16 @@ const defaultOptions: Required<PluginOptions> = {
     dracoScriptsUrl: 'https://unpkg.com/@2gis/mapgl-gltf@^1/dist/libs/draco/',
     modelsBaseUrl: '',
     modelsLoadStrategy: 'waitAll',
+    poiConfig: {
+        primary: {
+            fontSize: 14,
+            fontColor: '#000000',
+        },
+        secondary: {
+            fontSize: 14,
+            fontColor: '#000000',
+        }
+    }
 };
 
 export class GltfPlugin {
@@ -27,6 +38,7 @@ export class GltfPlugin {
     private onThreeJsInit = () => {}; // resolve of waitForThreeJsInit
     private waitForThreeJsInit = new Promise<void>((resolve) => (this.onThreeJsInit = resolve));
     private models = new Map<string, THREE.Object3D>();
+    private poiSources = new Map<string, GeoJsonSource>();
 
     /**
      * Example:
@@ -57,13 +69,7 @@ export class GltfPlugin {
         this.initLoader();
 
         map.once('idle', () => {
-            map.addLayer({
-                id: 'threeJsLayer',
-                type: 'custom',
-                onAdd: () => this.initThree(),
-                render: () => this.render(),
-                onRemove: () => {},
-            });
+            this.addStyleLayers();
         });
     }
 
@@ -128,6 +134,33 @@ export class GltfPlugin {
         }
         this.scene.remove(model);
         this.map.triggerRerender();
+    }
+
+    public addPoiGroup(poiGroup: {
+        id: string | number;
+        type: 'primary' | 'secondary';
+        data: FeatureCollection;
+        minZoom?: number;
+        maxZoom?: number;
+    }) {
+        const actualId = String(poiGroup.id);
+        if (this.poiSources.get(actualId) !== undefined) {
+            throw new Error(
+                `Poi layer with id "${actualId}" already exists. Please use different identifiers for poi layers`,
+            );
+        }
+        const source = new mapgl.GeoJsonSource(this.map, {
+            data: poiGroup.data,
+            attributes: {
+                dataType: actualId,
+            }
+        });
+        this.poiSources.set(actualId, source)
+    }
+
+    public removePoiGroup(id: string | number) {
+        const source = this.poiSources.get(String(id));
+        source?.destroy();
     }
 
     private loadModel(modelOptions: ModelOptions) {
@@ -243,5 +276,126 @@ export class GltfPlugin {
             this.options.dracoScriptsUrl,
         );
         this.loader.setDRACOLoader(dracoLoader);
+    }
+
+    private addStyleLayers() {
+        this.map.addIcon('km_pillar_gray_border', {
+            url: 'https://disk.2gis.com/styles/d7e8aed1-4d3f-472a-a1e4-337f4b31ab8a/km_pillar_gray_border',
+            // @ts-ignore
+            width: 38,
+            height: 38,
+            stretchX: [[4, 24]],
+            stretchY: [[4, 24]]
+        });
+
+        this.map.addIcon('no_image', {
+            url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1d/No_image.svg/1px-No_image.svg.png',
+        });
+
+        this.map.addLayer({
+            id: 'threeJsLayer',
+            type: 'custom',
+            onAdd: () => this.initThree(),
+            render: () => this.render(),
+            onRemove: () => {},
+        });
+
+        this.map.addLayer({
+            type: 'point',
+            id: 'primary-poi',
+            filter: [
+                'match', ['get', 'type'], ['primary_immersive_poi'], true, false
+            ],
+            style: {
+                iconPriority: 9000,
+                iconLabelingGroup: '__overlappedPrimary',
+                allowElevation: true,
+                elevation: ['get', 'elevation'],
+                iconImage: 'km_pillar_gray_border',
+                iconAnchor: [0.5, 1],
+                iconOffset: [0, 0],
+                iconTextFont: 'Noto_Sans',
+                iconTextColor: this.options.poiConfig.primary?.fontColor,
+                iconTextField: ['get', 'label'],
+                iconTextPadding: [5, 10, 5, 10],
+                iconTextFontSize: this.options.poiConfig.primary?.fontSize,
+                duplicationSpacing: 1,
+            },
+            minzoom: 14,
+        });
+
+        this.map.addLayer({
+            type: 'point',
+            id: 'secondary-poi',
+            filter: [
+                'match', ['get', 'type'], ['secondary_immersive_poi'], true, false
+            ],
+            style: {
+                iconPriority: 5000,
+                iconLabelingGroup: '__overlappedSecondary',
+                allowElevation: true,
+                elevation: ['get', 'elevation'],
+
+                iconImage: 'no_image',
+                iconAnchor: [0.5, 1],
+                iconOffset: [0, 0],
+                iconTextFont: 'Noto_Sans',
+                iconTextColor: this.options.poiConfig.secondary?.fontColor,
+                iconTextField: ['get', 'label'],
+                iconTextPadding: [5, 10, 5, 10],
+                iconTextFontSize: this.options.poiConfig.secondary?.fontSize,
+
+                /*
+                textFont: 'Noto_Sans',
+                textFontSize: this.options.poiConfig.secondary?.fontSize,
+                textColor: this.options.poiConfig.secondary?.fontColor,
+                textField: ['get', 'label'],
+                */
+            },
+            minzoom: 15,
+        });
+    }
+
+    private getPoiStyleLayerData(
+        id: string | number,
+        type: 'primary' | 'secondary',
+        minzoom: number,
+        maxzoom: number
+    ) {
+        const isPrimary = type === 'primary';
+        const iconPriority = isPrimary ? 9000 : 5000;
+        const iconLabelingGroup = isPrimary ? '__overlappedPrimary' : '__overlappedSecondary';
+        const iconImage = isPrimary ? 'km_pillar_gray_border' : 'no_image';
+        const iconTextColor = isPrimary
+            ? this.options.poiConfig.primary?.fontColor
+            : this.options.poiConfig.secondary?.fontColor;
+        const iconTextFontSize = isPrimary
+            ? this.options.poiConfig.primary?.fontSize
+            : this.options.poiConfig.secondary?.fontSize;
+
+        return {
+            type: 'point',
+            id: 'primary-poi-' + id,
+            filter: [
+                'match', ['get', 'type'], ['primary_immersive_poi'], true, false
+            ],
+            style: {
+                iconPriority,
+                iconLabelingGroup,
+                allowElevation: true,
+                elevation: ['get', 'elevation'],
+                iconImage,
+                iconAnchor: [0.5, 1],
+                iconOffset: [0, 0],
+                iconTextFont: 'Noto_Sans',
+                iconTextColor,
+                iconTextField: ['get', 'label'],
+                iconTextPadding: [5, 10, 5, 10],
+                iconTextFontSize,
+                duplicationSpacing: 1,
+            },
+            minzoom,
+            maxzoom,
+        }
     }
 }

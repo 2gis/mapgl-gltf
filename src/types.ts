@@ -22,6 +22,20 @@ export interface AmbientLightOptions {
 }
 
 /**
+ * Configuration of the poi
+ */
+export interface PoiConfigGranular {
+    /**
+     * Size of the font
+     */
+    fontSize?: number;
+    /**
+     * Color of the font
+     */
+    fontColor?: string;
+}
+
+/**
  * Options for the plugin
  */
 export interface PluginOptions {
@@ -43,6 +57,19 @@ export interface PluginOptions {
      * - waitAll - show models only when all models are ready for the rendering
      */
     modelsLoadStrategy?: 'dontWaitAll' | 'waitAll';
+    /**
+     * Configuration of poi
+     */
+    poiConfig?: {
+        /**
+         * Configuration the primary poi
+         */
+        primary?: PoiConfigGranular;
+        /**
+         * Configuration the secondary poi
+         */
+        secondary?: PoiConfigGranular;
+    }
 }
 
 /**

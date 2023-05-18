@@ -17,6 +17,14 @@ async function start() {
         modelsLoadStrategy: 'dontWaitAll',
         dracoScriptsUrl: 'libs/draco/',
         ambientLight: { color: '#ffffff', intencity: 2.5 },
+        poiConfig: {
+            primary: {
+                fontSize: 14,
+            },
+            secondary: {
+                fontSize: 14,
+            }
+        }
     });
 
     map.on('click', (e) => {
@@ -50,6 +58,42 @@ async function start() {
         .catch((e) => {
             console.error(e);
         });
+
+    plugin.addPoiGroup({
+        id: 1,
+        type: 'primary',
+        data: {
+            type: 'FeatureCollection',
+            features: [
+                {
+                    type: 'Feature',
+                    properties: {
+                        elevation: 30,
+                        type: 'primary_immersive_poi',
+                        label: '3к\n78.4 м²',
+                        url: 'https://a101.ru/kvartiry/360810/',
+                    },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [82.886454, 54.980388],
+                    },
+                },
+                {
+                    type: 'Feature',
+                    properties: {
+                        elevation: 30,
+                        type: 'secondary_immersive_poi',
+                        label: '10 м²',
+                        url: 'https://a101.ru/kvartiry/360810/',
+                    },
+                    geometry: {
+                        type: 'Point',
+                        coordinates: [82.886554, 54.980988],
+                    },
+                },
+            ],
+        },
+    });
 }
 
 start();
