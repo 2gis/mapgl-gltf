@@ -23,8 +23,8 @@ const defaultOptions: Required<PluginOptions> = {
         secondary: {
             fontSize: 14,
             fontColor: '#000000',
-        }
-    }
+        },
+    },
 };
 
 export class GltfPlugin {
@@ -163,9 +163,9 @@ export class GltfPlugin {
             data: data,
             attributes: {
                 dataType: actualId,
-            }
+            },
         });
-        this.poiSources.set(actualId, source)
+        this.poiSources.set(actualId, source);
 
         // add style layer for poi
         this.addPoiStyleLayer(actualId, type, minZoom, maxZoom);
@@ -299,7 +299,7 @@ export class GltfPlugin {
             width: 38,
             height: 38,
             stretchX: [[4, 24]],
-            stretchY: [[4, 24]]
+            stretchY: [[4, 24]],
         });
 
         this.map.addIcon('no_image', {
@@ -320,7 +320,7 @@ export class GltfPlugin {
         id: string,
         type: 'primary' | 'secondary',
         minzoom: number,
-        maxzoom: number
+        maxzoom: number,
     ) {
         const isPrimary = type === 'primary';
         const iconPriority = isPrimary ? 7000 : 6000;

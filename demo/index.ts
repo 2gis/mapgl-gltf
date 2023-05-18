@@ -23,8 +23,8 @@ async function start() {
             },
             secondary: {
                 fontSize: 14,
-            }
-        }
+            },
+        },
     });
 
     map.on('click', (e) => {

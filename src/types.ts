@@ -69,7 +69,7 @@ export interface PluginOptions {
          * Configuration the secondary poi
          */
         secondary?: PoiConfigGranular;
-    }
+    };
 }
 
 /**
