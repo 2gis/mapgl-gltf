@@ -83,14 +83,6 @@ async function start() {
         },
     });
 
-    setTimeout(() => {
-        plugin.removePoiGroup(1);
-    }, 5000);
-
-    setTimeout(() => {
-        plugin.removePoiGroup(2);
-    }, 6000);
-
     plugin.addPoiGroup({
         id: 2,
         type: 'secondary',
