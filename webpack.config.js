@@ -61,7 +61,7 @@ module.exports = function (env, _argv) {
                 },
                 {
                     from: 'demo/icons',
-                    to: 'icons'
+                    to: 'icons',
                 },
             ],
         }),
