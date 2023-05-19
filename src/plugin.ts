@@ -303,8 +303,8 @@ export class GltfPlugin {
         });
 
         this.map.addIcon('no_image', {
-            // TODO: need to add empty svg
-            url: 'https://disk.2gis.com/styles/d7e8aed1-4d3f-472a-a1e4-337f4b31ab8a/empty',
+            // TODO: need to upload empty svg to external server
+            url: 'http://localhost:3700/icons/empty.svg',
         });
 
         this.map.addLayer({
