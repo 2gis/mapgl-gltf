@@ -5,7 +5,8 @@ import { Evented } from './evented';
 import { Loader } from './loader';
 import { PoiGroup } from './poiGroup';
 import { PluginOptions, ModelOptions, GltfPluginEventTable } from './types';
-import { Parameter } from './utilityTypes';
+
+type Parameter<T extends (...args: any) => any> = Parameters<T>['0'];
 
 const defaultOptions: Required<PluginOptions> = {
     ambientLight: {
