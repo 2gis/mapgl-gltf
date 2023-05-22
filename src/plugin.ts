@@ -1,11 +1,10 @@
 import * as THREE from 'three';
-import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import type { Map as MapGL, GeoJsonSource } from '@2gis/mapgl/types';
 import type { FeatureCollection } from 'geojson';
 
-import { mapPointFromLngLat, degToRad, concatUrl, isAbsoluteUrl, geoToMapDistance } from './utils';
-import { PluginOptions, ModelOptions } from './types';
+import { Evented } from './evented';
+import { Loader } from './loader';
+import { PluginOptions, ModelOptions, GltfPluginEventTable } from './types';
 
 const defaultOptions: Required<PluginOptions> = {
     ambientLight: {
@@ -27,18 +26,18 @@ const defaultOptions: Required<PluginOptions> = {
     },
 };
 
-export class GltfPlugin {
+export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private renderer = new THREE.WebGLRenderer();
     private camera = new THREE.PerspectiveCamera();
     private scene = new THREE.Scene();
     private tmpMatrix = new THREE.Matrix4();
     private map: MapGL;
     private options = defaultOptions;
-    private loader = new GLTFLoader();
+    private loader: Loader;
     private onPluginInit = () => {}; // resolve of waitForPluginInit
     private waitForPluginInit = new Promise<void>((resolve) => (this.onPluginInit = resolve));
-    private models = new Map<string, THREE.Object3D>();
     private poiSources = new Map<string, GeoJsonSource>();
+    private models;
 
     /**
      * Example:
@@ -63,10 +62,16 @@ export class GltfPlugin {
      * @param pluginOptions GltfPlugin initialization options
      */
     constructor(map: MapGL, pluginOptions?: PluginOptions) {
+        super();
+
         this.map = map;
         this.options = { ...this.options, ...pluginOptions };
 
-        this.initLoader();
+        this.loader = new Loader({
+            modelsBaseUrl: this.options.modelsBaseUrl,
+            dracoScriptsUrl: this.options.dracoScriptsUrl,
+        });
+        this.models = this.loader.getModels();
 
         map.once('idle', () => {
             this.addStyleLayers();
@@ -82,7 +87,7 @@ export class GltfPlugin {
         await this.waitForPluginInit;
 
         const loadedModels = modelOptions.map((options) => {
-            return this.loadModel(options).then(() => {
+            return this.loader.loadModel(options).then(() => {
                 if (this.options.modelsLoadStrategy === 'dontWaitAll') {
                     if (options.linkedIds) {
                         this.map.setHiddenObjects(options.linkedIds);
@@ -114,7 +119,7 @@ export class GltfPlugin {
 
     public async addModel(options: ModelOptions) {
         await this.waitForPluginInit;
-        return this.loadModel(options).then(() => {
+        return this.loader.loadModel(options).then(() => {
             if (options.linkedIds) {
                 this.map.setHiddenObjects(options.linkedIds);
             }
@@ -177,72 +182,6 @@ export class GltfPlugin {
         this.map.removeLayer('plugin-poi-' + String(id));
     }
 
-    private loadModel(modelOptions: ModelOptions) {
-        const {
-            id,
-            coordinates,
-            modelUrl,
-            rotateX = 0,
-            rotateY = 0,
-            rotateZ = 0,
-            scale = 1,
-            offsetX = 0,
-            offsetY = 0,
-            offsetZ = 0,
-        } = modelOptions;
-        const modelPosition = mapPointFromLngLat(coordinates);
-        const mapPointsOffsetX = geoToMapDistance(coordinates, offsetX);
-        const mapPointsOffsetY = geoToMapDistance(coordinates, offsetY);
-        const mapPointsOffsetZ = geoToMapDistance(coordinates, offsetZ);
-
-        let actualModelUrl = isAbsoluteUrl(modelUrl)
-            ? modelUrl
-            : concatUrl(this.options.modelsBaseUrl, modelUrl);
-
-        return new Promise<void>((resolve, reject) => {
-            this.loader.load(
-                actualModelUrl,
-                (gltf: GLTF) => {
-                    const model = new THREE.Object3D();
-                    model.add(gltf.scene);
-
-                    // rotation
-                    model.rotateX(degToRad(rotateX));
-                    model.rotateY(degToRad(rotateY));
-                    model.rotateZ(degToRad(rotateZ));
-                    // scaling
-                    model.scale.set(scale, scale, scale);
-                    // position
-                    const mapPointCenter = [
-                        modelPosition[0] + mapPointsOffsetX,
-                        modelPosition[1] + mapPointsOffsetY,
-                        mapPointsOffsetZ,
-                    ];
-                    model.position.set(mapPointCenter[0], mapPointCenter[1], mapPointCenter[2]);
-
-                    const modelId = String(id);
-                    try {
-                        if (this.models.has(modelId)) {
-                            throw new Error(
-                                `Model with id "${modelId}" already exists. Please use different identifiers for models`,
-                            );
-                        }
-                    } catch (e) {
-                        reject(e);
-                        return;
-                    }
-                    this.models.set(modelId, model);
-
-                    resolve();
-                },
-                () => {},
-                (e) => {
-                    reject(e);
-                },
-            );
-        });
-    }
-
     private render() {
         this.camera.projectionMatrix.fromArray(this.map.getProjectionMatrixForGltfPlugin());
         this.camera.projectionMatrixInverse.copy(this.camera.projectionMatrix).invert();
@@ -282,14 +221,6 @@ export class GltfPlugin {
         this.scene.add(light);
 
         this.onPluginInit();
-    }
-
-    private initLoader() {
-        const loadingManager = new THREE.LoadingManager();
-        const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath(
-            this.options.dracoScriptsUrl,
-        );
-        this.loader.setDRACOLoader(dracoLoader);
     }
 
     private addStyleLayers() {
