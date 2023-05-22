@@ -147,32 +147,14 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.map.triggerRerender();
     }
 
-    public async addPoiGroup({
-        id,
-        type,
-        data,
-        minZoom = -Infinity,
-        maxZoom = +Infinity,
-    }: {
-        id: string | number;
-        type: 'primary' | 'secondary';
-        data: FeatureCollection;
-        minZoom?: number;
-        maxZoom?: number;
-    }) {
+    public async addPoiGroup(options: Parameters<typeof this.poiGroup.addPoiGroup>['0']) {
         await this.waitForPluginInit;
 
-        this.poiGroup.addPoiGroup({
-            id,
-            type,
-            data,
-            minZoom,
-            maxZoom,
-        });
+        this.poiGroup.addPoiGroup(options);
     }
 
-    public removePoiGroup(id: string | number) {
-        this.poiGroup.removePoiGroup(id);
+    public removePoiGroup(options: Parameters<typeof this.poiGroup.removePoiGroup>['0']) {
+        this.poiGroup.removePoiGroup(options);
     }
 
     private render() {
