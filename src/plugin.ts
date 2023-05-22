@@ -4,6 +4,7 @@ import type { FeatureCollection } from 'geojson';
 
 import { Evented } from './evented';
 import { Loader } from './loader';
+import { PoiGroup } from './poiGroup';
 import { PluginOptions, ModelOptions, GltfPluginEventTable } from './types';
 
 const defaultOptions: Required<PluginOptions> = {
@@ -34,9 +35,9 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private map: MapGL;
     private options = defaultOptions;
     private loader: Loader;
+    private poiGroup: PoiGroup;
     private onPluginInit = () => {}; // resolve of waitForPluginInit
     private waitForPluginInit = new Promise<void>((resolve) => (this.onPluginInit = resolve));
-    private poiSources = new Map<string, GeoJsonSource>();
     private models;
 
     /**
@@ -72,6 +73,11 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             dracoScriptsUrl: this.options.dracoScriptsUrl,
         });
         this.models = this.loader.getModels();
+
+        this.poiGroup = new PoiGroup({
+            map: this.map,
+            poiConfig: this.options.poiConfig,
+        });
 
         map.once('idle', () => {
             this.addStyleLayers();
@@ -156,30 +162,17 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }) {
         await this.waitForPluginInit;
 
-        const actualId = String(id);
-        if (this.poiSources.get(actualId) !== undefined) {
-            throw new Error(
-                `Poi group with id "${actualId}" already exists. Please use different identifiers for poi groups`,
-            );
-        }
-
-        // create source with poi
-        const source = new mapgl.GeoJsonSource(this.map, {
-            data: data,
-            attributes: {
-                dataType: actualId,
-            },
+        this.poiGroup.addPoiGroup({
+            id,
+            type,
+            data,
+            minZoom,
+            maxZoom,
         });
-        this.poiSources.set(actualId, source);
-
-        // add style layer for poi
-        this.addPoiStyleLayer(actualId, type, minZoom, maxZoom);
     }
 
     public removePoiGroup(id: string | number) {
-        const source = this.poiSources.get(String(id));
-        source?.destroy();
-        this.map.removeLayer('plugin-poi-' + String(id));
+        this.poiGroup.removePoiGroup(id);
     }
 
     private render() {
@@ -244,51 +237,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             onAdd: () => this.initThree(),
             render: () => this.render(),
             onRemove: () => {},
-        });
-    }
-
-    private addPoiStyleLayer(
-        id: string,
-        type: 'primary' | 'secondary',
-        minzoom: number,
-        maxzoom: number,
-    ) {
-        const isPrimary = type === 'primary';
-        const iconPriority = isPrimary ? 7000 : 6000;
-        const iconLabelingGroup = isPrimary ? '__overlappedPrimary' : '__overlappedSecondary';
-        const iconImage = isPrimary ? 'km_pillar_gray_border' : 'no_image';
-        const iconTextColor = isPrimary
-            ? this.options.poiConfig.primary?.fontColor
-            : this.options.poiConfig.secondary?.fontColor;
-        const iconTextFontSize = isPrimary
-            ? this.options.poiConfig.primary?.fontSize
-            : this.options.poiConfig.secondary?.fontSize;
-
-        this.map.addLayer({
-            type: 'point',
-            id: 'plugin-poi-' + id,
-            filter: [
-                'all',
-                ['match', ['sourceAttr', 'dataType'], [id], true, false],
-                ['match', ['get', 'type'], ['immersive_poi'], true, false],
-            ],
-            style: {
-                iconPriority,
-                iconLabelingGroup,
-                allowElevation: true,
-                elevation: ['get', 'elevation'],
-                iconImage,
-                iconAnchor: [0.5, 1],
-                iconOffset: [0, 0],
-                iconTextFont: 'Noto_Sans',
-                iconTextColor,
-                iconTextField: ['get', 'label'],
-                iconTextPadding: [5, 10, 5, 10],
-                iconTextFontSize,
-                duplicationSpacing: 1,
-            },
-            minzoom,
-            maxzoom,
         });
     }
 }
