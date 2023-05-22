@@ -1,11 +1,11 @@
 import * as THREE from 'three';
-import type { Map as MapGL, GeoJsonSource } from '@2gis/mapgl/types';
-import type { FeatureCollection } from 'geojson';
+import type { Map as MapGL } from '@2gis/mapgl/types';
 
 import { Evented } from './evented';
 import { Loader } from './loader';
 import { PoiGroup } from './poiGroup';
 import { PluginOptions, ModelOptions, GltfPluginEventTable } from './types';
+import { Parameter } from './utilityTypes';
 
 const defaultOptions: Required<PluginOptions> = {
     ambientLight: {
@@ -147,13 +147,13 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.map.triggerRerender();
     }
 
-    public async addPoiGroup(options: Parameters<typeof this.poiGroup.addPoiGroup>['0']) {
+    public async addPoiGroup(options: Parameter<PoiGroup['addPoiGroup']>) {
         await this.waitForPluginInit;
 
         this.poiGroup.addPoiGroup(options);
     }
 
-    public removePoiGroup(options: Parameters<typeof this.poiGroup.removePoiGroup>['0']) {
+    public removePoiGroup(options: Parameter<PoiGroup['removePoiGroup']>) {
         this.poiGroup.removePoiGroup(options);
     }
 
