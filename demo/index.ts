@@ -27,7 +27,7 @@ async function start() {
         },
     });
 
-    map.on('click', (e) => {
+    plugin.on('click', (e) => {
         console.log(e);
     });
 

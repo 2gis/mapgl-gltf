@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import type { Map as MapGL } from '@2gis/mapgl/types';
 
+import { create, contains } from './utils';
 import { Evented } from './evented';
 import { Loader } from './loader';
 import { PoiGroup } from './poiGroup';
@@ -28,11 +29,29 @@ const defaultOptions: Required<PluginOptions> = {
     },
 };
 
+//interface Viewport {
+//x: number;
+//y: number;
+//width: number;
+//height: number;
+//}
+
+const initialViewport = {
+    x: 0,
+    y: 0,
+    width: 0,
+    height: 0,
+    top: 0,
+};
+
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private renderer = new THREE.WebGLRenderer();
     private camera = new THREE.PerspectiveCamera();
     private scene = new THREE.Scene();
     private tmpMatrix = new THREE.Matrix4();
+    private raycaster = new THREE.Raycaster();
+    private pointer = new THREE.Vector2();
+    private viewport: ReturnType<HTMLElement['getBoundingClientRect']>;
     private map: MapGL;
     private options = defaultOptions;
     private loader: Loader;
@@ -69,6 +88,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.map = map;
         this.options = { ...this.options, ...pluginOptions };
 
+        this.viewport = this.map.getContainer().getBoundingClientRect();
+
         this.loader = new Loader({
             modelsBaseUrl: this.options.modelsBaseUrl,
             dracoScriptsUrl: this.options.dracoScriptsUrl,
@@ -82,6 +103,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
         map.once('idle', () => {
             this.addStyleLayers();
+            this.bindEvents();
+            this.getViewportBounds();
         });
     }
 
@@ -158,6 +181,68 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.poiGroup.removePoiGroup(options);
     }
 
+    private invalidateViewport() {
+        const container = this.map.getContainer();
+        const rect = container.getBoundingClientRect();
+        this.viewport = rect;
+    }
+
+    private getViewportBounds() {
+        this.invalidateViewport();
+        const v = this.viewport;
+        return create([v.x, v.y], [v.x + Math.round(v.width), v.y + Math.round(v.height)]);
+    }
+
+    private bindEvents() {
+        window.addEventListener('resize', () => {
+            this.invalidateViewport();
+        });
+
+        this.map.on('click', (ev) => {
+            const e = ev.originalEvent;
+            const { clientX, clientY } = 'changedTouches' in e ? e.changedTouches[0] : e;
+            const bounds = this.getViewportBounds();
+
+            if (!contains(bounds, [clientX, clientY])) {
+                return;
+            }
+
+            // получаем координату курсора в локальных координатах вьюпорта карты
+            const viewportClientX = clientX - bounds.min[0];
+            const viewportClientY = this.viewport.height - (clientY - bounds.min[1]);
+
+            // преобразуем координату курсора в нормализованные координаты [-1, 1]
+            // и используем их для идентификации объекта в three.js-сцене
+            this.pointer.x = (viewportClientX / this.viewport.width) * 2 - 1;
+            this.pointer.y = (viewportClientY / this.viewport.height) * 2 - 1;
+            this.raycaster.setFromCamera(this.pointer, this.camera);
+            const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+            const target = intersects[0] ? intersects[0] : undefined;
+
+            if (!target || target.object.type !== 'Mesh') {
+                return undefined;
+            }
+
+            /*
+            console.log('---->', {
+                target,
+                distance: target.distance,
+                symbol: 'buildingModel' as const,
+                id: target.object.userData._id,
+            });
+            */
+
+            this.emit('click', {
+                lngLat: ev.lngLat,
+                point: ev.point,
+                originalEvent: ev.originalEvent,
+                target: {
+                    id: '123',
+                },
+            });
+        });
+    }
+
     private render() {
         this.camera.projectionMatrix.fromArray(this.map.getProjectionMatrixForGltfPlugin());
         this.camera.projectionMatrixInverse.copy(this.camera.projectionMatrix).invert();
@@ -177,6 +262,16 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         );
 
         this.renderer.resetState();
+
+        // setViewport discards the same settings
+        // so it has no effect on performance
+        this.renderer.setViewport(
+            0,
+            0,
+            this.viewport.width * window.devicePixelRatio,
+            this.viewport.height * window.devicePixelRatio,
+        );
+
         this.renderer.render(this.scene, this.camera);
     }
 

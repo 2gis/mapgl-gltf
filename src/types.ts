@@ -1,3 +1,5 @@
+import type { MapPointerEvent } from '@2gis/mapgl/types';
+
 export type ColorModelString = `${'rgb' | 'hsl'}(${string})`;
 export type HexColorString = `#${string}`;
 /**
@@ -135,5 +137,5 @@ export interface GltfPluginEventTable {
     /**
      * Emitted when model are clicked
      */
-    click: ClickEvent;
+    click: MapPointerEvent;
 }

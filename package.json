@@ -28,6 +28,7 @@
     "three": "~0.151.3"
   },
   "devDependencies": {
+    "@2gis/gl-matrix": "^2.4.6",
     "@2gis/mapgl": "1.36.0",
     "@documentalist/compiler": "^2.8.1",
     "@types/geojson": "^7946.0.10",
