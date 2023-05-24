@@ -211,21 +211,12 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 return undefined;
             }
 
-            /*
-            console.log('---->', {
-                target,
-                distance: target.distance,
-                symbol: 'buildingModel' as const,
-                id: target.object.userData._id,
-            });
-            */
-
-            this.emit('click', {
+            this.emit('clickModel', {
                 lngLat: ev.lngLat,
                 point: ev.point,
                 originalEvent: ev.originalEvent,
                 target: {
-                    id: '123',
+                    id: target.object.userData.modelId,
                 },
             });
         });

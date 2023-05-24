@@ -27,14 +27,14 @@ async function start() {
         },
     });
 
-    plugin.on('click', (e) => {
-        console.log(e);
+    plugin.on('clickModel', (e) => {
+        console.log(e.target?.id, Date.now());
     });
 
     plugin
         .addModels([
             {
-                id: 1,
+                id: '03a234cb',
                 coordinates: [82.886554, 54.980988],
                 modelUrl: 'models/cube_draco.glb',
                 rotateX: 90,
@@ -42,7 +42,7 @@ async function start() {
                 linkedIds: ['141373143530065', '70030076379181421'],
             },
             {
-                id: 2,
+                id: 'e3a837ff',
                 coordinates: [82.886454, 54.980388],
                 modelUrl: 'models/cube_draco.glb',
                 rotateX: 90,

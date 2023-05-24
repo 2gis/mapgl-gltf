@@ -137,5 +137,5 @@ export interface GltfPluginEventTable {
     /**
      * Emitted when model are clicked
      */
-    click: MapPointerEvent;
+    clickModel: MapPointerEvent;
 }

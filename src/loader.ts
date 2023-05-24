@@ -50,6 +50,12 @@ export class Loader extends GLTFLoader {
             this.load(
                 actualModelUrl,
                 (gltf: GLTF) => {
+                    gltf.scene.traverse((object: THREE.Object3D) => {
+                        if (object instanceof THREE.Mesh) {
+                            object.userData.modelId = id;
+                        }
+                    });
+
                     const model = new THREE.Object3D();
                     model.add(gltf.scene);
 
