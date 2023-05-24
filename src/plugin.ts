@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import type { Map as MapGL } from '@2gis/mapgl/types';
 
-import { create, contains } from './utils';
 import { Evented } from './evented';
 import { Loader } from './loader';
 import { PoiGroup } from './poiGroup';
@@ -104,7 +103,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         map.once('idle', () => {
             this.addStyleLayers();
             this.bindEvents();
-            this.getViewportBounds();
         });
     }
 
@@ -187,12 +185,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.viewport = rect;
     }
 
-    private getViewportBounds() {
-        this.invalidateViewport();
-        const v = this.viewport;
-        return create([v.x, v.y], [v.x + Math.round(v.width), v.y + Math.round(v.height)]);
-    }
-
     private bindEvents() {
         window.addEventListener('resize', () => {
             this.invalidateViewport();
@@ -201,15 +193,11 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.map.on('click', (ev) => {
             const e = ev.originalEvent;
             const { clientX, clientY } = 'changedTouches' in e ? e.changedTouches[0] : e;
-            const bounds = this.getViewportBounds();
-
-            if (!contains(bounds, [clientX, clientY])) {
-                return;
-            }
+            this.invalidateViewport();
 
             // получаем координату курсора в локальных координатах вьюпорта карты
-            const viewportClientX = clientX - bounds.min[0];
-            const viewportClientY = this.viewport.height - (clientY - bounds.min[1]);
+            const viewportClientX = clientX - this.viewport.x;
+            const viewportClientY = this.viewport.height - (clientY - this.viewport.y);
 
             // преобразуем координату курсора в нормализованные координаты [-1, 1]
             // и используем их для идентификации объекта в three.js-сцене

@@ -75,24 +75,3 @@ export function concatUrl(baseUrl: string, path: string) {
 export function isAbsoluteUrl(url: string): boolean {
     return /^https?:\/\//i.test(url);
 }
-
-export interface Bounds {
-    min: Vec2; // Минимальная точка
-    max: Vec2; // Максимальная
-}
-
-export function create(min?: Vec2, max?: Vec2): Bounds {
-    return {
-        min: min || [Infinity, Infinity],
-        max: max || [-Infinity, -Infinity],
-    };
-}
-
-export function contains(bounds: Bounds, point: Vec3): boolean {
-    return (
-        point[0] <= bounds.max[0] &&
-        point[0] >= bounds.min[0] &&
-        point[1] <= bounds.max[1] &&
-        point[1] >= bounds.min[1]
-    );
-}
