@@ -124,18 +124,16 @@ export interface ModelOptions {
     linkedIds?: string[];
 }
 
-export interface ClickEvent {
-    id: string;
-    x: number;
-    y: number;
-}
-
 /**
  * The list of events that can be emitted by the glTF plugin instance
  */
 export interface GltfPluginEventTable {
     /**
-     * Emitted when model are clicked
+     * Emitted when model is clicked
      */
     clickModel: MapPointerEvent;
+    /**
+     * Emitted when poi is clicked
+     */
+    clickPoi: MapPointerEvent;
 }

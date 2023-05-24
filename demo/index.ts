@@ -31,6 +31,10 @@ async function start() {
         console.log(e.target?.id, Date.now());
     });
 
+    plugin.on('clickPoi', (e) => {
+        console.log(e);
+    });
+
     plugin
         .addModels([
             {

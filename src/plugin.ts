@@ -184,6 +184,15 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
 
         this.map.on('click', (ev) => {
+            if (
+                ev.targetData?.type === 'geojson' &&
+                ev.targetData?.feature?.properties?.type === 'immersive_poi'
+            ) {
+                this.emit('clickPoi', ev);
+            }
+        });
+
+        this.map.on('click', (ev) => {
             const e = ev.originalEvent;
             const { clientX, clientY } = 'changedTouches' in e ? e.changedTouches[0] : e;
             this.invalidateViewport();
