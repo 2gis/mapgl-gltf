@@ -28,13 +28,6 @@ const defaultOptions: Required<PluginOptions> = {
     },
 };
 
-//interface Viewport {
-//x: number;
-//y: number;
-//width: number;
-//height: number;
-//}
-
 const initialViewport = {
     x: 0,
     y: 0,
