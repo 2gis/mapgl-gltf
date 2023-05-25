@@ -28,7 +28,19 @@ async function start() {
     });
 
     plugin.on('clickModel', (e) => {
-        console.log(e.target?.id, Date.now());
+        console.log('clickModel, id = ', e.target?.id);
+    });
+
+    plugin.on('mousemoveModel', (e) => {
+        console.log('mousemoveModel, id = ', e.target?.id);
+    });
+
+    plugin.on('mouseoverModel', (e) => {
+        console.log('mouseoverModel, id = ', e.target?.id);
+    });
+
+    plugin.on('mouseoutModel', (e) => {
+        console.log('mouseoutModel, id = ', e.target?.id);
     });
 
     plugin.on('clickPoi', (e) => {

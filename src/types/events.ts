@@ -9,6 +9,18 @@ export interface GltfPluginEventTable {
      */
     clickModel: MapPointerEvent;
     /**
+     * Emitted when the user moves the pointer over the model.
+     */
+    mousemoveModel: MapPointerEvent;
+    /**
+     * Emitted when the user hovers over the model.
+     */
+    mouseoverModel: MapPointerEvent;
+    /**
+     * Emitted when the user moves the mouse away from the model.
+     */
+    mouseoutModel: MapPointerEvent;
+    /**
      * Emitted when poi is clicked
      */
     clickPoi: MapPointerEvent;
