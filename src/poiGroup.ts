@@ -1,7 +1,7 @@
 import type { FeatureCollection } from 'geojson';
 import type { Map as MapGL, GeoJsonSource } from '@2gis/mapgl/types';
 
-import { PluginOptions } from './types';
+import { PluginOptions } from './types/plugin';
 
 interface PoiGroupOptions {
     map: MapGL;

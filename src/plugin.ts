@@ -1,12 +1,13 @@
 import * as THREE from 'three';
 import type { Map as MapGL, MapPointerEvent } from '@2gis/mapgl/types';
 
-import { Evented } from './evented';
+import { Evented } from './external/evented';
 import { Loader } from './loader';
 import { PoiGroup } from './poiGroup';
-import { PluginOptions, ModelOptions, GltfPluginEventTable } from './types';
 
-type Parameter<T extends (...args: any) => any> = Parameters<T>['0'];
+import type { PluginOptions, ModelOptions } from './types/plugin';
+import type { GltfPluginEventTable } from './types/events';
+import type { Parameter } from './types/utils';
 
 const defaultOptions: Required<PluginOptions> = {
     ambientLight: {
@@ -254,7 +255,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             if (target) {
                 console.log('hover over the model', Date.now());
             }
-        })
+        });
     }
 
     private render() {

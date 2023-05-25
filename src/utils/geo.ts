@@ -1,3 +1,5 @@
+import { clamp, degToRad } from './common';
+
 /**
  * World size in map points
  */
@@ -18,16 +20,6 @@ export const EARTH_CIRCUMFERENCE = 2 * Math.PI * MERCATOR_EARTH_RADIUS;
  * How many map points in one meter of web mercator
  */
 export const MAP_POINTS_IN_METER = worldSize / EARTH_CIRCUMFERENCE;
-
-export function clamp(value: number, min: number, max: number): number {
-    value = Math.max(value, min);
-    value = Math.min(value, max);
-    return value;
-}
-
-export function degToRad(degrees: number): number {
-    return (degrees * Math.PI) / 180;
-}
 
 /**
  * Projects point in geographical coordinates to point in map coordinates.
@@ -52,26 +44,4 @@ function projectionScaleFactor(latitude: number): number {
  */
 export function geoToMapDistance(point: number[], distance: number): number {
     return distance * MAP_POINTS_IN_METER * projectionScaleFactor(point[1]);
-}
-
-export function concatUrl(baseUrl: string, path: string) {
-    if (baseUrl.length === 0) {
-        return path;
-    }
-
-    if (baseUrl[baseUrl.length - 1] === '/') {
-        return baseUrl + path;
-    }
-
-    return baseUrl + '/' + path;
-}
-
-/**
- * Checks whether passed url is absolute, i.e. it begins
- * with http://, https:// or //
- *
- * @param url - checked url
- */
-export function isAbsoluteUrl(url: string): boolean {
-    return /^https?:\/\//i.test(url);
 }

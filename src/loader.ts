@@ -2,8 +2,11 @@ import * as THREE from 'three';
 import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 
-import { ModelOptions } from './types';
-import { mapPointFromLngLat, degToRad, concatUrl, isAbsoluteUrl, geoToMapDistance } from './utils';
+import { degToRad } from './utils/common';
+import { concatUrl, isAbsoluteUrl } from './utils/url';
+import { mapPointFromLngLat, geoToMapDistance } from './utils/geo';
+
+import type { ModelOptions } from './types/plugin';
 
 interface LoaderOptions {
     dracoScriptsUrl: string;
