@@ -28,14 +28,6 @@ const defaultOptions: Required<PluginOptions> = {
     },
 };
 
-const initialViewport = {
-    x: 0,
-    y: 0,
-    width: 0,
-    height: 0,
-    top: 0,
-};
-
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private renderer = new THREE.WebGLRenderer();
     private camera = new THREE.PerspectiveCamera();
@@ -94,7 +86,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
 
         map.once('idle', () => {
-            this.addStyleLayers();
+            this.poiGroup.addIcons();
+            this.addThreeJsLayer();
             this.bindEvents();
         });
     }
@@ -174,8 +167,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
     private invalidateViewport() {
         const container = this.map.getContainer();
-        const rect = container.getBoundingClientRect();
-        this.viewport = rect;
+        this.viewport = container.getBoundingClientRect();
     }
 
     private isGeoJsonPoi(ev: MapPointerEvent) {
@@ -186,7 +178,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     private bindEvents() {
-        window.addEventListener('resize', () => {
+        this.map.on('resize', () => {
             this.invalidateViewport();
         });
 
@@ -217,16 +209,15 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.map.on('click', (ev) => {
             const e = ev.originalEvent;
             const { clientX, clientY } = 'changedTouches' in e ? e.changedTouches[0] : e;
-            this.invalidateViewport();
 
-            // получаем координату курсора в локальных координатах вьюпорта карты
-            const viewportClientX = clientX - this.viewport.x;
-            const viewportClientY = this.viewport.height - (clientY - this.viewport.y);
+            // coordinates of the cursor in local coordinates of map's viewport
+            const localX = clientX - this.viewport.x;
+            const localY = this.viewport.height - (clientY - this.viewport.y);
 
-            // преобразуем координату курсора в нормализованные координаты [-1, 1]
-            // и используем их для идентификации объекта в three.js-сцене
-            this.pointer.x = (viewportClientX / this.viewport.width) * 2 - 1;
-            this.pointer.y = (viewportClientY / this.viewport.height) * 2 - 1;
+            // convert local coordinates of the corser to WebGL coordinates
+            // and use it for the object identification in three.js-scene
+            this.pointer.x = (localX / this.viewport.width) * 2 - 1;
+            this.pointer.y = (localY / this.viewport.height) * 2 - 1;
             this.raycaster.setFromCamera(this.pointer, this.camera);
             const intersects = this.raycaster.intersectObjects(this.scene.children, true);
             const target = intersects[0] ? intersects[0] : undefined;
@@ -297,16 +288,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.onPluginInit();
     }
 
-    private addStyleLayers() {
-        this.map.addIcon('km_pillar_gray_border', {
-            url: 'https://disk.2gis.com/styles/d7e8aed1-4d3f-472a-a1e4-337f4b31ab8a/km_pillar_gray_border',
-            // @ts-ignore
-            width: 38,
-            height: 38,
-            stretchX: [[4, 24]],
-            stretchY: [[4, 24]],
-        });
-
+    private addThreeJsLayer() {
         this.map.addLayer({
             id: 'threeJsLayer',
             type: 'custom',

@@ -18,6 +18,17 @@ export class PoiGroup {
         this.poiConfig = options.poiConfig;
     }
 
+    public addIcons() {
+        this.map.addIcon('km_pillar_gray_border', {
+            url: 'https://disk.2gis.com/styles/d7e8aed1-4d3f-472a-a1e4-337f4b31ab8a/km_pillar_gray_border',
+            // @ts-ignore
+            width: 38,
+            height: 38,
+            stretchX: [[4, 24]],
+            stretchY: [[4, 24]],
+        });
+    }
+
     public async addPoiGroup({
         id,
         type,
