@@ -170,10 +170,32 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.viewport = container.getBoundingClientRect();
     }
 
-    private isGeoJsonPoi(ev: MapPointerEvent) {
+    private getEventTargetMesh(e: MouseEvent | TouchEvent) {
+        const { clientX, clientY } = 'changedTouches' in e ? e.changedTouches[0] : e;
+
+        // coordinates of the cursor in local coordinates of map's viewport
+        const localX = clientX - this.viewport.x;
+        const localY = this.viewport.height - (clientY - this.viewport.y);
+
+        // convert local coordinates of the corser to WebGL coordinates
+        // and use it for the object identification in three.js-scene
+        this.pointer.x = (localX / this.viewport.width) * 2 - 1;
+        this.pointer.y = (localY / this.viewport.height) * 2 - 1;
+        this.raycaster.setFromCamera(this.pointer, this.camera);
+        const intersects = this.raycaster.intersectObjects(this.scene.children, true);
+        const target = intersects[0] ? intersects[0] : undefined;
+
+        if (!target || target.object.type !== 'Mesh') {
+            return null;
+        }
+
+        return target;
+    }
+
+    private isGeoJsonPoi(e: MapPointerEvent) {
         return (
-            ev.targetData?.type === 'geojson' &&
-            ev.targetData?.feature?.properties?.type === 'immersive_poi'
+            e.targetData?.type === 'geojson' &&
+            e.targetData?.feature?.properties?.type === 'immersive_poi'
         );
     }
 
@@ -182,54 +204,41 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.invalidateViewport();
         });
 
-        this.map.on('mousemove', (ev) => {
-            if (this.isGeoJsonPoi(ev)) {
-                this.emit('mousemovePoi', ev);
+        this.map.on('mousemove', (e) => {
+            if (this.isGeoJsonPoi(e)) {
+                this.emit('mousemovePoi', e);
             }
         });
 
-        this.map.on('mouseover', (ev) => {
-            if (this.isGeoJsonPoi(ev)) {
-                this.emit('mouseoverPoi', ev);
+        this.map.on('mouseover', (e) => {
+            if (this.isGeoJsonPoi(e)) {
+                this.emit('mouseoverPoi', e);
             }
         });
 
-        this.map.on('mouseout', (ev) => {
-            if (this.isGeoJsonPoi(ev)) {
-                this.emit('mouseoutPoi', ev);
+        this.map.on('mouseout', (e) => {
+            if (this.isGeoJsonPoi(e)) {
+                this.emit('mouseoutPoi', e);
             }
         });
 
-        this.map.on('click', (ev) => {
-            if (this.isGeoJsonPoi(ev)) {
-                this.emit('clickPoi', ev);
+        this.map.on('click', (e) => {
+            if (this.isGeoJsonPoi(e)) {
+                this.emit('clickPoi', e);
             }
         });
 
-        this.map.on('click', (ev) => {
-            const e = ev.originalEvent;
-            const { clientX, clientY } = 'changedTouches' in e ? e.changedTouches[0] : e;
+        this.map.on('click', (e) => {
+            const target = this.getEventTargetMesh(e.originalEvent);
 
-            // coordinates of the cursor in local coordinates of map's viewport
-            const localX = clientX - this.viewport.x;
-            const localY = this.viewport.height - (clientY - this.viewport.y);
-
-            // convert local coordinates of the corser to WebGL coordinates
-            // and use it for the object identification in three.js-scene
-            this.pointer.x = (localX / this.viewport.width) * 2 - 1;
-            this.pointer.y = (localY / this.viewport.height) * 2 - 1;
-            this.raycaster.setFromCamera(this.pointer, this.camera);
-            const intersects = this.raycaster.intersectObjects(this.scene.children, true);
-            const target = intersects[0] ? intersects[0] : undefined;
-
-            if (!target || target.object.type !== 'Mesh') {
-                return undefined;
+            if (target === null) {
+                return;
             }
 
             this.emit('clickModel', {
-                lngLat: ev.lngLat,
-                point: ev.point,
-                originalEvent: ev.originalEvent,
+                lngLat: e.lngLat,
+                point: e.point,
+                originalEvent: e.originalEvent,
                 target: {
                     id: target.object.userData.modelId,
                 },
