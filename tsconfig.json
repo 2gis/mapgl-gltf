@@ -9,8 +9,7 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "dist/",
-    "sourceMap": true,
-    "types": ["@2gis/gl-matrix"]
+    "sourceMap": true
   },
   "include": ["project.d.ts", "src/**/*.ts"]
 }
