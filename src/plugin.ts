@@ -5,37 +5,18 @@ import { Evented } from './external/evented';
 import { EventSource } from './eventSource';
 import { Loader } from './loader';
 import { PoiGroup } from './poiGroup';
+import { defaultOptions } from './defaultOptions';
 
 import type { PluginOptions, ModelOptions } from './types/plugin';
 import type { GltfPluginEventTable } from './types/events';
 import type { Parameter } from './types/utils';
-
-const defaultOptions: Required<PluginOptions> = {
-    ambientLight: {
-        color: '#ffffff',
-        intencity: 1,
-    },
-    dracoScriptsUrl: 'https://unpkg.com/@2gis/mapgl-gltf@^1/dist/libs/draco/',
-    modelsBaseUrl: '',
-    modelsLoadStrategy: 'waitAll',
-    poiConfig: {
-        primary: {
-            fontSize: 14,
-            fontColor: '#000000',
-        },
-        secondary: {
-            fontSize: 14,
-            fontColor: '#000000',
-        },
-    },
-};
 
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private renderer = new THREE.WebGLRenderer();
     private camera = new THREE.PerspectiveCamera();
     private scene = new THREE.Scene();
     private tmpMatrix = new THREE.Matrix4();
-    private viewport: ReturnType<HTMLElement['getBoundingClientRect']>;
+    private viewport: DOMRect;
     private map: MapGL;
     private options = defaultOptions;
     private loader: Loader;
