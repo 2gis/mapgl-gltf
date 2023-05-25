@@ -204,6 +204,9 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.invalidateViewport();
         });
 
+        /**
+         * Poi events
+         */
         this.map.on('mousemove', (e) => {
             if (this.isGeoJsonPoi(e)) {
                 this.emit('mousemovePoi', e);
@@ -228,22 +231,30 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             }
         });
 
+        /**
+         * Model events
+         */
         this.map.on('click', (e) => {
             const target = this.getEventTargetMesh(e.originalEvent);
 
-            if (target === null) {
-                return;
+            if (target) {
+                this.emit('clickModel', {
+                    lngLat: e.lngLat,
+                    point: e.point,
+                    originalEvent: e.originalEvent,
+                    target: {
+                        id: target.object.userData.modelId,
+                    },
+                });
             }
-
-            this.emit('clickModel', {
-                lngLat: e.lngLat,
-                point: e.point,
-                originalEvent: e.originalEvent,
-                target: {
-                    id: target.object.userData.modelId,
-                },
-            });
         });
+
+        this.map.on('mousemove', (e) => {
+            const target = this.getEventTargetMesh(e.originalEvent);
+            if (target) {
+                console.log('hover over the model', Date.now());
+            }
+        })
     }
 
     private render() {
