@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Map as MapGL } from '@2gis/mapgl/types';
+import type { Map as MapGL, MapPointerEvent } from '@2gis/mapgl/types';
 
 import { Evented } from './evented';
 import { Loader } from './loader';
@@ -178,16 +178,38 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.viewport = rect;
     }
 
+    private isGeoJsonPoi(ev: MapPointerEvent) {
+        return (
+            ev.targetData?.type === 'geojson' &&
+            ev.targetData?.feature?.properties?.type === 'immersive_poi'
+        );
+    }
+
     private bindEvents() {
         window.addEventListener('resize', () => {
             this.invalidateViewport();
         });
 
+        this.map.on('mousemove', (ev) => {
+            if (this.isGeoJsonPoi(ev)) {
+                this.emit('mousemovePoi', ev);
+            }
+        });
+
+        this.map.on('mouseover', (ev) => {
+            if (this.isGeoJsonPoi(ev)) {
+                this.emit('mouseoverPoi', ev);
+            }
+        });
+
+        this.map.on('mouseout', (ev) => {
+            if (this.isGeoJsonPoi(ev)) {
+                this.emit('mouseoutPoi', ev);
+            }
+        });
+
         this.map.on('click', (ev) => {
-            if (
-                ev.targetData?.type === 'geojson' &&
-                ev.targetData?.feature?.properties?.type === 'immersive_poi'
-            ) {
+            if (this.isGeoJsonPoi(ev)) {
                 this.emit('clickPoi', ev);
             }
         });
@@ -283,11 +305,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             height: 38,
             stretchX: [[4, 24]],
             stretchY: [[4, 24]],
-        });
-
-        this.map.addIcon('no_image', {
-            // TODO: need to upload empty svg to external server
-            url: 'http://localhost:3700/icons/empty.svg',
         });
 
         this.map.addLayer({

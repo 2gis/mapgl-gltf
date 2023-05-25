@@ -59,10 +59,6 @@ module.exports = function (env, _argv) {
                     from: 'demo/models',
                     to: 'models',
                 },
-                {
-                    from: 'demo/icons',
-                    to: 'icons',
-                },
             ],
         }),
     ];

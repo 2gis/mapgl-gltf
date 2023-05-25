@@ -63,16 +63,34 @@ export class PoiGroup {
         minzoom: number,
         maxzoom: number,
     ) {
-        const isPrimary = type === 'primary';
-        const iconPriority = isPrimary ? 7000 : 6000;
-        const iconLabelingGroup = isPrimary ? '__overlappedPrimary' : '__overlappedSecondary';
-        const iconImage = isPrimary ? 'km_pillar_gray_border' : 'no_image';
-        const iconTextColor = isPrimary
-            ? this.poiConfig?.primary?.fontColor
-            : this.poiConfig?.secondary?.fontColor;
-        const iconTextFontSize = isPrimary
-            ? this.poiConfig?.primary?.fontSize
-            : this.poiConfig?.secondary?.fontSize;
+        let style;
+        if (type === 'primary') {
+            style = {
+                iconPriority: 7000,
+                allowElevation: true,
+                elevation: ['get', 'elevation'],
+                iconImage: 'km_pillar_gray_border',
+                iconAnchor: [0.5, 1],
+                iconOffset: [0, 0],
+                iconTextFont: 'Noto_Sans',
+                iconTextColor: this.poiConfig?.primary?.fontColor,
+                iconTextField: ['get', 'label'],
+                iconTextPadding: [5, 10, 5, 10],
+                iconTextFontSize: this.poiConfig?.primary?.fontSize,
+                duplicationSpacing: 1,
+            };
+        } else {
+            style = {
+                allowElevation: true,
+                elevation: ['get', 'elevation'],
+                duplicationSpacing: 1,
+                textField: ['get', 'label'],
+                textFont: 'Noto_Sans',
+                textFontSize: this.poiConfig?.secondary?.fontSize,
+                textColor: this.poiConfig?.secondary?.fontColor,
+                textPriority: 6000,
+            };
+        }
 
         this.map.addLayer({
             type: 'point',
@@ -82,21 +100,7 @@ export class PoiGroup {
                 ['match', ['sourceAttr', 'dataType'], [id], true, false],
                 ['match', ['get', 'type'], ['immersive_poi'], true, false],
             ],
-            style: {
-                iconPriority,
-                iconLabelingGroup,
-                allowElevation: true,
-                elevation: ['get', 'elevation'],
-                iconImage,
-                iconAnchor: [0.5, 1],
-                iconOffset: [0, 0],
-                iconTextFont: 'Noto_Sans',
-                iconTextColor,
-                iconTextField: ['get', 'label'],
-                iconTextPadding: [5, 10, 5, 10],
-                iconTextFontSize,
-                duplicationSpacing: 1,
-            },
+            style,
             minzoom,
             maxzoom,
         });
