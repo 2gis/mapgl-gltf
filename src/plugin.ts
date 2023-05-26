@@ -137,13 +137,13 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.map.triggerRerender();
     }
 
-    public async addPoiGroup(options: Parameter<PoiGroup['addPoiGroup']>) {
+    public async addPoiGroup(options: Parameter<PoiGroup['addPoiGroup'], '0'>) {
         await this.waitForPluginInit;
 
         this.poiGroup.addPoiGroup(options);
     }
 
-    public removePoiGroup(options: Parameter<PoiGroup['removePoiGroup']>) {
+    public removePoiGroup(options: Parameter<PoiGroup['removePoiGroup'], '0'>) {
         this.poiGroup.removePoiGroup(options);
     }
 
