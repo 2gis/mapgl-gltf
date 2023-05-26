@@ -134,7 +134,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
                 const currEventData = this.getModelEventData(e, this.getTargetId(currTarget));
                 const currTargetId = this.getTargetId(currTarget);
 
-                // move mouse pointer from the map to the object
+                // when user move a mouse pointer from the map to a model
                 if (this.prevTargetId === null) {
                     this.emit('mouseoverModel', currEventData);
                     this.emit('mousemoveModel', currEventData);
@@ -142,13 +142,13 @@ export class EventSource extends Evented<GltfPluginEventTable> {
                     return;
                 }
 
-                // move mouse pointer on the same object
+                // when user move a mouse pointer on the same model
                 if (this.prevTargetId === currTargetId) {
                     this.emit('mousemoveModel', currEventData);
                     return;
                 }
 
-                // move mouse pointer from one object to another
+                // when user move a mouse pointer from one model to another model
                 if (this.prevTargetId !== currTargetId) {
                     const prevEventData = this.getModelEventData(e, this.prevTargetId);
                     this.emit('mouseoutModel', prevEventData);
@@ -157,14 +157,14 @@ export class EventSource extends Evented<GltfPluginEventTable> {
                     this.prevTargetId = currTargetId;
                     return;
                 }
-            } else {
-                // move mouse pointer from the object to the map
-                if (this.prevTargetId !== null) {
-                    const prevEventData = this.getModelEventData(e, this.prevTargetId);
-                    this.emit('mouseoutModel', prevEventData);
-                    this.prevTargetId = null;
-                    return;
-                }
+            }
+
+            // when user move a mouse pointer from a model to the map
+            if (this.prevTargetId !== null) {
+                const prevEventData = this.getModelEventData(e, this.prevTargetId);
+                this.emit('mouseoutModel', prevEventData);
+                this.prevTargetId = null;
+                return;
             }
         });
     }
