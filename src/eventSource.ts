@@ -45,7 +45,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
         const localX = clientX - this.viewport.x;
         const localY = this.viewport.height - (clientY - this.viewport.y);
 
-        // convert local coordinates of the corser to WebGL coordinates
+        // convert local coordinates of the mouse pointer to WebGL coordinates
         // and use it for the object identification in three.js-scene
         this.pointer.x = (localX / this.viewport.width) * 2 - 1;
         this.pointer.y = (localY / this.viewport.height) * 2 - 1;
@@ -134,7 +134,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
                 const currEventData = this.getModelEventData(e, this.getTargetId(currTarget));
                 const currTargetId = this.getTargetId(currTarget);
 
-                // when user move a mouse pointer from the map to a model
+                // when user move the mouse pointer from the map to a model
                 if (this.prevTargetId === null) {
                     this.emit('mouseoverModel', currEventData);
                     this.emit('mousemoveModel', currEventData);
@@ -142,13 +142,13 @@ export class EventSource extends Evented<GltfPluginEventTable> {
                     return;
                 }
 
-                // when user move a mouse pointer on the same model
+                // when user move the mouse pointer on the same model
                 if (this.prevTargetId === currTargetId) {
                     this.emit('mousemoveModel', currEventData);
                     return;
                 }
 
-                // when user move a mouse pointer from one model to another model
+                // when user move the mouse pointer from one model to another model
                 if (this.prevTargetId !== currTargetId) {
                     const prevEventData = this.getModelEventData(e, this.prevTargetId);
                     this.emit('mouseoutModel', prevEventData);
@@ -159,7 +159,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
                 }
             }
 
-            // when user move a mouse pointer from a model to the map
+            // when user move the mouse pointer from a model to the map
             if (this.prevTargetId !== null) {
                 const prevEventData = this.getModelEventData(e, this.prevTargetId);
                 this.emit('mouseoutModel', prevEventData);
