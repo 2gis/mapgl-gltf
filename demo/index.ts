@@ -27,24 +27,35 @@ async function start() {
         },
     });
 
-    plugin.on('clickModel', (e) => {
-        console.log('clickModel, id = ', e.target?.id);
+    plugin.on('click', (e) => {
+        if (e.target.type === 'model') {
+            console.log('model click, id = ', e.target.data.id);
+            console.log('modelClick', e);
+        }
     });
 
-    plugin.on('mousemoveModel', (e) => {
-        console.log('mousemoveModel, id = ', e.target?.id);
+    plugin.on('mousemove', (e) => {
+        if (e.target.type === 'model') {
+            console.log('model mousemove, id = ', e.target.data.id);
+        }
     });
 
-    plugin.on('mouseoverModel', (e) => {
-        console.log('mouseoverModel, id = ', e.target?.id);
+    plugin.on('mouseover', (e) => {
+        if (e.target.type === 'model') {
+            console.log('model mouseover, id = ', e.target.data.id);
+        }
     });
 
-    plugin.on('mouseoutModel', (e) => {
-        console.log('mouseoutModel, id = ', e.target?.id);
+    plugin.on('mouseout', (e) => {
+        if (e.target.type === 'model') {
+            console.log('model mouseout, id = ', e.target.data.id);
+        }
     });
 
-    plugin.on('clickPoi', (e) => {
-        console.log(e);
+    plugin.on('click', (e) => {
+        if (e.target.type === 'poi') {
+            console.log(e);
+        }
     });
 
     /*
@@ -81,6 +92,7 @@ async function start() {
             rotateX: 90,
             scale: 3000,
             linkedIds: ['141373143530065', '70030076379181421'],
+            // TODO: добавить userData в события моделей
         });
     }
 
@@ -93,29 +105,40 @@ async function start() {
             console.error(e);
         });
 
-    plugin.addPoiGroup({
-        id: 1,
-        type: 'primary',
-        minZoom: 15,
-        data: {
-            type: 'FeatureCollection',
-            features: [
-                {
-                    type: 'Feature',
-                    properties: {
-                        elevation: 130,
-                        type: 'immersive_poi',
-                        label: '3к\n78.4 м²',
-                        url: 'https://a101.ru/kvartiry/360810/',
+    plugin.addPoiGroup(
+        {
+            id: 1,
+            type: 'primary',
+            minZoom: 15,
+            data: {
+                type: 'FeatureCollection',
+                features: [
+                    {
+                        type: 'Feature',
+                        properties: {
+                            // TODO: динамически добавлять groupId,
+                            // для того чтобы понять связь poi и здания
+                            // эта информация должна попасть в поле target у событий
+                            elevation: 130,
+                            type: 'immersive_poi',
+                            label: '3к\n78.4 м²',
+                            userData: {
+                                url: 'https://a101.ru/kvartiry/360810/',
+                            },
+                        },
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [82.886454, 54.980388],
+                        },
                     },
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [82.886454, 54.980388],
-                    },
-                },
-            ],
-        },
-    });
+                ],
+            },
+        } /*, {
+        TODO: идентификаторы для связи между poi и здания
+        buildingId: '234234',
+        floorId: '234234',
+    }*/,
+    );
 
     plugin.addPoiGroup({
         id: 2,

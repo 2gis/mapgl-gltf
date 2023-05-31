@@ -120,4 +120,8 @@ export interface ModelOptions {
      * List of buildings' identifiers that should be hidden
      */
     linkedIds?: string[];
+    /**
+     * User specific data
+     */
+    userData?: any;
 }
