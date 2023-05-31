@@ -10,6 +10,7 @@ import { defaultOptions } from './defaultOptions';
 import type { PluginOptions, ModelOptions } from './types/plugin';
 import type { GltfPluginEventTable } from './types/events';
 import type { Parameter } from './types/utils';
+import { GLTFFloorControl } from './control';
 
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private renderer = new THREE.WebGLRenderer();
@@ -17,7 +18,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private scene = new THREE.Scene();
     private tmpMatrix = new THREE.Matrix4();
     private viewport: DOMRect;
-    private map: MapGL;
+    protected map: MapGL;
     private options = defaultOptions;
     private loader: Loader;
     private poiGroup: PoiGroup;
@@ -72,6 +73,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.addThreeJsLayer();
             this.initEventHandlers();
         });
+
+        new GLTFFloorControl(this, this.map, { position: 'centerLeft' });
     }
 
     /**
@@ -93,6 +96,19 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                     if (model !== undefined) {
                         this.scene.add(model);
                     }
+                    this.emit('showModelFloorPlan', {
+                        floorPlanId: options.id,
+                        currentFloorLevelKey: 0,
+                        floorLevels: [
+                            {
+                                floorLevelKey: 0,
+                                floorLevelType: 'parking',
+                                floorLevelName: 'Парковка',
+                            },
+                            { floorLevelKey: 1, floorLevelName: '1-9' },
+                            { floorLevelKey: 2, floorLevelName: '10-16' },
+                        ],
+                    });
                     this.map.triggerRerender();
                 }
             });
@@ -125,6 +141,15 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 this.scene.add(model);
             }
             this.map.triggerRerender();
+            this.emit('showModelFloorPlan', {
+                floorPlanId: options.id,
+                currentFloorLevelKey: 0,
+                floorLevels: [
+                    { floorLevelKey: 0, floorLevelType: 'parking', floorLevelName: 'Парковка' },
+                    { floorLevelKey: 1, floorLevelName: '1-9' },
+                    { floorLevelKey: 2, floorLevelName: '10-16' },
+                ],
+            });
         });
     }
 

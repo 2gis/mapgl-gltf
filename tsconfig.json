@@ -11,5 +11,5 @@
     "outDir": "dist/",
     "sourceMap": true
   },
-  "include": ["project.d.ts", "src/**/*.ts"]
+  "include": ["project.d.ts","modules.d.ts", "src/**/*.ts"]
 }

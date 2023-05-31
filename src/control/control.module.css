@@ -1,0 +1,95 @@
+.root {
+    position: relative;
+}
+
+.container {
+    display: flex;
+    max-height: 96px;
+    background: #ffffff;
+    min-width: 32px;
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px 0 rgba(38, 38, 38, 0.5);
+}
+
+.splitContainer {
+    margin-bottom: 8px;
+}
+
+.scroller {
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -moz-padding-end: 17px;
+    -webkit-padding-end: 17px;
+    -webkit-margin-end: -17px;
+}
+
+.content {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.contentHome {
+    display: flex;
+    flex-direction: column-reverse;
+}
+
+.control {
+    all: revert;
+    padding: 0;
+    border: none;
+    background: #ffffff;
+    padding-left: 4px;
+    padding-right: 4px;
+    height: 32px;
+    width: auto;
+    color: #262626;
+    cursor: pointer;
+    border-bottom: 1px solid #e6e6e6;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+.control:focus {
+    outline: 0;
+}
+.control:first-child {
+    border-bottom: none;
+}
+.control:hover {
+    color: rgba(38, 38, 38, 0.7);
+}
+.control:active {
+    color: #028eff;
+}
+.control:disabled {
+    background: #f2f2f2;
+    color: #929292;
+    cursor: default;
+}
+
+.control:disabled svg {
+    opacity: 0.7;
+}
+
+.label {
+    font-size: 18px;
+    line-height: 32px;
+    font-weight: 400;
+    overflow-wrap: break-word;
+
+    position: relative;
+    text-align: center;
+    height: 100%;
+}
+
+._hasResult:after {
+    content: '';
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #028eff;
+}
