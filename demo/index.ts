@@ -32,7 +32,6 @@ async function start() {
     plugin.on('click', (e) => {
         if (e.target.type === 'model') {
             console.log('model click, id = ', e.target.data.id);
-            console.log('modelClick', e);
         }
     });
 
@@ -97,7 +96,7 @@ async function start() {
             scale: 3000,
             linkedIds: ['141373143530065', '70030076379181421'],
             userData: {
-                test: 'hey',
+                test: 'Test userData ' + i,
             },
         });
     }

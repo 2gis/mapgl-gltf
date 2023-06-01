@@ -4,7 +4,12 @@ import type { Map as MapGL, MapPointerEvent } from '@2gis/mapgl/types';
 import { Evented } from './external/evented';
 import { clone } from './utils/common';
 
-import type { GltfPluginEventTable, GltfPluginPointerEvent, PoiOptions } from './types/events';
+import type {
+    GltfPluginEventTable,
+    GltfPluginPoiEvent,
+    GltfPluginModelEvent,
+    PoiOptions,
+} from './types/events';
 import type { ModelOptions } from './types/plugin';
 
 export class EventSource extends Evented<GltfPluginEventTable> {
@@ -67,52 +72,35 @@ export class EventSource extends Evented<GltfPluginEventTable> {
         }
     }
 
-    private createPoiEventData(
+    private createEventData(
+        type: 'model' | 'poi',
         ev: MapPointerEvent,
-        originalData: PoiOptions,
-    ): GltfPluginPointerEvent {
-        const data = clone(originalData);
-        const { userData, __floorId: floorId, __buildingId: buildingId } = data;
-        delete data.userData;
-        delete data.__buildingId;
-        delete data.__floorId;
-
-        return {
-            originalEvent: ev.originalEvent,
-            point: ev.point,
-            lngLat: ev.lngLat,
-            target: {
-                type: 'poi',
-                data,
-                userData,
-                buildingId,
-                floorId,
-            },
-        };
-    }
-
-    private createModelEventData(
-        ev: MapPointerEvent,
-        originalData: ModelOptions,
-    ): GltfPluginPointerEvent {
+        originalData: ModelOptions | PoiOptions,
+    ): GltfPluginPoiEvent | GltfPluginModelEvent {
         const data = clone(originalData);
         const { buildingId, floorId, userData } = data;
         delete data.buildingId;
         delete data.floorId;
         delete data.userData;
 
-        return {
+        const event = {
             originalEvent: ev.originalEvent,
             point: ev.point,
             lngLat: ev.lngLat,
             target: {
-                type: 'model',
+                type,
                 data,
                 userData,
                 buildingId,
                 floorId,
             },
         };
+
+        if (type === 'model') {
+            return event as GltfPluginModelEvent;
+        }
+
+        return event as GltfPluginPoiEvent;
     }
 
     private initEventHandlers() {
@@ -122,7 +110,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
         this.map.on('mousemove', (e) => {
             const poiOptions = this.getPoiOptions(e);
             if (poiOptions) {
-                const eventData = this.createPoiEventData(e, poiOptions);
+                const eventData = this.createEventData('poi', e, poiOptions);
                 this.emit('mousemove', eventData);
             }
         });
@@ -130,7 +118,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
         this.map.on('mouseover', (e) => {
             const poiOptions = this.getPoiOptions(e);
             if (poiOptions) {
-                const eventData = this.createPoiEventData(e, poiOptions);
+                const eventData = this.createEventData('poi', e, poiOptions);
                 this.emit('mouseover', eventData);
             }
         });
@@ -138,16 +126,15 @@ export class EventSource extends Evented<GltfPluginEventTable> {
         this.map.on('mouseout', (e) => {
             const poiOptions = this.getPoiOptions(e);
             if (poiOptions) {
-                const eventData = this.createPoiEventData(e, poiOptions);
+                const eventData = this.createEventData('poi', e, poiOptions);
                 this.emit('mouseout', eventData);
             }
         });
 
         this.map.on('click', (e) => {
-            console.log('originalEvent', e);
             const poiOptions = this.getPoiOptions(e);
             if (poiOptions) {
-                const eventData = this.createPoiEventData(e, poiOptions);
+                const eventData = this.createEventData('poi', e, poiOptions);
                 this.emit('click', eventData);
             }
         });
@@ -160,7 +147,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
 
             if (target) {
                 const modelOptions = target.userData as ModelOptions;
-                const eventData = this.createModelEventData(e, modelOptions);
+                const eventData = this.createEventData('model', e, modelOptions);
                 this.emit('click', eventData);
             }
         });
@@ -169,7 +156,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
             const currTargetModel = this.getEventTargetMesh(e.originalEvent);
             if (currTargetModel) {
                 const modelOptions = currTargetModel.userData as ModelOptions;
-                const currEventData = this.createModelEventData(e, modelOptions);
+                const currEventData = this.createEventData('model', e, modelOptions);
 
                 // when user move the mouse pointer from the map to a model
                 if (this.prevTargetModel === null) {
@@ -188,7 +175,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
                 // when user move the mouse pointer from one model to another model
                 if (this.prevTargetModel !== currTargetModel) {
                     const modelOptions = this.prevTargetModel.userData as ModelOptions;
-                    const prevEventData = this.createModelEventData(e, modelOptions);
+                    const prevEventData = this.createEventData('model', e, modelOptions);
                     this.emit('mouseout', prevEventData);
                     this.emit('mouseover', currEventData);
                     this.emit('mousemove', currEventData);
@@ -200,7 +187,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
             // when user move the mouse pointer from a model to the map
             if (this.prevTargetModel !== null) {
                 const modelOptions = this.prevTargetModel.userData as ModelOptions;
-                const prevEventData = this.createModelEventData(e, modelOptions);
+                const prevEventData = this.createEventData('model', e, modelOptions);
                 this.emit('mouseout', prevEventData);
                 this.prevTargetModel = null;
                 return;

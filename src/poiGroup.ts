@@ -1,7 +1,11 @@
-import type { FeatureCollection } from 'geojson';
 import type { Map as MapGL, GeoJsonSource } from '@2gis/mapgl/types';
 
-import type { PluginOptions, BuildingState } from './types/plugin';
+import type {
+    PluginOptions,
+    BuildingState,
+    AddPoiGroupOptions,
+    RemovePoiGroupOptions,
+} from './types/plugin';
 
 interface PoiGroupOptions {
     map: MapGL;
@@ -29,22 +33,8 @@ export class PoiGroup {
         });
     }
 
-    public async addPoiGroup(
-        {
-            id,
-            type,
-            data,
-            minZoom = -Infinity,
-            maxZoom = +Infinity,
-        }: {
-            id: string | number;
-            type: 'primary' | 'secondary';
-            data: FeatureCollection;
-            minZoom?: number;
-            maxZoom?: number;
-        },
-        state?: BuildingState,
-    ) {
+    public async addPoiGroup(options: AddPoiGroupOptions, state?: BuildingState) {
+        const { id, type, data, minZoom = -Infinity, maxZoom = +Infinity } = options;
         const actualId = String(id);
         if (this.poiSources.get(actualId) !== undefined) {
             throw new Error(
@@ -54,8 +44,8 @@ export class PoiGroup {
 
         data.features.forEach((feature) => {
             if (feature.properties !== null) {
-                feature.properties.__buildingId = state?.buildingId;
-                feature.properties.__floorId = state?.floorId;
+                feature.properties.buildingId = state?.buildingId;
+                feature.properties.floorId = state?.floorId;
             }
         });
 
@@ -72,7 +62,8 @@ export class PoiGroup {
         this.addPoiStyleLayer(actualId, type, minZoom, maxZoom);
     }
 
-    public removePoiGroup(id: string | number) {
+    public removePoiGroup(options: RemovePoiGroupOptions) {
+        const { id } = options;
         const source = this.poiSources.get(String(id));
         source?.destroy();
         this.map.removeLayer('plugin-poi-' + String(id));

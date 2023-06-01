@@ -59,7 +59,7 @@ interface PoiTarget {
 /**
  * The event type for pointer-related plugin events
  */
-export interface GltfPluginPointerEvent {
+interface GltfPluginPointerEvent {
     /**
      * The original DOM event
      */
@@ -74,11 +74,26 @@ export interface GltfPluginPointerEvent {
      * Screen coordinates of the event
      */
     point: number[];
+}
 
+/**
+ * The event type for pointer-related plugin events emitted by the poi
+ */
+export interface GltfPluginPoiEvent extends GltfPluginPointerEvent {
     /**
-     * Target of the event (poi or model)
+     * Target of the poi event
      */
-    target: PoiTarget | ModelTarget;
+    target: PoiTarget;
+}
+
+/**
+ * The event type for pointer-related plugin events emitted by the model
+ */
+export interface GltfPluginModelEvent extends GltfPluginPointerEvent {
+    /**
+     * Target of the model event
+     */
+    target: ModelTarget;
 }
 
 /**
@@ -88,17 +103,17 @@ export interface GltfPluginEventTable {
     /**
      * Emitted when model or poi are clicked
      */
-    click: GltfPluginPointerEvent;
+    click: GltfPluginPoiEvent | GltfPluginModelEvent;
     /**
      * Emitted when the user moves the pointer over the model or the poi
      */
-    mousemove: GltfPluginPointerEvent;
+    mousemove: GltfPluginPoiEvent | GltfPluginModelEvent;
     /**
      * Emitted when the user hovers over the model or the poi
      */
-    mouseover: GltfPluginPointerEvent;
+    mouseover: GltfPluginPoiEvent | GltfPluginModelEvent;
     /**
      * Emitted when the user moves the mouse away from the model or the poi
      */
-    mouseout: GltfPluginPointerEvent;
+    mouseout: GltfPluginPoiEvent | GltfPluginModelEvent;
 }

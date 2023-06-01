@@ -7,9 +7,14 @@ import { Loader } from './loader';
 import { PoiGroup } from './poiGroup';
 import { defaultOptions } from './defaultOptions';
 
-import type { PluginOptions, ModelOptions, BuildingState } from './types/plugin';
+import type {
+    PluginOptions,
+    ModelOptions,
+    BuildingState,
+    AddPoiGroupOptions,
+    RemovePoiGroupOptions,
+} from './types/plugin';
 import type { GltfPluginEventTable } from './types/events';
-import type { Parameter } from './types/utils';
 
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private renderer = new THREE.WebGLRenderer();
@@ -137,16 +142,13 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.map.triggerRerender();
     }
 
-    public async addPoiGroup(
-        options: Parameter<PoiGroup['addPoiGroup'], '0'>,
-        state?: BuildingState,
-    ) {
+    public async addPoiGroup(options: AddPoiGroupOptions, state?: BuildingState) {
         await this.waitForPluginInit;
 
         this.poiGroup.addPoiGroup(options, state);
     }
 
-    public removePoiGroup(options: Parameter<PoiGroup['removePoiGroup'], '0'>) {
+    public removePoiGroup(options: RemovePoiGroupOptions) {
         this.poiGroup.removePoiGroup(options);
     }
 
