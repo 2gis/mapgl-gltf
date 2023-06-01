@@ -59,6 +59,24 @@ async function start() {
         }
     });
 
+    plugin.on('mousemove', (e) => {
+        if (e.target.type === 'poi') {
+            console.log('poi mousemove, id = ', e.target.data.label);
+        }
+    });
+
+    plugin.on('mouseover', (e) => {
+        if (e.target.type === 'poi') {
+            console.log('poi mouseover, id = ', e.target.data.label);
+        }
+    });
+
+    plugin.on('mouseout', (e) => {
+        if (e.target.type === 'poi') {
+            console.log('poi mouseout, id = ', e.target.data.label);
+        }
+    });
+
     /*
     const models: ModelOptions[] = [
         {
