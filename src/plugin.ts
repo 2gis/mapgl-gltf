@@ -98,12 +98,12 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                     }
                     this.emit('showModelFloorPlan', {
                         floorPlanId: options.id,
-                        currentFloorLevelKey: 0,
+                        currentFloorLevelKey: 'building',
                         floorLevels: [
                             {
                                 floorLevelKey: 0,
-                                floorLevelType: 'parking',
-                                floorLevelName: 'Парковка',
+                                floorLevelIcon: 'parking',
+                                floorLevelName: '',
                             },
                             { floorLevelKey: 1, floorLevelName: '1-9' },
                             { floorLevelKey: 2, floorLevelName: '10-16' },
@@ -143,9 +143,9 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.map.triggerRerender();
             this.emit('showModelFloorPlan', {
                 floorPlanId: options.id,
-                currentFloorLevelKey: 0,
+                currentFloorLevelKey: 'building',
                 floorLevels: [
-                    { floorLevelKey: 0, floorLevelType: 'parking', floorLevelName: 'Парковка' },
+                    { floorLevelKey: 0, floorLevelIcon: 'parking', floorLevelName: '' },
                     { floorLevelKey: 1, floorLevelName: '1-9' },
                     { floorLevelKey: 2, floorLevelName: '10-16' },
                 ],

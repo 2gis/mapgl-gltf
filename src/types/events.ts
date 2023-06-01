@@ -15,7 +15,7 @@ export interface ModelFloorLevel {
     /**
      * A floor level type
      */
-    floorLevelType?: 'parking';
+    floorLevelIcon?: 'parking' | string;
 }
 
 /**
@@ -55,7 +55,7 @@ export interface ModelFloorLevelChangeEvent {
     /**
      * A floor level type
      */
-    floorLevelType?: 'parking';
+    floorLevelIcon?: 'parking';
 }
 
 /**

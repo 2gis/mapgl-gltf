@@ -91,16 +91,21 @@ export class GLTFFloorControl extends Control {
         button.className = classes.control;
         button.innerHTML = `<div class="${classes.label}">${icon_building}</div>`;
         button.name = 'building';
+        if (currentFloorLevelKey === 'building') {
+            button.disabled = true;
+        }
         const handler = this._controlHandler('building');
         button.addEventListener('click', handler);
         this._contentHome.append(button);
 
-        floorLevels.forEach(({ floorLevelKey, floorLevelName, floorLevelType }) => {
+        floorLevels.forEach(({ floorLevelKey, floorLevelName, floorLevelIcon }) => {
             const button = document.createElement('button');
             let buttonContext = floorLevelName;
-            if (floorLevelType) {
-                if (floorLevelType === 'parking') {
+            if (floorLevelIcon) {
+                if (floorLevelIcon === 'parking') {
                     buttonContext = icon_parking;
+                } else {
+                    buttonContext = `<img src = "${floorLevelIcon}">`;
                 }
             }
             button.className = classes.control;
