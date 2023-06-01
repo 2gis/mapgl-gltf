@@ -60,7 +60,7 @@ async function start() {
     });
 
     /*
-    const models = [
+    const models: ModelOptions[] = [
         {
             id: '03a234cb',
             coordinates: [82.886554, 54.980988],
@@ -142,31 +142,37 @@ async function start() {
         },
     );
 
-    plugin.addPoiGroup({
-        id: 2,
-        type: 'secondary',
-        minZoom: 17,
-        data: {
-            type: 'FeatureCollection',
-            features: [
-                {
-                    type: 'Feature',
-                    properties: {
-                        elevation: 30,
-                        type: 'immersive_poi',
-                        label: '10 м²',
-                        userData: {
-                            url: 'https://a101.ru/kvartiry/360810/',
+    plugin.addPoiGroup(
+        {
+            id: 2,
+            type: 'secondary',
+            minZoom: 17,
+            data: {
+                type: 'FeatureCollection',
+                features: [
+                    {
+                        type: 'Feature',
+                        properties: {
+                            elevation: 30,
+                            type: 'immersive_poi',
+                            label: '10 м²',
+                            userData: {
+                                url: 'https://a101.ru/kvartiry/360810/',
+                            },
+                        },
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [82.886554, 54.980988],
                         },
                     },
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [82.886554, 54.980988],
-                    },
-                },
-            ],
+                ],
+            },
         },
-    });
+        {
+            buildingId: '12345',
+            floorId: '234234',
+        },
+    );
 }
 
 start();
