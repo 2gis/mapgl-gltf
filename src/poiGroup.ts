@@ -46,6 +46,7 @@ export class PoiGroup {
             if (feature.properties !== null) {
                 feature.properties.buildingId = state?.buildingId;
                 feature.properties.floorId = state?.floorId;
+                feature.properties.poiType = type;
             }
         });
 
