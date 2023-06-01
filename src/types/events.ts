@@ -17,6 +17,16 @@ interface ModelTarget {
      * User specific data
      */
     userData?: any;
+
+    /**
+     * Identifier of the building's model
+     */
+    buildingId?: number | string;
+
+    /**
+     * Identifier of the floor's model
+     */
+    floorId?: number | string;
 }
 
 interface PoiTarget {

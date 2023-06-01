@@ -81,6 +81,14 @@ export interface ModelOptions {
      */
     id: number | string;
     /**
+     * Identifier of the building
+     */
+    buildingId?: number | string;
+    /**
+     * Identifier of the floor's plan
+     */
+    floorId?: number | string;
+    /**
      * Geographical coordinates [longitude, latitude]
      */
     coordinates: number[];

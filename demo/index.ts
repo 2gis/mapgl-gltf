@@ -1,6 +1,8 @@
 import { load } from '@2gis/mapgl';
 import { GltfPlugin } from '../src/index';
 
+import type { ModelOptions } from '../src/types/plugin';
+
 async function start() {
     const mapglAPI = await load();
 
@@ -81,18 +83,22 @@ async function start() {
     ];
     */
 
-    const models = [];
+    const models: ModelOptions[] = [];
     for (let i = 0; i < 10; i++) {
         let lonRnd = (Math.random() / 100) * (Math.random() > 0.5 ? 1 : -1);
         let latRnd = (Math.random() / 100) * (Math.random() > 0.5 ? 1 : -1);
         models.push({
             id: i,
+            buildingId: 'buildingId' + i,
+            floorId: 'floorId' + i,
             coordinates: [82.8865 + lonRnd, 54.9809 + latRnd],
             modelUrl: 'models/cube_draco.glb',
             rotateX: 90,
             scale: 3000,
             linkedIds: ['141373143530065', '70030076379181421'],
-            // TODO: добавить userData в события моделей
+            userData: {
+                test: 'hey',
+            },
         });
     }
 
