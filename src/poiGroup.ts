@@ -1,7 +1,7 @@
 import type { FeatureCollection } from 'geojson';
 import type { Map as MapGL, GeoJsonSource } from '@2gis/mapgl/types';
 
-import { PluginOptions } from './types/plugin';
+import type { PluginOptions, BuildingState } from './types/plugin';
 
 interface PoiGroupOptions {
     map: MapGL;
@@ -29,25 +29,35 @@ export class PoiGroup {
         });
     }
 
-    public async addPoiGroup({
-        id,
-        type,
-        data,
-        minZoom = -Infinity,
-        maxZoom = +Infinity,
-    }: {
-        id: string | number;
-        type: 'primary' | 'secondary';
-        data: FeatureCollection;
-        minZoom?: number;
-        maxZoom?: number;
-    }) {
+    public async addPoiGroup(
+        {
+            id,
+            type,
+            data,
+            minZoom = -Infinity,
+            maxZoom = +Infinity,
+        }: {
+            id: string | number;
+            type: 'primary' | 'secondary';
+            data: FeatureCollection;
+            minZoom?: number;
+            maxZoom?: number;
+        },
+        state?: BuildingState,
+    ) {
         const actualId = String(id);
         if (this.poiSources.get(actualId) !== undefined) {
             throw new Error(
                 `Poi group with id "${actualId}" already exists. Please use different identifiers for poi groups`,
             );
         }
+
+        data.features.forEach((feature) => {
+            if (feature.properties !== null) {
+                feature.properties.__buildingId = state?.buildingId;
+                feature.properties.__floorId = state?.floorId;
+            }
+        });
 
         // create source with poi
         const source = new mapgl.GeoJsonSource(this.map, {

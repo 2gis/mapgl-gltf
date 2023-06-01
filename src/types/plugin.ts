@@ -73,6 +73,21 @@ export interface PluginOptions {
 }
 
 /**
+ * State for the building's scene
+ */
+export interface BuildingState {
+    /**
+     * Identifier of the building's model
+     */
+    buildingId: number | string;
+
+    /**
+     * Identifier of the floor's model
+     */
+    floorId?: number | string;
+}
+
+/**
  * Options for a model
  */
 export interface ModelOptions {

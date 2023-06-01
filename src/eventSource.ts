@@ -72,8 +72,10 @@ export class EventSource extends Evented<GltfPluginEventTable> {
         originalData: PoiOptions,
     ): GltfPluginPointerEvent {
         const data = clone(originalData);
-        const { userData } = data;
+        const { userData, __floorId: floorId, __buildingId: buildingId } = data;
         delete data.userData;
+        delete data.__buildingId;
+        delete data.__floorId;
 
         return {
             originalEvent: ev.originalEvent,
@@ -83,6 +85,8 @@ export class EventSource extends Evented<GltfPluginEventTable> {
                 type: 'poi',
                 data,
                 userData,
+                buildingId,
+                floorId,
             },
         };
     }
@@ -103,10 +107,10 @@ export class EventSource extends Evented<GltfPluginEventTable> {
             lngLat: ev.lngLat,
             target: {
                 type: 'model',
+                data,
                 userData,
                 buildingId,
                 floorId,
-                data,
             },
         };
     }

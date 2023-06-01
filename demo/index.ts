@@ -122,9 +122,6 @@ async function start() {
                     {
                         type: 'Feature',
                         properties: {
-                            // TODO: динамически добавлять groupId,
-                            // для того чтобы понять связь poi и здания
-                            // эта информация должна попасть в поле target у событий
                             elevation: 130,
                             type: 'immersive_poi',
                             label: '3к\n78.4 м²',
@@ -139,11 +136,11 @@ async function start() {
                     },
                 ],
             },
-        } /*, {
-        TODO: идентификаторы для связи между poi и здания
-        buildingId: '234234',
-        floorId: '234234',
-    }*/,
+        },
+        {
+            buildingId: '12345',
+            floorId: '234234',
+        },
     );
 
     plugin.addPoiGroup({
@@ -159,7 +156,9 @@ async function start() {
                         elevation: 30,
                         type: 'immersive_poi',
                         label: '10 м²',
-                        url: 'https://a101.ru/kvartiry/360810/',
+                        userData: {
+                            url: 'https://a101.ru/kvartiry/360810/',
+                        },
                     },
                     geometry: {
                         type: 'Point',
