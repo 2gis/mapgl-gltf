@@ -150,17 +150,19 @@ export class GltfFloorControl extends Control {
             return;
         }
 
-        (
-            this._wrap.querySelector(
-                `.${classes.control}[name="${this._floor.currentFloorLevelKey}"]`,
-            ) as HTMLButtonElement
-        ).disabled = false;
+        const buttonToDisabled: HTMLButtonElement | null = this._wrap.querySelector(
+            `.${classes.control}[name="${this._floor.currentFloorLevelKey}"]`,
+        );
+        if (buttonToDisabled) {
+            buttonToDisabled.disabled = false;
+        }
 
-        (
-            this._wrap.querySelector(
-                `.${classes.control}[name="${floorLevelKey}"]`,
-            ) as HTMLButtonElement
-        ).disabled = true;
+        const buttonToEnabled: HTMLButtonElement | null = this._wrap.querySelector(
+            `.${classes.control}[name="${floorLevelKey}"]`,
+        );
+        if (buttonToEnabled) {
+            buttonToEnabled.disabled = true;
+        }
 
         this._floor.currentFloorLevelKey = floorLevelKey;
     };

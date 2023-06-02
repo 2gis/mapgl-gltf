@@ -4,7 +4,7 @@
 
 .container {
     display: flex;
-    max-height: 96px;
+    max-height: 156px;
     background: #ffffff;
     min-width: 32px;
     overflow: hidden;
