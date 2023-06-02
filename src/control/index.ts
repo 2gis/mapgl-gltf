@@ -100,7 +100,7 @@ export class GLTFFloorControl extends Control {
 
         floorLevels.forEach(({ floorLevelKey, floorLevelName, floorLevelIcon }) => {
             const button = document.createElement('button');
-            let buttonContext = floorLevelName;
+            let buttonContent = floorLevelName;
             if (floorLevelIcon) {
                 if (floorLevelIcon === 'parking') {
                     buttonContext = icon_parking;
