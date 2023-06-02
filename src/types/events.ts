@@ -1,8 +1,23 @@
-import type { ModelOptions } from '../types/plugin';
+import type { ModelOptions, PoiOptions } from '../types/plugin';
 
-export type PoiOptions = Record<string, any>;
+export type PoiGeoJsonProperties = PoiOptions & {
+    /**
+     * Identifier of the building's model
+     */
+    buildingId?: number | string;
 
-interface ModelTarget {
+    /**
+     * Identifier of the floor's model
+     */
+    floorId?: number | string;
+
+    /**
+     * Type of the poi
+     */
+    type?: string;
+};
+
+export interface ModelTarget {
     /**
      * Type of the target
      */
@@ -12,11 +27,6 @@ interface ModelTarget {
      * The targeted model
      */
     data: ModelOptions;
-
-    /**
-     * User specific data
-     */
-    userData?: any;
 
     /**
      * Identifier of the building's model
@@ -29,7 +39,7 @@ interface ModelTarget {
     floorId?: number | string;
 }
 
-interface PoiTarget {
+export interface PoiTarget {
     /**
      * Type of the target
      */
@@ -38,12 +48,7 @@ interface PoiTarget {
     /**
      * The targeted poi
      */
-    data: PoiOptions;
-
-    /**
-     * User specific data
-     */
-    userData?: any;
+    data: PoiGeoJsonProperties;
 
     /**
      * Identifier of the building's model

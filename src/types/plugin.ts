@@ -1,5 +1,3 @@
-import type { FeatureCollection } from 'geojson';
-
 export type ColorModelString = `${'rgb' | 'hsl'}(${string})`;
 export type HexColorString = `#${string}`;
 /**
@@ -151,6 +149,25 @@ export interface ModelOptions {
     userData?: any;
 }
 
+export interface PoiOptions {
+    /**
+     * Coordinate of the poi
+     */
+    coordinates: [number, number];
+    /**
+     * Elevation of the poi
+     */
+    elevation?: number;
+    /**
+     * Elevation of the poi
+     */
+    label: string;
+    /**
+     * User specific data
+     */
+    userData?: any;
+}
+
 /**
  * Options for the method addPoiGroup
  */
@@ -164,9 +181,13 @@ export interface AddPoiGroupOptions {
      */
     type: 'primary' | 'secondary';
     /**
-     * Geo points to add on the map as poi
+     * Elevation of the group of poi
      */
-    data: FeatureCollection;
+    elevation: number;
+    /**
+     * Array of poi to add on the map
+     */
+    data: PoiOptions[];
     /**
      * Minimum display styleZoom of the poi group
      */

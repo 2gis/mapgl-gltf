@@ -31,7 +31,8 @@ async function start() {
 
     plugin.on('click', (e) => {
         if (e.target.type === 'model') {
-            console.log('model click, id = ', e.target.data.id);
+            // console.log('model click, id = ', e.target.data.id);
+            console.log(e);
         }
     });
 
@@ -133,26 +134,17 @@ async function start() {
             id: 1,
             type: 'primary',
             minZoom: 15,
-            data: {
-                type: 'FeatureCollection',
-                features: [
-                    {
-                        type: 'Feature',
-                        properties: {
-                            elevation: 130,
-                            type: 'immersive_poi',
-                            label: '3к\n78.4 м²',
-                            userData: {
-                                url: 'https://a101.ru/kvartiry/360810/',
-                            },
-                        },
-                        geometry: {
-                            type: 'Point',
-                            coordinates: [82.886454, 54.980388],
-                        },
+            elevation: 130,
+            data: [
+                {
+                    coordinates: [82.886454, 54.980388],
+                    elevation: 130,
+                    label: '3к\n78.4 м²',
+                    userData: {
+                        url: 'https://a101.ru/kvartiry/360810/',
                     },
-                ],
-            },
+                },
+            ],
         },
         {
             buildingId: '12345',
@@ -165,26 +157,16 @@ async function start() {
             id: 2,
             type: 'secondary',
             minZoom: 17,
-            data: {
-                type: 'FeatureCollection',
-                features: [
-                    {
-                        type: 'Feature',
-                        properties: {
-                            elevation: 30,
-                            type: 'immersive_poi',
-                            label: '10 м²',
-                            userData: {
-                                url: 'https://a101.ru/kvartiry/360810/',
-                            },
-                        },
-                        geometry: {
-                            type: 'Point',
-                            coordinates: [82.886554, 54.980988],
-                        },
+            elevation: 30,
+            data: [
+                {
+                    coordinates: [82.886554, 54.980988],
+                    label: '10 м²',
+                    userData: {
+                        url: 'https://a101.ru/kvartiry/360810/',
                     },
-                ],
-            },
+                },
+            ],
         },
         {
             buildingId: '12345',

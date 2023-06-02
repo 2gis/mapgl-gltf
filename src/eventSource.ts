@@ -8,7 +8,9 @@ import type {
     GltfPluginEventTable,
     GltfPluginPoiEvent,
     GltfPluginModelEvent,
-    PoiOptions,
+    PoiGeoJsonProperties,
+    PoiTarget,
+    ModelTarget,
 } from './types/events';
 import type { ModelOptions } from './types/plugin';
 
@@ -63,44 +65,65 @@ export class EventSource extends Evented<GltfPluginEventTable> {
         return target as THREE.Mesh;
     }
 
-    private getPoiOptions(e: MapPointerEvent) {
+    private getPoiProperties(e: MapPointerEvent) {
         if (
             e.targetData?.type === 'geojson' &&
             e.targetData?.feature?.properties?.type === 'immersive_poi'
         ) {
-            return e.targetData.feature.properties;
+            return e.targetData.feature.properties as PoiGeoJsonProperties;
         }
     }
 
-    private createEventData(
-        type: 'model' | 'poi',
-        ev: MapPointerEvent,
-        originalData: ModelOptions | PoiOptions,
-    ): GltfPluginPoiEvent | GltfPluginModelEvent {
-        const data = clone(originalData);
-        const { buildingId, floorId, userData } = data;
+    private cleanPoiEvent(event: GltfPluginPoiEvent) {
+        const { data } = event.target;
+        delete data.type;
         delete data.buildingId;
         delete data.floorId;
-        delete data.userData;
+        return event;
+    }
 
-        const event = {
+    private createPoiEvenData(
+        ev: MapPointerEvent,
+        originalData: PoiGeoJsonProperties,
+    ): GltfPluginPoiEvent {
+        const data = clone(originalData);
+        const { buildingId, floorId } = data;
+        const target: PoiTarget = {
+            type: 'poi',
+            data,
+        };
+        if (buildingId !== undefined) {
+            target.buildingId = buildingId;
+        }
+        if (floorId !== undefined) {
+            target.floorId = floorId;
+        }
+        return this.cleanPoiEvent({
             originalEvent: ev.originalEvent,
             point: ev.point,
             lngLat: ev.lngLat,
-            target: {
-                type,
-                data,
-                userData,
-                buildingId,
-                floorId,
-            },
+            target,
+        });
+    }
+
+    private createModelEventData(ev: MapPointerEvent, data: ModelOptions): GltfPluginModelEvent {
+        const { buildingId, floorId } = data;
+        const target: ModelTarget = {
+            type: 'model',
+            data,
         };
-
-        if (type === 'model') {
-            return event as GltfPluginModelEvent;
+        if (buildingId !== undefined) {
+            target.buildingId = buildingId;
         }
-
-        return event as GltfPluginPoiEvent;
+        if (floorId !== undefined) {
+            target.floorId = floorId;
+        }
+        return {
+            originalEvent: ev.originalEvent,
+            point: ev.point,
+            lngLat: ev.lngLat,
+            target,
+        };
     }
 
     private initEventHandlers() {
@@ -108,33 +131,33 @@ export class EventSource extends Evented<GltfPluginEventTable> {
          * Poi events
          */
         this.map.on('mousemove', (e) => {
-            const poiOptions = this.getPoiOptions(e);
-            if (poiOptions) {
-                const eventData = this.createEventData('poi', e, poiOptions);
+            const poiProperties = this.getPoiProperties(e);
+            if (poiProperties) {
+                const eventData = this.createPoiEvenData(e, poiProperties);
                 this.emit('mousemove', eventData);
             }
         });
 
         this.map.on('mouseover', (e) => {
-            const poiOptions = this.getPoiOptions(e);
-            if (poiOptions) {
-                const eventData = this.createEventData('poi', e, poiOptions);
+            const poiProperties = this.getPoiProperties(e);
+            if (poiProperties) {
+                const eventData = this.createPoiEvenData(e, poiProperties);
                 this.emit('mouseover', eventData);
             }
         });
 
         this.map.on('mouseout', (e) => {
-            const poiOptions = this.getPoiOptions(e);
-            if (poiOptions) {
-                const eventData = this.createEventData('poi', e, poiOptions);
+            const poiProperties = this.getPoiProperties(e);
+            if (poiProperties) {
+                const eventData = this.createPoiEvenData(e, poiProperties);
                 this.emit('mouseout', eventData);
             }
         });
 
         this.map.on('click', (e) => {
-            const poiOptions = this.getPoiOptions(e);
-            if (poiOptions) {
-                const eventData = this.createEventData('poi', e, poiOptions);
+            const poiProperties = this.getPoiProperties(e);
+            if (poiProperties) {
+                const eventData = this.createPoiEvenData(e, poiProperties);
                 this.emit('click', eventData);
             }
         });
@@ -147,7 +170,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
 
             if (target) {
                 const modelOptions = target.userData as ModelOptions;
-                const eventData = this.createEventData('model', e, modelOptions);
+                const eventData = this.createModelEventData(e, modelOptions);
                 this.emit('click', eventData);
             }
         });
@@ -156,7 +179,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
             const currTargetModel = this.getEventTargetMesh(e.originalEvent);
             if (currTargetModel) {
                 const modelOptions = currTargetModel.userData as ModelOptions;
-                const currEventData = this.createEventData('model', e, modelOptions);
+                const currEventData = this.createModelEventData(e, modelOptions);
 
                 // when user move the mouse pointer from the map to a model
                 if (this.prevTargetModel === null) {
@@ -175,7 +198,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
                 // when user move the mouse pointer from one model to another model
                 if (this.prevTargetModel !== currTargetModel) {
                     const modelOptions = this.prevTargetModel.userData as ModelOptions;
-                    const prevEventData = this.createEventData('model', e, modelOptions);
+                    const prevEventData = this.createModelEventData(e, modelOptions);
                     this.emit('mouseout', prevEventData);
                     this.emit('mouseover', currEventData);
                     this.emit('mousemove', currEventData);
@@ -187,7 +210,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
             // when user move the mouse pointer from a model to the map
             if (this.prevTargetModel !== null) {
                 const modelOptions = this.prevTargetModel.userData as ModelOptions;
-                const prevEventData = this.createEventData('model', e, modelOptions);
+                const prevEventData = this.createModelEventData(e, modelOptions);
                 this.emit('mouseout', prevEventData);
                 this.prevTargetModel = null;
                 return;

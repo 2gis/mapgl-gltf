@@ -1,3 +1,4 @@
+import type { FeatureCollection, Feature, Point, GeoJsonProperties } from 'geojson';
 import type { Map as MapGL, GeoJsonSource } from '@2gis/mapgl/types';
 
 import type {
@@ -5,12 +6,15 @@ import type {
     BuildingState,
     AddPoiGroupOptions,
     RemovePoiGroupOptions,
+    PoiOptions,
 } from './types/plugin';
 
 interface PoiGroupOptions {
     map: MapGL;
     poiConfig: PluginOptions['poiConfig'];
 }
+
+type FeaturePoint = Feature<Point, GeoJsonProperties>;
 
 export class PoiGroup {
     private poiSources = new Map<string, GeoJsonSource>();
@@ -33,8 +37,8 @@ export class PoiGroup {
         });
     }
 
-    public async addPoiGroup(options: AddPoiGroupOptions, state?: BuildingState) {
-        const { id, type, data, minZoom = -Infinity, maxZoom = +Infinity } = options;
+    public async addPoiGroup(groupOptions: AddPoiGroupOptions, state?: BuildingState) {
+        const { id, type, data, minZoom = -Infinity, maxZoom = +Infinity } = groupOptions;
         const actualId = String(id);
         if (this.poiSources.get(actualId) !== undefined) {
             throw new Error(
@@ -42,17 +46,11 @@ export class PoiGroup {
             );
         }
 
-        data.features.forEach((feature) => {
-            if (feature.properties !== null) {
-                feature.properties.buildingId = state?.buildingId;
-                feature.properties.floorId = state?.floorId;
-                feature.properties.poiType = type;
-            }
-        });
+        const geoJson = this.createGeoJson(data, groupOptions, state);
 
         // create source with poi
         const source = new mapgl.GeoJsonSource(this.map, {
-            data: data,
+            data: geoJson,
             attributes: {
                 dataType: actualId,
             },
@@ -63,11 +61,42 @@ export class PoiGroup {
         this.addPoiStyleLayer(actualId, type, minZoom, maxZoom);
     }
 
-    public removePoiGroup(options: RemovePoiGroupOptions) {
-        const { id } = options;
+    public removePoiGroup(groupOptions: RemovePoiGroupOptions) {
+        const { id } = groupOptions;
         const source = this.poiSources.get(String(id));
         source?.destroy();
         this.map.removeLayer('plugin-poi-' + String(id));
+    }
+
+    private createGeoJson(
+        poiOptions: PoiOptions[],
+        groupOptions: AddPoiGroupOptions,
+        state?: BuildingState,
+    ): FeatureCollection<Point> {
+        const { elevation } = groupOptions;
+        const features: FeaturePoint[] = poiOptions.map((opts) => ({
+            type: 'Feature',
+            properties: {
+                // main properties
+                type: 'immersive_poi',
+                label: opts.label,
+                userData: opts.userData,
+                elevation: elevation,
+                coordinates: opts.coordinates,
+                // auxilary properties
+                buildingId: state?.buildingId,
+                floorId: state?.floorId,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: opts.coordinates,
+            },
+        }));
+
+        return {
+            type: 'FeatureCollection',
+            features,
+        };
     }
 
     private addPoiStyleLayer(
