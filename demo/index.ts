@@ -135,6 +135,8 @@ async function start() {
             type: 'primary',
             minZoom: 15,
             elevation: 130,
+            fontSize: 16,
+            fontColor: '#3a3a3a',
             data: [
                 {
                     coordinates: [82.886454, 54.980388],

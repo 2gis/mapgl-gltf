@@ -196,6 +196,14 @@ export interface AddPoiGroupOptions {
      * Maximum display styleZoom of the poi group
      */
     maxZoom?: number;
+    /**
+     * Size of the poi's font
+     */
+    fontSize?: number;
+    /**
+     * Color of the poi's font
+     */
+    fontColor?: string;
 }
 
 /**
