@@ -7,7 +7,7 @@ export interface ModelFloorLevel {
     /**
      * A floor level index
      */
-    floorLevelKey: number | string;
+    floorLevelKey: number | 'building';
     /**
      * A floor level name
      */
@@ -15,7 +15,7 @@ export interface ModelFloorLevel {
     /**
      * A floor level type
      */
-    floorLevelIcon?: 'parking' | string;
+    floorLevelIcon?: 'parking' | 'building' | string;
 }
 
 /**

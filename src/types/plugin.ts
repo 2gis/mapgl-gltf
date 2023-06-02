@@ -36,6 +36,29 @@ export interface PoiConfigGranular {
 }
 
 /**
+ * Possible position of the control.
+ */
+export type ControlPosition =
+    | 'topLeft'
+    | 'topCenter'
+    | 'topRight'
+    | 'centerLeft'
+    | 'centerRight'
+    | 'bottomLeft'
+    | 'bottomCenter'
+    | 'bottomRight';
+
+/**
+ * Control initialization options.
+ */
+export interface ControlOptions {
+    /**
+     * Position of the control.
+     */
+    position: ControlPosition;
+}
+
+/**
  * Options for the plugin
  */
 export interface PluginOptions {
@@ -70,6 +93,11 @@ export interface PluginOptions {
          */
         secondary?: PoiConfigGranular;
     };
+
+    /**
+     * Floors control
+     */
+    floorsControl?: boolean | ControlOptions;
 }
 
 /**

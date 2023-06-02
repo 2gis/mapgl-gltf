@@ -25,6 +25,7 @@ async function start() {
                 fontSize: 14,
             },
         },
+        floorsControl: true,
     });
 
     plugin.on('clickModel', (e) => {

@@ -1,7 +1,10 @@
-import type { Map as MapGL, ControlPosition, ControlOptions } from '@2gis/mapgl/types';
+import type { Map as MapGL } from '@2gis/mapgl/types';
+import { ControlOptions, ControlPosition } from '../types/plugin';
 
 /**
  * Class for the map's controls creating.
+ * @hidden
+ * @internal
  */
 export class Control {
     /**

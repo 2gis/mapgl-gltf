@@ -9,9 +9,7 @@ import { ModelFloorPlanShowEvent } from '../types/events';
 const content = /* HTML */ `
     <div class="${classes.root}">
         <div class="${classes.container} ${classes.splitContainer}">
-            <div class="${classes.scroller}">
-                <div class="${classes.contentHome}" />
-            </div>
+            <div class="${classes.contentHome}" />
         </div>
     </div>
     <div class="${classes.root}">
@@ -24,12 +22,14 @@ const content = /* HTML */ `
 `;
 
 /**
- * A control for change floor layer level on the map.
- * It appears on the map only if you set the `floorControl` option within @type MapOptions to `true`.
+ * A control for change floor layer level on the plugin.
+ * It appears on the map only if you set the `floorControl` option within @type PluginOptions to `true`.
+ * @hidden
+ * @internal
  */
-export class GLTFFloorControl extends Control {
+export class GltfFloorControl extends Control {
     private _map: MapGL;
-    private _pluginGLTF: GltfPlugin;
+    private _pluginGltf: GltfPlugin;
     private _root: HTMLElement;
     private _content: HTMLElement;
     private _contentHome: HTMLElement;
@@ -41,7 +41,7 @@ export class GLTFFloorControl extends Control {
 
     constructor(plugin: GltfPlugin, map: MapGL, options: ControlOptions) {
         super(map, content, options);
-        this._pluginGLTF = plugin;
+        this._pluginGltf = plugin;
         this._map = map;
         this._root = this._wrap.querySelector(`.${classes.root}`) as HTMLElement;
         this._content = this._wrap.querySelector(`.${classes.content}`) as HTMLElement;
@@ -55,9 +55,9 @@ export class GLTFFloorControl extends Control {
     }
 
     public destroy() {
-        this._pluginGLTF.off('showModelFloorPlan', this._showControl);
-        this._pluginGLTF.off('hideModelFloorPlan', this._hideControl);
-        this._pluginGLTF.off('changeModelFloorPlan', this._onLevelChange);
+        this._pluginGltf.off('showModelFloorPlan', this._showControl);
+        this._pluginGltf.off('hideModelFloorPlan', this._hideControl);
+        this._pluginGltf.off('changeModelFloorPlan', this._onLevelChange);
 
         this._removeButtonsEventListeners();
 
@@ -87,29 +87,21 @@ export class GLTFFloorControl extends Control {
         this._contentHome.innerHTML = '';
         let currentButton: HTMLElement | undefined;
 
-        const button = document.createElement('button');
-        button.className = classes.control;
-        button.innerHTML = `<div class="${classes.label}">${icon_building}</div>`;
-        button.name = 'building';
-        if (currentFloorLevelKey === 'building') {
-            button.disabled = true;
-        }
-        const handler = this._controlHandler('building');
-        button.addEventListener('click', handler);
-        this._contentHome.append(button);
-
         floorLevels.forEach(({ floorLevelKey, floorLevelName, floorLevelIcon }) => {
+            const rootContent = floorLevelKey === 'building' ? this._contentHome : this._content;
             const button = document.createElement('button');
             let buttonContent = floorLevelName;
             if (floorLevelIcon) {
+                buttonContent = `<img src = "${floorLevelIcon}">`;
                 if (floorLevelIcon === 'parking') {
-                    buttonContext = icon_parking;
-                } else {
-                    buttonContext = `<img src = "${floorLevelIcon}">`;
+                    buttonContent = icon_parking;
+                }
+                if (floorLevelIcon === 'building') {
+                    buttonContent = icon_building;
                 }
             }
             button.className = classes.control;
-            button.innerHTML = `<div class="${classes.label}">${buttonContext}</div>`;
+            button.innerHTML = `<div class="${classes.label}">${buttonContent}</div>`;
             button.name = floorLevelKey.toLocaleString();
             if (currentFloorLevelKey === floorLevelKey) {
                 button.disabled = true;
@@ -120,7 +112,7 @@ export class GLTFFloorControl extends Control {
             button.addEventListener('click', handler);
 
             this._handlers.set(button, handler);
-            this._content.append(button);
+            rootContent.append(button);
         });
 
         if (currentButton && currentButton.offsetTop) {
@@ -149,6 +141,7 @@ export class GLTFFloorControl extends Control {
 
         if (this._floor) {
             // todo call plugin method of change floor model
+            console.log(this._floor);
         }
     };
 
