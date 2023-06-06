@@ -7,7 +7,7 @@
     position: relative;
     max-height: 148px;
     background: #ffffff;
-    min-width: 32px;
+    width: 55px;
     overflow: hidden;
     border-radius: 4px;
     box-shadow: 0 1px 3px 0 rgba(38, 38, 38, 0.5);
@@ -48,9 +48,9 @@
     width: 100%;
     overflow-x: hidden;
     overflow-y: overlay;
-    -moz-padding-end: 4px;
+    -moz-padding-end: 17px;
     -webkit-padding-end: 17px;
-    -webkit-margin-end: -13px;
+    -webkit-margin-end: -17px;
 }
 
 .content {
@@ -71,7 +71,7 @@
     padding-left: 4px;
     padding-right: 4px;
     height: 32px;
-    width: auto;
+    width: 55px;
     color: #262626;
     cursor: pointer;
     border-bottom: 1px solid #e6e6e6;
@@ -121,7 +121,7 @@
     line-height: 32px;
     font-weight: 400;
     overflow-wrap: break-word;
-
+    overflow: hidden;
     position: relative;
     text-align: center;
     height: 100%;
