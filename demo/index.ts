@@ -29,53 +29,15 @@ async function start() {
         },
     });
 
-    plugin.on('click', (e) => {
-        if (e.target.type === 'model') {
-            // console.log('model click, id = ', e.target.data.id);
-            console.log(e);
-        }
-    });
-
-    plugin.on('mousemove', (e) => {
-        if (e.target.type === 'model') {
-            console.log('model mousemove, id = ', e.target.data.id);
-        }
-    });
-
-    plugin.on('mouseover', (e) => {
-        if (e.target.type === 'model') {
-            console.log('model mouseover, id = ', e.target.data.id);
-        }
-    });
-
-    plugin.on('mouseout', (e) => {
-        if (e.target.type === 'model') {
-            console.log('model mouseout, id = ', e.target.data.id);
-        }
-    });
-
-    plugin.on('click', (e) => {
-        if (e.target.type === 'poi') {
-            console.log(e);
-        }
-    });
-
-    plugin.on('mousemove', (e) => {
-        if (e.target.type === 'poi') {
-            console.log('poi mousemove, id = ', e.target.data.label);
-        }
-    });
-
-    plugin.on('mouseover', (e) => {
-        if (e.target.type === 'poi') {
-            console.log('poi mouseover, id = ', e.target.data.label);
-        }
-    });
-
-    plugin.on('mouseout', (e) => {
-        if (e.target.type === 'poi') {
-            console.log('poi mouseout, id = ', e.target.data.label);
-        }
+    (['click', 'mousemove', 'mouseover', 'mouseout'] as const).forEach((eventName) => {
+        plugin.on(eventName, (e) => {
+            if (e.target.type === 'model') {
+                console.log(`model ${eventName}, id =`, e.target.data.id);
+            }
+            if (e.target.type === 'poi') {
+                console.log(`poi ${eventName}, label =`, e.target.data.label);
+            }
+        });
     });
 
     /*
