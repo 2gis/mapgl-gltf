@@ -16,6 +16,7 @@ import type { ModelOptions } from './types/plugin';
 
 export class EventSource extends Evented<GltfPluginEventTable> {
     private prevTargetModel: THREE.Mesh | null = null;
+    private isMouseOutToPoi = false;
     private raycaster = new THREE.Raycaster();
     private pointer = new THREE.Vector2();
     private eventList: Array<keyof GltfPluginEventTable> = [
@@ -127,22 +128,36 @@ export class EventSource extends Evented<GltfPluginEventTable> {
     }
 
     private initEventHandlers() {
-        /**
-         * Poi events
-         */
         this.map.on('mousemove', (e) => {
+            let isModelMove = true;
             const poiProperties = this.getPoiProperties(e);
             if (poiProperties) {
+                isModelMove = false;
+                this.prevTargetModel = null;
                 const eventData = this.createPoiEvenData(e, poiProperties);
                 this.emit('mousemove', eventData);
+            }
+            if (isModelMove) {
+                this.isMouseOutToPoi = true;
+                this.emitModelMouseMoveEvents(e);
             }
         });
 
         this.map.on('mouseover', (e) => {
             const poiProperties = this.getPoiProperties(e);
             if (poiProperties) {
+                this.prevTargetModel = null;
                 const eventData = this.createPoiEvenData(e, poiProperties);
                 this.emit('mouseover', eventData);
+
+                const currTargetModel = this.getEventTargetMesh(e.originalEvent);
+                if (currTargetModel && this.isMouseOutToPoi) {
+                    const modelOptions = currTargetModel.userData as ModelOptions;
+                    const currEventData = this.createModelEventData(e, modelOptions);
+                    this.emit('mouseout', currEventData);
+                    this.isMouseOutToPoi = false;
+                }
+                this.prevTargetModel = null;
             }
         });
 
@@ -151,70 +166,73 @@ export class EventSource extends Evented<GltfPluginEventTable> {
             if (poiProperties) {
                 const eventData = this.createPoiEvenData(e, poiProperties);
                 this.emit('mouseout', eventData);
+                this.prevTargetModel = null;
             }
         });
 
         this.map.on('click', (e) => {
+            let isModelClick = true;
             const poiProperties = this.getPoiProperties(e);
             if (poiProperties) {
+                isModelClick = false;
                 const eventData = this.createPoiEvenData(e, poiProperties);
                 this.emit('click', eventData);
             }
-        });
-
-        /**
-         * Model events
-         */
-        this.map.on('click', (e) => {
-            const target = this.getEventTargetMesh(e.originalEvent);
-
-            if (target) {
-                const modelOptions = target.userData as ModelOptions;
-                const eventData = this.createModelEventData(e, modelOptions);
-                this.emit('click', eventData);
+            if (isModelClick) {
+                this.emitModelClickEvent(e);
             }
         });
+    }
 
-        this.map.on('mousemove', (e) => {
-            const currTargetModel = this.getEventTargetMesh(e.originalEvent);
-            if (currTargetModel) {
-                const modelOptions = currTargetModel.userData as ModelOptions;
-                const currEventData = this.createModelEventData(e, modelOptions);
+    private emitModelClickEvent(e: MapPointerEvent) {
+        const target = this.getEventTargetMesh(e.originalEvent);
 
-                // when user move the mouse pointer from the map to a model
-                if (this.prevTargetModel === null) {
-                    this.emit('mouseover', currEventData);
-                    this.emit('mousemove', currEventData);
-                    this.prevTargetModel = currTargetModel;
-                    return;
-                }
+        if (target) {
+            const modelOptions = target.userData as ModelOptions;
+            const eventData = this.createModelEventData(e, modelOptions);
+            this.emit('click', eventData);
+        }
+    }
 
-                // when user move the mouse pointer on the same model
-                if (this.prevTargetModel === currTargetModel) {
-                    this.emit('mousemove', currEventData);
-                    return;
-                }
+    private emitModelMouseMoveEvents(e: MapPointerEvent) {
+        const currTargetModel = this.getEventTargetMesh(e.originalEvent);
+        if (currTargetModel) {
+            const modelOptions = currTargetModel.userData as ModelOptions;
+            const currEventData = this.createModelEventData(e, modelOptions);
 
-                // when user move the mouse pointer from one model to another model
-                if (this.prevTargetModel !== currTargetModel) {
-                    const modelOptions = this.prevTargetModel.userData as ModelOptions;
-                    const prevEventData = this.createModelEventData(e, modelOptions);
-                    this.emit('mouseout', prevEventData);
-                    this.emit('mouseover', currEventData);
-                    this.emit('mousemove', currEventData);
-                    this.prevTargetModel = currTargetModel;
-                    return;
-                }
+            // when user move the mouse pointer from the map to a model
+            if (this.prevTargetModel === null) {
+                this.emit('mouseover', currEventData);
+                this.emit('mousemove', currEventData);
+                this.prevTargetModel = currTargetModel;
+                return;
             }
 
-            // when user move the mouse pointer from a model to the map
-            if (this.prevTargetModel !== null) {
+            // when user move the mouse pointer on the same model
+            if (this.prevTargetModel === currTargetModel) {
+                this.emit('mousemove', currEventData);
+                return;
+            }
+
+            // when user move the mouse pointer from one model to another model
+            if (this.prevTargetModel !== currTargetModel) {
                 const modelOptions = this.prevTargetModel.userData as ModelOptions;
                 const prevEventData = this.createModelEventData(e, modelOptions);
                 this.emit('mouseout', prevEventData);
-                this.prevTargetModel = null;
+                this.emit('mouseover', currEventData);
+                this.emit('mousemove', currEventData);
+                this.prevTargetModel = currTargetModel;
                 return;
             }
-        });
+        }
+
+        // when user move the mouse pointer from a model to the map
+        if (this.prevTargetModel !== null) {
+            const modelOptions = this.prevTargetModel.userData as ModelOptions;
+            const prevEventData = this.createModelEventData(e, modelOptions);
+            this.emit('mouseout', prevEventData);
+            this.prevTargetModel = null;
+            return;
+        }
     }
 }
