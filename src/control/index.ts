@@ -13,7 +13,7 @@ const content = /* HTML */ `
         </div>
     </div>
     <div class="${classes.root}">
-        <div class="${classes.container}">
+        <div class="${classes.container} ${classes.containerFloors}">
             <div class="${classes.scroller}">
                 <div class="${classes.content}" />
             </div>

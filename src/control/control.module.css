@@ -4,12 +4,39 @@
 
 .container {
     display: flex;
-    max-height: 156px;
+    position: relative;
+    max-height: 148px;
     background: #ffffff;
     min-width: 32px;
     overflow: hidden;
     border-radius: 4px;
     box-shadow: 0 1px 3px 0 rgba(38, 38, 38, 0.5);
+}
+
+.containerFloors::before,
+.containerFloors::after {
+    user-select: none;
+    display: block;
+    position: absolute;
+    content: '';
+    width: 100%;
+    height: 8px;
+    left: 0;
+    z-index: 1;
+}
+
+.containerFloors::before {
+    top: 0;
+    background-image: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 1) 25%,
+        rgba(255, 255, 255, 0)
+    );
+}
+
+.containerFloors::after {
+    bottom: 0;
+    background-image: linear-gradient(to top, rgba(255, 255, 255, 1) 25%, rgba(255, 255, 255, 0));
 }
 
 .splitContainer {
