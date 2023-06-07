@@ -1,12 +1,15 @@
 import type { Map as MapGL } from '@2gis/mapgl/types';
+
 import { ControlOptions, ControlPosition } from '../types/plugin';
+import { Evented } from '../external/evented';
+import type { ControlEventTable } from './events';
 
 /**
  * Class for the map's controls creating.
  * @hidden
  * @internal
  */
-export class Control {
+export class Control extends Evented<ControlEventTable> {
     /**
      * @hidden
      * @internal
@@ -31,6 +34,7 @@ export class Control {
      * @param options Control options.
      */
     constructor(map: MapGL, content: string, options: ControlOptions) {
+        super();
         const { position } = options;
         this._wrap = document.createElement('div');
         this._wrap.style.userSelect = 'none';
