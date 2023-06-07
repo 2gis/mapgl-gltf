@@ -2,7 +2,7 @@ import type { Map as MapGL } from '@2gis/mapgl/types';
 
 import { ControlOptions, ControlPosition } from '../types/plugin';
 import { Evented } from '../external/evented';
-import type { ControlEventTable } from './events';
+import type { ControlEventTable } from './types';
 
 /**
  * Class for the map's controls creating.
