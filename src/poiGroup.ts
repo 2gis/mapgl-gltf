@@ -1,12 +1,20 @@
-import type { FeatureCollection } from 'geojson';
+import type { FeatureCollection, Feature, Point, GeoJsonProperties } from 'geojson';
 import type { Map as MapGL, GeoJsonSource } from '@2gis/mapgl/types';
 
-import { PluginOptions } from './types/plugin';
+import type {
+    PluginOptions,
+    BuildingState,
+    AddPoiGroupOptions,
+    RemovePoiGroupOptions,
+    PoiOptions,
+} from './types/plugin';
 
 interface PoiGroupOptions {
     map: MapGL;
     poiConfig: PluginOptions['poiConfig'];
 }
+
+type FeaturePoint = Feature<Point, GeoJsonProperties>;
 
 export class PoiGroup {
     private poiSources = new Map<string, GeoJsonSource>();
@@ -29,19 +37,8 @@ export class PoiGroup {
         });
     }
 
-    public async addPoiGroup({
-        id,
-        type,
-        data,
-        minZoom = -Infinity,
-        maxZoom = +Infinity,
-    }: {
-        id: string | number;
-        type: 'primary' | 'secondary';
-        data: FeatureCollection;
-        minZoom?: number;
-        maxZoom?: number;
-    }) {
+    public async addPoiGroup(groupOptions: AddPoiGroupOptions, state?: BuildingState) {
+        const { id, data } = groupOptions;
         const actualId = String(id);
         if (this.poiSources.get(actualId) !== undefined) {
             throw new Error(
@@ -49,9 +46,11 @@ export class PoiGroup {
             );
         }
 
+        const geoJson = this.createGeoJson(data, groupOptions, state);
+
         // create source with poi
         const source = new mapgl.GeoJsonSource(this.map, {
-            data: data,
+            data: geoJson,
             attributes: {
                 dataType: actualId,
             },
@@ -59,22 +58,66 @@ export class PoiGroup {
         this.poiSources.set(actualId, source);
 
         // add style layer for poi
-        this.addPoiStyleLayer(actualId, type, minZoom, maxZoom);
+        this.addPoiStyleLayer(groupOptions);
     }
 
-    public removePoiGroup(id: string | number) {
+    public removePoiGroup(groupOptions: RemovePoiGroupOptions) {
+        const { id } = groupOptions;
         const source = this.poiSources.get(String(id));
         source?.destroy();
         this.map.removeLayer('plugin-poi-' + String(id));
     }
 
-    private addPoiStyleLayer(
-        id: string,
-        type: 'primary' | 'secondary',
-        minzoom: number,
-        maxzoom: number,
-    ) {
+    private createGeoJson(
+        poiOptions: PoiOptions[],
+        groupOptions: AddPoiGroupOptions,
+        state?: BuildingState,
+    ): FeatureCollection<Point> {
+        const { elevation } = groupOptions;
+        const features: FeaturePoint[] = poiOptions.map((opts) => ({
+            type: 'Feature',
+            properties: {
+                // main properties
+                type: 'immersive_poi',
+                label: opts.label,
+                userData: opts.userData,
+                elevation: elevation,
+                coordinates: opts.coordinates,
+                // auxilary properties
+                buildingId: state?.buildingId,
+                floorId: state?.floorId,
+            },
+            geometry: {
+                type: 'Point',
+                coordinates: opts.coordinates,
+            },
+        }));
+
+        return {
+            type: 'FeatureCollection',
+            features,
+        };
+    }
+
+    private addPoiStyleLayer(groupOptions: AddPoiGroupOptions) {
+        const { id, type, minZoom = -Infinity, maxZoom = +Infinity } = groupOptions;
+        let { fontSize, fontColor } = groupOptions;
+        const actualId = String(id);
         let style;
+
+        if (fontColor === undefined) {
+            fontColor =
+                type === 'primary'
+                    ? this.poiConfig?.primary?.fontColor ?? '#3a3a3a'
+                    : this.poiConfig?.secondary?.fontColor ?? '#3a3a3a';
+        }
+        if (fontSize === undefined) {
+            fontSize =
+                type === 'primary'
+                    ? this.poiConfig?.primary?.fontSize ?? 14
+                    : this.poiConfig?.secondary?.fontSize ?? 12;
+        }
+
         if (type === 'primary') {
             style = {
                 iconPriority: 7000,
@@ -84,10 +127,10 @@ export class PoiGroup {
                 iconAnchor: [0.5, 1],
                 iconOffset: [0, 0],
                 iconTextFont: 'Noto_Sans',
-                iconTextColor: this.poiConfig?.primary?.fontColor,
+                iconTextColor: fontColor,
                 iconTextField: ['get', 'label'],
                 iconTextPadding: [5, 10, 5, 10],
-                iconTextFontSize: this.poiConfig?.primary?.fontSize,
+                iconTextFontSize: fontSize,
                 duplicationSpacing: 1,
             };
         } else {
@@ -97,23 +140,23 @@ export class PoiGroup {
                 duplicationSpacing: 1,
                 textField: ['get', 'label'],
                 textFont: 'Noto_Sans',
-                textFontSize: this.poiConfig?.secondary?.fontSize,
-                textColor: this.poiConfig?.secondary?.fontColor,
+                textFontSize: fontSize,
+                textColor: fontColor,
                 textPriority: 6000,
             };
         }
 
         this.map.addLayer({
             type: 'point',
-            id: 'plugin-poi-' + id,
+            id: 'plugin-poi-' + actualId,
             filter: [
                 'all',
-                ['match', ['sourceAttr', 'dataType'], [id], true, false],
+                ['match', ['sourceAttr', 'dataType'], [actualId], true, false],
                 ['match', ['get', 'type'], ['immersive_poi'], true, false],
             ],
             style,
-            minzoom,
-            maxzoom,
+            minzoom: minZoom,
+            maxzoom: maxZoom,
         });
     }
 }

@@ -101,6 +101,21 @@ export interface PluginOptions {
 }
 
 /**
+ * State for the building's scene
+ */
+export interface BuildingState {
+    /**
+     * Identifier of the building's model
+     */
+    buildingId: number | string;
+
+    /**
+     * Identifier of the floor's model
+     */
+    floorId?: number | string;
+}
+
+/**
  * Options for a model
  */
 export interface ModelOptions {
@@ -108,6 +123,14 @@ export interface ModelOptions {
      * Identifier should be unique for every model
      */
     id: number | string;
+    /**
+     * Identifier of the building
+     */
+    buildingId?: number | string;
+    /**
+     * Identifier of the floor's plan
+     */
+    floorId?: number | string;
     /**
      * Geographical coordinates [longitude, latitude]
      */
@@ -148,4 +171,75 @@ export interface ModelOptions {
      * List of buildings' identifiers that should be hidden
      */
     linkedIds?: string[];
+    /**
+     * User specific data
+     */
+    userData?: any;
+}
+
+export interface PoiOptions {
+    /**
+     * Coordinate of the poi
+     */
+    coordinates: [number, number];
+    /**
+     * Elevation of the poi
+     */
+    elevation?: number;
+    /**
+     * Elevation of the poi
+     */
+    label: string;
+    /**
+     * User specific data
+     */
+    userData?: any;
+}
+
+/**
+ * Options for the method addPoiGroup
+ */
+export interface AddPoiGroupOptions {
+    /**
+     * Identifier of the poi group to add
+     */
+    id: string | number;
+    /**
+     * Type of the poi
+     */
+    type: 'primary' | 'secondary';
+    /**
+     * Elevation of the group of poi
+     */
+    elevation: number;
+    /**
+     * Array of poi to add on the map
+     */
+    data: PoiOptions[];
+    /**
+     * Minimum display styleZoom of the poi group
+     */
+    minZoom?: number;
+    /**
+     * Maximum display styleZoom of the poi group
+     */
+    maxZoom?: number;
+    /**
+     * Size of the poi's font
+     */
+    fontSize?: number;
+    /**
+     * Color of the poi's font
+     */
+    fontColor?: string;
+}
+
+/**
+ * Options for the method removePoiGroup
+ */
+export interface RemovePoiGroupOptions {
+    /**
+     * Identifier of the poi group to delete
+     */
+    id: number | string;
 }

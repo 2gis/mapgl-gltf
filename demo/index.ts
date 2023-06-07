@@ -1,6 +1,8 @@
 import { load } from '@2gis/mapgl';
 import { GltfPlugin } from '../src/index';
 
+import type { ModelOptions } from '../src/types/plugin';
+
 async function start() {
     const mapglAPI = await load();
 
@@ -28,28 +30,19 @@ async function start() {
         floorsControl: true,
     });
 
-    plugin.on('clickModel', (e) => {
-        console.log('clickModel, id = ', e.target?.id);
-    });
-
-    plugin.on('mousemoveModel', (e) => {
-        console.log('mousemoveModel, id = ', e.target?.id);
-    });
-
-    plugin.on('mouseoverModel', (e) => {
-        console.log('mouseoverModel, id = ', e.target?.id);
-    });
-
-    plugin.on('mouseoutModel', (e) => {
-        console.log('mouseoutModel, id = ', e.target?.id);
-    });
-
-    plugin.on('clickPoi', (e) => {
-        console.log(e);
+    (['click', 'mousemove', 'mouseover', 'mouseout'] as const).forEach((eventName) => {
+        plugin.on(eventName, (e) => {
+            if (e.target.type === 'model') {
+                console.log(`model ${eventName}, id =`, e.target.data.id);
+            }
+            if (e.target.type === 'poi') {
+                console.log(`poi ${eventName}, label =`, e.target.data.label);
+            }
+        });
     });
 
     /*
-    const models = [
+    const models: ModelOptions[] = [
         {
             id: '03a234cb',
             coordinates: [82.886554, 54.980988],
@@ -71,17 +64,22 @@ async function start() {
     ];
     */
 
-    const models = [];
+    const models: ModelOptions[] = [];
     for (let i = 0; i < 10; i++) {
         let lonRnd = (Math.random() / 100) * (Math.random() > 0.5 ? 1 : -1);
         let latRnd = (Math.random() / 100) * (Math.random() > 0.5 ? 1 : -1);
         models.push({
             id: i,
+            buildingId: 'buildingId' + i,
+            floorId: 'floorId' + i,
             coordinates: [82.8865 + lonRnd, 54.9809 + latRnd],
             modelUrl: 'models/cube_draco.glb',
             rotateX: 90,
             scale: 3000,
             linkedIds: ['141373143530065', '70030076379181421'],
+            userData: {
+                test: 'Test userData ' + i,
+            },
         });
     }
 
@@ -94,53 +92,52 @@ async function start() {
             console.error(e);
         });
 
-    plugin.addPoiGroup({
-        id: 1,
-        type: 'primary',
-        minZoom: 15,
-        data: {
-            type: 'FeatureCollection',
-            features: [
+    plugin.addPoiGroup(
+        {
+            id: 1,
+            type: 'primary',
+            minZoom: 15,
+            elevation: 130,
+            fontSize: 16,
+            fontColor: '#3a3a3a',
+            data: [
                 {
-                    type: 'Feature',
-                    properties: {
-                        elevation: 130,
-                        type: 'immersive_poi',
-                        label: '3к\n78.4 м²',
+                    coordinates: [82.886454, 54.980388],
+                    elevation: 130,
+                    label: '3к\n78.4 м²',
+                    userData: {
                         url: 'https://a101.ru/kvartiry/360810/',
-                    },
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [82.886454, 54.980388],
                     },
                 },
             ],
         },
-    });
+        {
+            buildingId: '12345',
+            floorId: '234234',
+        },
+    );
 
-    plugin.addPoiGroup({
-        id: 2,
-        type: 'secondary',
-        minZoom: 17,
-        data: {
-            type: 'FeatureCollection',
-            features: [
+    plugin.addPoiGroup(
+        {
+            id: 2,
+            type: 'secondary',
+            minZoom: 17,
+            elevation: 30,
+            data: [
                 {
-                    type: 'Feature',
-                    properties: {
-                        elevation: 30,
-                        type: 'immersive_poi',
-                        label: '10 м²',
+                    coordinates: [82.886554, 54.980988],
+                    label: '10 м²',
+                    userData: {
                         url: 'https://a101.ru/kvartiry/360810/',
-                    },
-                    geometry: {
-                        type: 'Point',
-                        coordinates: [82.886554, 54.980988],
                     },
                 },
             ],
         },
-    });
+        {
+            buildingId: '12345',
+            floorId: '234234',
+        },
+    );
 }
 
 start();
