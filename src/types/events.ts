@@ -4,7 +4,7 @@ export type PoiGeoJsonProperties = PoiOptions & {
     /**
      * Identifier of the building's model
      */
-    buildingId?: number | string;
+    modelId?: number | string;
 
     /**
      * Identifier of the floor's model
@@ -48,7 +48,7 @@ export interface PoiTarget {
     /**
      * Identifier of the building's model
      */
-    buildingId?: number | string;
+    modelId?: number | string;
 
     /**
      * Identifier of the floor's model

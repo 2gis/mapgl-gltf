@@ -1,4 +1,4 @@
-import type { FeatureCollection, Feature, Point, GeoJsonProperties } from 'geojson';
+import type { FeatureCollection, Feature, Point } from 'geojson';
 import type { Map as MapGL, GeoJsonSource } from '@2gis/mapgl/types';
 
 import type {
@@ -8,13 +8,14 @@ import type {
     RemovePoiGroupOptions,
     PoiOptions,
 } from './types/plugin';
+import type { PoiGeoJsonProperties } from './types/events';
 
 interface PoiGroupOptions {
     map: MapGL;
     poiConfig: PluginOptions['poiConfig'];
 }
 
-type FeaturePoint = Feature<Point, GeoJsonProperties>;
+type FeaturePoint = Feature<Point, PoiGeoJsonProperties>;
 
 export class PoiGroup {
     private poiSources = new Map<string, GeoJsonSource>();
@@ -84,7 +85,7 @@ export class PoiGroup {
                 elevation: elevation,
                 coordinates: opts.coordinates,
                 // auxilary properties
-                buildingId: state?.buildingId,
+                modelId: state?.modelId,
                 floorId: state?.floorId,
             },
             geometry: {

@@ -107,7 +107,7 @@ export interface BuildingState {
     /**
      * Identifier of the building's model
      */
-    buildingId: number | string;
+    modelId: number | string;
 
     /**
      * Identifier of the floor's model

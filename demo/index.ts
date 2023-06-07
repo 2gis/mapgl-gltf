@@ -30,14 +30,9 @@ async function start() {
         floorsControl: true,
     });
 
-    (['click', 'mousemove', 'mouseover', 'mouseout'] as const).forEach((eventName) => {
+    (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {
-            if (e.target.type === 'model') {
-                console.log(`model ${eventName}, id =`, e.target.data.modelId);
-            }
-            if (e.target.type === 'poi') {
-                console.log(`poi ${eventName}, label =`, e.target.data.label);
-            }
+            console.log(e);
         });
     });
 
@@ -110,7 +105,7 @@ async function start() {
             ],
         },
         {
-            buildingId: '12345',
+            modelId: '12345',
             floorId: '234234',
         },
     );
@@ -132,7 +127,7 @@ async function start() {
             ],
         },
         {
-            buildingId: '12345',
+            modelId: '12345',
             floorId: '234234',
         },
     );

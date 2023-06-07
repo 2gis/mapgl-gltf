@@ -78,7 +78,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
     private cleanPoiEvent(event: GltfPluginPoiEvent) {
         const { data } = event.target;
         delete data.type;
-        delete data.buildingId;
+        delete data.modelId;
         delete data.floorId;
         return event;
     }
@@ -88,13 +88,13 @@ export class EventSource extends Evented<GltfPluginEventTable> {
         originalData: PoiGeoJsonProperties,
     ): GltfPluginPoiEvent {
         const data = clone(originalData);
-        const { buildingId, floorId } = data;
+        const { modelId, floorId } = data;
         const target: PoiTarget = {
             type: 'poi',
             data,
         };
-        if (buildingId !== undefined) {
-            target.buildingId = buildingId;
+        if (modelId !== undefined) {
+            target.modelId = modelId;
         }
         if (floorId !== undefined) {
             target.floorId = floorId;
