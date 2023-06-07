@@ -18,5 +18,7 @@ export const defaultOptions: Required<PluginOptions> = {
             fontColor: '#000000',
         },
     },
-    floorsControl: false,
+    floorsControl: {
+        position: 'centerLeft',
+    }
 };

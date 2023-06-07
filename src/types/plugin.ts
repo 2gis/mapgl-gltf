@@ -36,7 +36,7 @@ export interface PoiConfigGranular {
 }
 
 /**
- * Possible position of the control.
+ * Possible positions of the control.
  */
 export type ControlPosition =
     | 'topLeft'
@@ -97,7 +97,7 @@ export interface PluginOptions {
     /**
      * Floors control
      */
-    floorsControl?: boolean | ControlOptions;
+    floorsControl?: ControlOptions;
 }
 
 /**

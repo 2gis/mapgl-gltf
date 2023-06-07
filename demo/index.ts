@@ -27,8 +27,9 @@ async function start() {
                 fontSize: 14,
             },
         },
-        floorsControl: true,
     });
+
+    plugin.invokeMegaMethod({});
 
     (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {

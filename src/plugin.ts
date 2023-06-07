@@ -79,14 +79,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.addThreeJsLayer();
             this.initEventHandlers();
         });
-
-        if (pluginOptions?.floorsControl) {
-            const position =
-                typeof pluginOptions.floorsControl === 'boolean'
-                    ? 'centerLeft'
-                    : pluginOptions.floorsControl.position;
-            this.control = new GltfFloorControl(this.map, { position });
-        }
     }
 
     /**
@@ -111,33 +103,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                     if (model !== undefined) {
                         this.scene.add(model);
                     }
-                    // TODO: move an activation of the control to the mega method
-                    this.control?.show({
-                        modelId: 777,
-                        floorId: 0,
-                        floorLevels: [
-                            {
-                                icon: 'building',
-                                text: '',
-                            },
-                            {
-                                floorId: 0,
-                                icon: 'parking',
-                                text: '',
-                            },
-                            { floorId: 1, text: '1-9' },
-                            { floorId: 3, text: '10-11' },
-                            { floorId: 4, text: '12-13' },
-                            { floorId: 5, text: '14-15' },
-                            { floorId: 6, text: '16-19' },
-                            { floorId: 7, text: '20' },
-                            { floorId: 8, text: '21-22' },
-                            { floorId: 9, text: '23-25' },
-                            { floorId: 10, text: '25-30' },
-                            { floorId: 11, text: '31-34' },
-                            { floorId: 12, text: '35' },
-                        ],
-                    });
                     this.map.triggerRerender();
                 }
             });
@@ -192,6 +157,40 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.poiGroup.removePoiGroup(options);
     }
 
+    public invokeMegaMethod(scene: any) {
+        const { position } = this.options.floorsControl;
+        this.control = new GltfFloorControl(this.map, { position });
+        this.control.on('floorChange', (e) => {
+            console.log(e);
+        });
+        this.control?.show({
+            modelId: 777,
+            floorId: 0,
+            floorLevels: [
+                {
+                    icon: 'building',
+                    text: '',
+                },
+                {
+                    floorId: 0,
+                    icon: 'parking',
+                    text: '',
+                },
+                { floorId: 1, text: '1-9' },
+                { floorId: 3, text: '10-11' },
+                { floorId: 4, text: '12-13' },
+                { floorId: 5, text: '14-15' },
+                { floorId: 6, text: '16-19' },
+                { floorId: 7, text: '20' },
+                { floorId: 8, text: '21-22' },
+                { floorId: 9, text: '23-25' },
+                { floorId: 10, text: '25-30' },
+                { floorId: 11, text: '31-34' },
+                { floorId: 12, text: '35' },
+            ],
+        });
+    }
+
     private invalidateViewport() {
         const container = this.map.getContainer();
         this.viewport = container.getBoundingClientRect();
@@ -207,12 +206,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         for (let eventName of this.eventSource.getEvents()) {
             this.eventSource.on(eventName, (e) => {
                 this.emit(eventName, e);
-            });
-        }
-
-        if (this.control) {
-            this.control.on('floorChange', (e) => {
-                console.log(e);
             });
         }
     }
