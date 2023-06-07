@@ -29,7 +29,7 @@ export class Loader extends GLTFLoader {
 
     public loadModel(modelOptions: ModelOptions) {
         const {
-            id,
+            modelId,
             coordinates,
             modelUrl,
             rotateX = 0,
@@ -76,18 +76,18 @@ export class Loader extends GLTFLoader {
                     ];
                     model.position.set(mapPointCenter[0], mapPointCenter[1], mapPointCenter[2]);
 
-                    const modelId = String(id);
+                    const actualModelId = String(modelId);
                     try {
-                        if (this.models.has(modelId)) {
+                        if (this.models.has(actualModelId)) {
                             throw new Error(
-                                `Model with id "${modelId}" already exists. Please use different identifiers for models`,
+                                `Model with id "${actualModelId}" already exists. Please use different identifiers for models`,
                             );
                         }
                     } catch (e) {
                         reject(e);
                         return;
                     }
-                    this.models.set(modelId, model);
+                    this.models.set(actualModelId, model);
 
                     resolve();
                 },

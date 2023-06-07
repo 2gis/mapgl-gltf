@@ -108,17 +108,13 @@ export class EventSource extends Evented<GltfPluginEventTable> {
     }
 
     private createModelEventData(ev: MapPointerEvent, data: ModelOptions): GltfPluginModelEvent {
-        const { buildingId, floorId } = data;
+        const { modelId } = data;
         const target: ModelTarget = {
             type: 'model',
+            modelId,
             data,
         };
-        if (buildingId !== undefined) {
-            target.buildingId = buildingId;
-        }
-        if (floorId !== undefined) {
-            target.floorId = floorId;
-        }
+
         return {
             originalEvent: ev.originalEvent,
             point: ev.point,

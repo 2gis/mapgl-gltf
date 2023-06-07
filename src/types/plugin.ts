@@ -120,17 +120,9 @@ export interface BuildingState {
  */
 export interface ModelOptions {
     /**
-     * Identifier should be unique for every model
+     * Identifier of the model should be unique for every model
      */
-    id: number | string;
-    /**
-     * Identifier of the building
-     */
-    buildingId?: number | string;
-    /**
-     * Identifier of the floor's plan
-     */
-    floorId?: number | string;
+    modelId: number | string;
     /**
      * Geographical coordinates [longitude, latitude]
      */

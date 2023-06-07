@@ -33,7 +33,7 @@ async function start() {
     (['click', 'mousemove', 'mouseover', 'mouseout'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {
             if (e.target.type === 'model') {
-                console.log(`model ${eventName}, id =`, e.target.data.id);
+                console.log(`model ${eventName}, id =`, e.target.data.modelId);
             }
             if (e.target.type === 'poi') {
                 console.log(`poi ${eventName}, label =`, e.target.data.label);
@@ -69,9 +69,7 @@ async function start() {
         let lonRnd = (Math.random() / 100) * (Math.random() > 0.5 ? 1 : -1);
         let latRnd = (Math.random() / 100) * (Math.random() > 0.5 ? 1 : -1);
         models.push({
-            id: i,
-            buildingId: 'buildingId' + i,
-            floorId: 'floorId' + i,
+            modelId: i,
             coordinates: [82.8865 + lonRnd, 54.9809 + latRnd],
             modelUrl: 'models/cube_draco.glb',
             rotateX: 90,

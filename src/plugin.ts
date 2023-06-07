@@ -103,13 +103,13 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                         this.map.setHiddenObjects(options.linkedIds);
                     }
 
-                    const model = this.models.get(String(options.id));
+                    const model = this.models.get(String(options.modelId));
                     if (model !== undefined) {
                         this.scene.add(model);
                     }
                     // to do remove is mock data
                     this.emit('showModelFloorPlan', {
-                        floorPlanId: options.id,
+                        floorPlanId: options.modelId,
                         currentFloorLevelKey: 'building',
                         floorLevels: [
                             {
@@ -162,7 +162,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 this.map.setHiddenObjects(options.linkedIds);
             }
 
-            const model = this.models.get(String(options.id));
+            const model = this.models.get(String(options.modelId));
             if (model !== undefined) {
                 this.scene.add(model);
             }
