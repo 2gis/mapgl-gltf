@@ -31,6 +31,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private onPluginInit = () => {}; // resolve of waitForPluginInit
     private waitForPluginInit = new Promise<void>((resolve) => (this.onPluginInit = resolve));
     private models;
+    private control?: GltfFloorControl;
 
     /**
      * Example:
@@ -84,7 +85,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 typeof pluginOptions.floorsControl === 'boolean'
                     ? 'centerLeft'
                     : pluginOptions.floorsControl.position;
-            new GltfFloorControl(this, this.map, { position });
+            this.control = new GltfFloorControl(this.map, { position });
         }
     }
 
@@ -110,32 +111,31 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                     if (model !== undefined) {
                         this.scene.add(model);
                     }
-                    // to do remove is mock data
-                    this.emit('showModelFloorPlan', {
-                        floorPlanId: options.modelId,
-                        currentFloorLevelKey: 'building',
+                    // TODO: move an activation of the control to the mega method
+                    this.control?.show({
+                        currentFloorId: 'building',
                         floorLevels: [
                             {
-                                floorLevelKey: 0,
-                                floorLevelIcon: 'parking',
-                                floorLevelName: '',
+                                floorId: 0,
+                                icon: 'parking',
+                                text: '',
                             },
                             {
-                                floorLevelKey: 'building',
-                                floorLevelIcon: 'building',
-                                floorLevelName: '',
+                                floorId: 'building',
+                                icon: 'building',
+                                text: '',
                             },
-                            { floorLevelKey: 1, floorLevelName: '1-9' },
-                            { floorLevelKey: 3, floorLevelName: '10-11' },
-                            { floorLevelKey: 4, floorLevelName: '12-13' },
-                            { floorLevelKey: 5, floorLevelName: '14-15' },
-                            { floorLevelKey: 6, floorLevelName: '16-19' },
-                            { floorLevelKey: 7, floorLevelName: '20' },
-                            { floorLevelKey: 8, floorLevelName: '21-22' },
-                            { floorLevelKey: 9, floorLevelName: '23-25' },
-                            { floorLevelKey: 10, floorLevelName: '25-30' },
-                            { floorLevelKey: 11, floorLevelName: '31-34' },
-                            { floorLevelKey: 12, floorLevelName: '35' },
+                            { floorId: 1, text: '1-9' },
+                            { floorId: 3, text: '10-11' },
+                            { floorId: 4, text: '12-13' },
+                            { floorId: 5, text: '14-15' },
+                            { floorId: 6, text: '16-19' },
+                            { floorId: 7, text: '20' },
+                            { floorId: 8, text: '21-22' },
+                            { floorId: 9, text: '23-25' },
+                            { floorId: 10, text: '25-30' },
+                            { floorId: 11, text: '31-34' },
+                            { floorId: 12, text: '35' },
                         ],
                     });
                     this.map.triggerRerender();
@@ -207,6 +207,12 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         for (let eventName of this.eventSource.getEvents()) {
             this.eventSource.on(eventName, (e) => {
                 this.emit(eventName, e);
+            });
+        }
+
+        if (this.control) {
+            this.control.on('floorChange', (e) => {
+                console.log(e);
             });
         }
     }
