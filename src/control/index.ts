@@ -34,7 +34,7 @@ export class GltfFloorControl extends Control {
     private _root: HTMLElement;
     private _content: HTMLElement;
     private _contentHome: HTMLElement;
-    private _floor?: FloorId;
+    private _currentFloorId?: FloorId;
 
     private _handlers: WeakMap<ChildNode, () => void>;
 
@@ -53,7 +53,7 @@ export class GltfFloorControl extends Control {
         this._removeButtonsEventListeners();
 
         const { currentFloorId, floorLevels } = options;
-        this._floor = currentFloorId;
+        this._currentFloorId = currentFloorId;
         this._root.style.display = 'block';
         this._content.innerHTML = '';
         this._contentHome.innerHTML = '';
@@ -75,7 +75,7 @@ export class GltfFloorControl extends Control {
             button.className = classes.control;
             button.innerHTML = `<div class="${classes.label}">${buttonContent}</div>`;
             button.name = floorId.toLocaleString();
-            if (this._floor === floorId) {
+            if (this._currentFloorId === floorId) {
                 button.disabled = true;
                 currentButton = button;
             }
@@ -99,7 +99,7 @@ export class GltfFloorControl extends Control {
 
     public hide() {
         this._removeButtonsEventListeners();
-        this._floor = undefined;
+        this._currentFloorId = undefined;
         this._root.style.display = 'none';
     }
 
@@ -125,20 +125,20 @@ export class GltfFloorControl extends Control {
     private _controlHandler = (floorLevelKey: number | string) => () => {
         this._switchCurrentFloorLevel(floorLevelKey);
 
-        if (this._floor) {
+        if (this._currentFloorId !== undefined) {
             this.emit('floorChange', {
-                floorId: this._floor,
+                floorId: this._currentFloorId,
             });
         }
     };
 
     private _switchCurrentFloorLevel(floorId: number | string) {
-        if (!this._floor) {
+        if (this._currentFloorId === undefined) {
             return;
         }
 
         const buttonToDisabled: HTMLButtonElement | null = this._wrap.querySelector(
-            `.${classes.control}[name="${this._floor}"]`,
+            `.${classes.control}[name="${this._currentFloorId}"]`,
         );
         if (buttonToDisabled) {
             buttonToDisabled.disabled = false;
@@ -151,6 +151,6 @@ export class GltfFloorControl extends Control {
             buttonToEnabled.disabled = true;
         }
 
-        this._floor = floorId;
+        this._currentFloorId = floorId;
     }
 }
