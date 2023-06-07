@@ -15,6 +15,7 @@ import type {
     RemovePoiGroupOptions,
 } from './types/plugin';
 import type { GltfPluginEventTable } from './types/events';
+import { GltfFloorControl } from './control';
 
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private renderer = new THREE.WebGLRenderer();
@@ -77,6 +78,14 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.addThreeJsLayer();
             this.initEventHandlers();
         });
+
+        if (pluginOptions?.floorsControl) {
+            const position =
+                typeof pluginOptions.floorsControl === 'boolean'
+                    ? 'centerLeft'
+                    : pluginOptions.floorsControl.position;
+            new GltfFloorControl(this, this.map, { position });
+        }
     }
 
     /**
@@ -98,6 +107,34 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                     if (model !== undefined) {
                         this.scene.add(model);
                     }
+                    // to do remove is mock data
+                    this.emit('showModelFloorPlan', {
+                        floorPlanId: options.id,
+                        currentFloorLevelKey: 'building',
+                        floorLevels: [
+                            {
+                                floorLevelKey: 0,
+                                floorLevelIcon: 'parking',
+                                floorLevelName: '',
+                            },
+                            {
+                                floorLevelKey: 'building',
+                                floorLevelIcon: 'building',
+                                floorLevelName: '',
+                            },
+                            { floorLevelKey: 1, floorLevelName: '1-9' },
+                            { floorLevelKey: 3, floorLevelName: '10-11' },
+                            { floorLevelKey: 4, floorLevelName: '12-13' },
+                            { floorLevelKey: 5, floorLevelName: '14-15' },
+                            { floorLevelKey: 6, floorLevelName: '16-19' },
+                            { floorLevelKey: 7, floorLevelName: '20' },
+                            { floorLevelKey: 8, floorLevelName: '21-22' },
+                            { floorLevelKey: 9, floorLevelName: '23-25' },
+                            { floorLevelKey: 10, floorLevelName: '25-30' },
+                            { floorLevelKey: 11, floorLevelName: '31-34' },
+                            { floorLevelKey: 12, floorLevelName: '35' },
+                        ],
+                    });
                     this.map.triggerRerender();
                 }
             });

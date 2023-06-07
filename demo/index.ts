@@ -27,6 +27,7 @@ async function start() {
                 fontSize: 14,
             },
         },
+        floorsControl: true,
     });
 
     (['click', 'mousemove', 'mouseover', 'mouseout'] as const).forEach((eventName) => {
