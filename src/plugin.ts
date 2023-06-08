@@ -96,6 +96,9 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     public async addModels(modelOptions: ModelOptions[]) {
         await this.waitForPluginInit;
 
+        // TODO: move to mega method
+        this.eventSource?.setCurrentFloorId(1234342);
+
         const loadedModels = modelOptions.map((options) => {
             return this.loader.loadModel(options).then(() => {
                 if (this.options.modelsLoadStrategy === 'dontWaitAll') {

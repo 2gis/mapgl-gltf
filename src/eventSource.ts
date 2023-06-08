@@ -25,6 +25,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
         'mouseover',
         'mouseout',
     ];
+    private currentFloorId: string | number | null = null;
 
     constructor(
         private map: MapGL,
@@ -42,6 +43,10 @@ export class EventSource extends Evented<GltfPluginEventTable> {
 
     public updateViewport(v: DOMRect) {
         this.viewport = v;
+    }
+
+    public setCurrentFloorId(id: string | number | null) {
+        this.currentFloorId = id;
     }
 
     private getEventTargetMesh(e: MouseEvent | TouchEvent) {
@@ -114,6 +119,9 @@ export class EventSource extends Evented<GltfPluginEventTable> {
             modelId,
             data,
         };
+        if (this.currentFloorId !== null) {
+            target.floorId = this.currentFloorId;
+        }
 
         return {
             originalEvent: ev.originalEvent,
