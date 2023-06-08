@@ -1,10 +1,10 @@
-export type FloorId = number | string | 'building';
+export type Id = number | string;
 
 /**
  * Floor level data.
  */
 export interface FloorLevel {
-    floorId: FloorId;
+    floorId?: Id;
     text: string;
     icon?: 'parking' | 'building' | string;
 }
@@ -13,7 +13,8 @@ export interface FloorLevel {
  * Options for the method show
  */
 export interface ShowOptions {
-    currentFloorId: FloorId;
+    modelId: Id;
+    floorId?: Id;
     floorLevels: FloorLevel[];
 }
 
@@ -21,7 +22,8 @@ export interface ShowOptions {
  * Event that emitted on button presses of the control
  */
 export interface FloorChangeEvent {
-    floorId: FloorId;
+    modelId: Id;
+    floorId?: Id;
 }
 
 export interface ControlEventTable {

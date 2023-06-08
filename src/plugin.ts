@@ -113,16 +113,16 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                     }
                     // TODO: move an activation of the control to the mega method
                     this.control?.show({
-                        currentFloorId: 'building',
+                        modelId: 777,
+                        floorId: 0,
                         floorLevels: [
                             {
-                                floorId: 0,
-                                icon: 'parking',
+                                icon: 'building',
                                 text: '',
                             },
                             {
-                                floorId: 'building',
-                                icon: 'building',
+                                floorId: 0,
+                                icon: 'parking',
                                 text: '',
                             },
                             { floorId: 1, text: '1-9' },

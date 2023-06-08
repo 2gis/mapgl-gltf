@@ -1,6 +1,6 @@
 import type { Map as MapGL, ControlOptions } from '@2gis/mapgl/types';
 
-import type { ShowOptions, FloorId } from './types';
+import type { ShowOptions, Id } from './types';
 
 import icon_building from 'raw-loader!./icon_building.svg';
 import icon_parking from 'raw-loader!./icon_parking.svg';
@@ -33,7 +33,7 @@ export class GltfFloorControl extends Control {
     private _root: HTMLElement;
     private _content: HTMLElement;
     private _contentHome: HTMLElement;
-    private _currentFloorId?: FloorId;
+    private _currentFloorId?: string;
 
     private _handlers: WeakMap<ChildNode, () => void>;
 
@@ -50,15 +50,16 @@ export class GltfFloorControl extends Control {
     public show(options: ShowOptions) {
         this._removeButtonsEventListeners();
 
-        const { currentFloorId, floorLevels } = options;
-        this._currentFloorId = currentFloorId;
+        const { modelId, floorId, floorLevels } = options;
+
+        this._currentFloorId = this.createId(modelId, floorId);
         this._root.style.display = 'block';
         this._content.innerHTML = '';
         this._contentHome.innerHTML = '';
         let currentButton: HTMLElement | undefined;
 
         floorLevels.forEach(({ floorId, text, icon }) => {
-            const rootContent = floorId === 'building' ? this._contentHome : this._content;
+            const rootContent = floorId === undefined ? this._contentHome : this._content;
             const button = document.createElement('button');
             let buttonContent = text;
             if (icon) {
@@ -72,13 +73,14 @@ export class GltfFloorControl extends Control {
             }
             button.className = classes.control;
             button.innerHTML = `<div class="${classes.label}">${buttonContent}</div>`;
-            button.name = floorId.toLocaleString();
-            if (this._currentFloorId === floorId) {
+            const id = this.createId(modelId, floorId);
+            button.name = id;
+            if (this._currentFloorId === id) {
                 button.disabled = true;
                 currentButton = button;
             }
 
-            const handler = this._controlHandler(floorId);
+            const handler = this._controlHandler(modelId, floorId);
             button.addEventListener('click', handler);
 
             this._handlers.set(button, handler);
@@ -106,7 +108,7 @@ export class GltfFloorControl extends Control {
         super.destroy();
     }
 
-    private _removeButtonsEventListeners = () => {
+    private _removeButtonsEventListeners() {
         if (!this._content) {
             return;
         }
@@ -119,21 +121,23 @@ export class GltfFloorControl extends Control {
                 }
             }
         });
-    };
-    private _controlHandler = (floorLevelKey: number | string) => () => {
-        this._switchCurrentFloorLevel(floorLevelKey);
+    }
 
-        if (this._currentFloorId !== undefined) {
-            this.emit('floorChange', {
-                floorId: this._currentFloorId,
-            });
-        }
+    private _controlHandler = (modelId: Id, floorId?: Id) => () => {
+        this._switchCurrentFloorLevel(modelId, floorId);
+
+        this.emit('floorChange', {
+            modelId,
+            floorId,
+        });
     };
 
-    private _switchCurrentFloorLevel(floorId: number | string) {
+    private _switchCurrentFloorLevel(modelId: Id, floorId?: Id) {
         if (this._currentFloorId === undefined) {
             return;
         }
+
+        const id = this.createId(modelId, floorId);
 
         const buttonToDisabled: HTMLButtonElement | null = this._wrap.querySelector(
             `.${classes.control}[name="${this._currentFloorId}"]`,
@@ -143,12 +147,19 @@ export class GltfFloorControl extends Control {
         }
 
         const buttonToEnabled: HTMLButtonElement | null = this._wrap.querySelector(
-            `.${classes.control}[name="${floorId}"]`,
+            `.${classes.control}[name="${id}"]`,
         );
         if (buttonToEnabled) {
             buttonToEnabled.disabled = true;
         }
 
-        this._currentFloorId = floorId;
+        this._currentFloorId = id;
+    }
+
+    private createId(modelId: Id, floorId?: Id) {
+        if (floorId === undefined) {
+            return String(modelId);
+        }
+        return `${modelId}_${floorId}`;
     }
 }
