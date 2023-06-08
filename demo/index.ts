@@ -29,7 +29,7 @@ async function start() {
         },
     });
 
-    plugin.invokeMegaMethod({});
+    plugin.megaMethod({});
 
     (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {

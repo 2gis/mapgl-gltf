@@ -89,9 +89,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     public async addModels(modelOptions: ModelOptions[]) {
         await this.waitForPluginInit;
 
-        // TODO: move to mega method
-        this.eventSource?.setCurrentFloorId(1234342);
-
         const loadedModels = modelOptions.map((options) => {
             return this.loader.loadModel(options).then(() => {
                 if (this.options.modelsLoadStrategy === 'dontWaitAll') {
@@ -157,7 +154,9 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.poiGroup.removePoiGroup(options);
     }
 
-    public invokeMegaMethod(scene: any) {
+    public async megaMethod(scene: any) {
+        await this.waitForPluginInit;
+
         const { position } = this.options.floorsControl;
         this.control = new GltfFloorControl(this.map, { position });
         this.control.on('floorChange', (e) => {
@@ -189,6 +188,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 { floorId: 12, text: '35' },
             ],
         });
+        this.eventSource?.setCurrentFloorId(1234342);
     }
 
     private invalidateViewport() {
