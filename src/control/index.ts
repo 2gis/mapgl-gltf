@@ -30,7 +30,6 @@ const content = /* HTML */ `
  */
 export class GltfFloorControl extends Control {
     private _map: MapGL;
-    // private _pluginGltf: GltfPlugin;
     private _root: HTMLElement;
     private _content: HTMLElement;
     private _contentHome: HTMLElement;
@@ -40,7 +39,6 @@ export class GltfFloorControl extends Control {
 
     constructor(map: MapGL, options: ControlOptions) {
         super(map, content, options);
-        // this._pluginGltf = plugin;
         this._map = map;
         this._root = this._wrap.querySelector(`.${classes.root}`) as HTMLElement;
         this._content = this._wrap.querySelector(`.${classes.content}`) as HTMLElement;
