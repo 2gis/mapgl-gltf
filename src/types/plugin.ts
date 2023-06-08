@@ -169,6 +169,25 @@ export interface ModelOptions {
     userData?: any;
 }
 
+interface ModelMapOptions {
+    center?: number[];
+    pitch?: number;
+    rotation?: number;
+}
+
+interface ModelFloorsOptions {
+    id: number | string;
+    text: string;
+    modelUrl: string;
+    icon?: 'building' | 'parking' | string;
+    poiGroups?: AddPoiGroupOptions[];
+}
+
+export interface ModelSceneOptions extends ModelOptions {
+    mapOptions?: ModelMapOptions;
+    floors?: ModelFloorsOptions[];
+}
+
 export interface PoiOptions {
     /**
      * Coordinate of the poi

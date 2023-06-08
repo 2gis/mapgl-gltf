@@ -1,14 +1,14 @@
 import { load } from '@2gis/mapgl';
 import { GltfPlugin } from '../src/index';
 
-import type { ModelOptions } from '../src/types/plugin';
+import type { ModelSceneOptions } from '../src/types/plugin';
 
 async function start() {
     const mapglAPI = await load();
 
     const map = new mapglAPI.Map('container', {
-        center: [82.886554, 54.980988],
-        zoom: 15.5,
+        center: [47.245286302641034, 56.134743473834099],
+        zoom: 17.5,
         key: 'cb20c5bf-34d3-4f0e-9b2b-33e9b8edb57f',
         pitch: 45,
         rotation: 330,
@@ -29,7 +29,37 @@ async function start() {
         },
     });
 
-    plugin.megaMethod({});
+    const scene: ModelSceneOptions[] = [
+        {
+            modelId: '03a234cb',
+            coordinates: [47.245286302641034, 56.134743473834099],
+            modelUrl: 'http://localhost:3300/zgktechnology1.glb',
+            rotateX: 90,
+            rotateY: -15.1240072739039,
+            scale: 191.637678,
+            linkedIds: ['70030076555821177'],
+        },
+        {
+            modelId: '1ba234cb',
+            coordinates: [47.245286302641034, 56.134743473834099],
+            modelUrl: 'http://localhost:3300/zgktechnology2.glb',
+            rotateX: 90,
+            rotateY: -15.1240072739039,
+            scale: 191.637678,
+            linkedIds: ['70030076555823021'],
+        },
+        {
+            modelId: 'eda234cb',
+            coordinates: [47.245286302641034, 56.134743473834099],
+            modelUrl: 'http://localhost:3300/zgktechnology_construction.glb',
+            rotateX: 90,
+            rotateY: -15.1240072739039,
+            scale: 191.637678,
+            linkedIds: ['70030076561388553'],
+        },
+    ];
+
+    plugin.megaMethod(scene);
 
     (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {
@@ -38,28 +68,6 @@ async function start() {
     });
 
     /*
-    const models: ModelOptions[] = [
-        {
-            id: '03a234cb',
-            coordinates: [82.886554, 54.980988],
-            modelUrl: 'models/cube_draco.glb',
-            rotateX: 90,
-            scale: 1000,
-            linkedIds: ['141373143530065', '70030076379181421'],
-        },
-        {
-            id: 'e3a837ff',
-            coordinates: [82.886454, 54.980388],
-            modelUrl: 'models/cube_draco.glb',
-            rotateX: 90,
-            rotateY: 31,
-            scale: 700,
-            linkedIds: ['141373143530064', '70030076379180575'],
-            offsetX: 30,
-        },
-    ];
-    */
-
     const models: ModelOptions[] = [];
     for (let i = 0; i < 10; i++) {
         let lonRnd = (Math.random() / 100) * (Math.random() > 0.5 ? 1 : -1);
@@ -132,6 +140,7 @@ async function start() {
             floorId: '234234',
         },
     );
+    */
 }
 
 start();

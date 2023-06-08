@@ -20,5 +20,5 @@ export const defaultOptions: Required<PluginOptions> = {
     },
     floorsControl: {
         position: 'centerLeft',
-    }
+    },
 };

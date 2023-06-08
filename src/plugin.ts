@@ -13,6 +13,7 @@ import type {
     BuildingState,
     AddPoiGroupOptions,
     RemovePoiGroupOptions,
+    ModelSceneOptions,
 } from './types/plugin';
 import type { GltfPluginEventTable } from './types/events';
 import { GltfFloorControl } from './control';
@@ -154,7 +155,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.poiGroup.removePoiGroup(options);
     }
 
-    public async megaMethod(scene: any) {
+    public async megaMethod(scene: ModelSceneOptions[]) {
         await this.waitForPluginInit;
 
         const { position } = this.options.floorsControl;
@@ -189,6 +190,19 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             ],
         });
         this.eventSource?.setCurrentFloorId(1234342);
+
+        const mainModels = scene.map(
+            ({ modelId, coordinates, modelUrl, rotateX, rotateY, scale, linkedIds }) => ({
+                modelId,
+                coordinates,
+                modelUrl,
+                rotateX,
+                rotateY,
+                scale,
+                linkedIds,
+            }),
+        );
+        this.addModels(mainModels);
     }
 
     private invalidateViewport() {
