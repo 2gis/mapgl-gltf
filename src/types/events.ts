@@ -62,74 +62,6 @@ export interface PoiTarget {
 }
 
 /**
- * Contains a floor level data.
- */
-export interface ModelFloorLevel {
-    /**
-     * A floor level index
-     */
-    floorLevelKey: number | 'building';
-    /**
-     * A floor level name
-     */
-    floorLevelName: string;
-    /**
-     * A floor level type
-     */
-    floorLevelIcon?: 'parking' | 'building' | string;
-}
-
-/**
- * Contains an appeared floor plan data.
- */
-export interface ModelFloorPlanShowEvent {
-    /**
-     * An id of an appeared floor plan.
-     */
-    floorPlanId: string | number;
-    /**
-     * An key of a current displayed floor level.
-     */
-    currentFloorLevelKey: number | string;
-    /**
-     * All available floor plan levels.
-     */
-    floorLevels: ModelFloorLevel[];
-}
-
-/**
- * Contains a current floor level data.
- */
-export interface ModelFloorLevelChangeEvent {
-    /**
-     * An id of a floor plan.
-     */
-    floorPlanId: string;
-    /**
-     * A current level index of a floor plan.
-     */
-    floorLevelKey: number | string;
-    /**
-     * A current level name of a floor plan.
-     */
-    floorLevelName: string;
-    /**
-     * A floor level type
-     */
-    floorLevelIcon?: 'parking';
-}
-
-/**
- * Contains a disappeared floor plan data.
- */
-export interface ModelFloorPlanHideEvent {
-    /**
-     * An id of a disappeared floor plan.
-     */
-    floorPlanId: string;
-}
-
-/**
  * The event type for pointer-related plugin events
  */
 interface GltfPluginPointerEvent {
@@ -189,16 +121,4 @@ export interface GltfPluginEventTable {
      * Emitted when the user moves the mouse away from the model or the poi
      */
     mouseout: GltfPluginPoiEvent | GltfPluginModelEvent;
-    /**
-     * Emitted when model is show.
-     */
-    showModelFloorPlan: ModelFloorPlanShowEvent;
-    /**
-     * Emitted when model is hide.
-     */
-    hideModelFloorPlan: ModelFloorPlanHideEvent;
-    /**
-     * Emitted when model floor plan is change.
-     */
-    changeModelFloorPlan: ModelFloorLevelChangeEvent;
 }
