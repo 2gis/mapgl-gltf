@@ -1,32 +1,37 @@
 import * as THREE from 'three';
-import { GLTFLoader, GLTF } from 'three/examples/jsm/loaders/GLTFLoader';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import type { Map as MapGL } from '@2gis/mapgl/types';
 
-import { mapPointFromLngLat, degToRad, concatUrl, isAbsoluteUrl } from './utils';
-import { PluginOptions, ModelOptions } from './types';
+import { Evented } from './external/evented';
+import { EventSource } from './eventSource';
+import { Loader } from './loader';
+import { PoiGroup } from './poiGroup';
+import { defaultOptions } from './defaultOptions';
 
-const defaultOptions: Required<PluginOptions> = {
-    ambientLight: {
-        color: '#ffffff',
-        intencity: 1,
-    },
-    dracoScriptsUrl: 'https://unpkg.com/@2gis/mapgl-gltf@^1/dist/libs/draco/',
-    modelsBaseUrl: '',
-    modelsLoadStrategy: 'waitAll',
-};
+import type {
+    PluginOptions,
+    ModelOptions,
+    BuildingState,
+    AddPoiGroupOptions,
+    RemovePoiGroupOptions,
+} from './types/plugin';
+import type { GltfPluginEventTable } from './types/events';
+import { GltfFloorControl } from './control';
 
-export class GltfPlugin {
+export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private renderer = new THREE.WebGLRenderer();
     private camera = new THREE.PerspectiveCamera();
     private scene = new THREE.Scene();
     private tmpMatrix = new THREE.Matrix4();
+    private viewport: DOMRect;
     private map: MapGL;
     private options = defaultOptions;
-    private loader = new GLTFLoader();
-    private onThreeJsInit = () => {}; // resolve of waitForThreeJsInit
-    private waitForThreeJsInit = new Promise<void>((resolve) => (this.onThreeJsInit = resolve));
-    private models = new Map<string, THREE.Object3D>();
+    private loader: Loader;
+    private poiGroup: PoiGroup;
+    private eventSource?: EventSource;
+    private onPluginInit = () => {}; // resolve of waitForPluginInit
+    private waitForPluginInit = new Promise<void>((resolve) => (this.onPluginInit = resolve));
+    private models;
+    private control?: GltfFloorControl;
 
     /**
      * Example:
@@ -51,20 +56,37 @@ export class GltfPlugin {
      * @param pluginOptions GltfPlugin initialization options
      */
     constructor(map: MapGL, pluginOptions?: PluginOptions) {
+        super();
+
         this.map = map;
         this.options = { ...this.options, ...pluginOptions };
 
-        this.initLoader();
+        this.viewport = this.map.getContainer().getBoundingClientRect();
+
+        this.loader = new Loader({
+            modelsBaseUrl: this.options.modelsBaseUrl,
+            dracoScriptsUrl: this.options.dracoScriptsUrl,
+        });
+        this.models = this.loader.getModels();
+
+        this.poiGroup = new PoiGroup({
+            map: this.map,
+            poiConfig: this.options.poiConfig,
+        });
 
         map.once('idle', () => {
-            map.addLayer({
-                id: 'threeJsLayer',
-                type: 'custom',
-                onAdd: () => this.initThree(),
-                render: () => this.render(),
-                onRemove: () => {},
-            });
+            this.poiGroup.addIcons();
+            this.addThreeJsLayer();
+            this.initEventHandlers();
         });
+
+        if (pluginOptions?.floorsControl) {
+            const position =
+                typeof pluginOptions.floorsControl === 'boolean'
+                    ? 'centerLeft'
+                    : pluginOptions.floorsControl.position;
+            this.control = new GltfFloorControl(this.map, { position });
+        }
     }
 
     /**
@@ -73,70 +95,51 @@ export class GltfPlugin {
      * @param modelOptions An array of models' options
      */
     public async addModels(modelOptions: ModelOptions[]) {
-        await this.waitForThreeJsInit;
+        await this.waitForPluginInit;
+
+        // TODO: move to mega method
+        this.eventSource?.setCurrentFloorId(1234342);
 
         const loadedModels = modelOptions.map((options) => {
-            const {
-                id,
-                coordinates,
-                modelUrl,
-                linkedIds,
-                rotateX = 0,
-                rotateY = 0,
-                rotateZ = 0,
-                scale = 1,
-            } = options;
-            const modelPosition = mapPointFromLngLat(coordinates);
+            return this.loader.loadModel(options).then(() => {
+                if (this.options.modelsLoadStrategy === 'dontWaitAll') {
+                    if (options.linkedIds) {
+                        this.map.setHiddenObjects(options.linkedIds);
+                    }
 
-            let actualModelUrl = isAbsoluteUrl(modelUrl)
-                ? modelUrl
-                : concatUrl(this.options.modelsBaseUrl, modelUrl);
-
-            return new Promise<void>((resolve, reject) => {
-                this.loader.load(
-                    actualModelUrl,
-                    (gltf: GLTF) => {
-                        const model = new THREE.Object3D();
-                        model.add(gltf.scene);
-
-                        // rotation
-                        model.rotateX(degToRad(rotateX));
-                        model.rotateY(degToRad(rotateY));
-                        model.rotateZ(degToRad(rotateZ));
-                        // scaling
-                        model.scale.set(scale, scale, scale);
-                        // position
-                        const mapPointCenter = [modelPosition[0], modelPosition[1], 0];
-                        model.position.set(mapPointCenter[0], mapPointCenter[1], scale / 2);
-
-                        const modelId = String(id);
-                        try {
-                            if (this.models.has(modelId)) {
-                                throw new Error(
-                                    `Model with id "${modelId}" already exists. Please use different identifiers for models`,
-                                );
-                            }
-                        } catch (e) {
-                            reject(e);
-                            return;
-                        }
-                        this.models.set(modelId, model);
-
-                        if (this.options.modelsLoadStrategy === 'dontWaitAll') {
-                            if (linkedIds) {
-                                this.map.setHiddenObjects(linkedIds);
-                            }
-                            this.scene.add(model);
-                            this.map.triggerRerender();
-                        }
-
-                        resolve();
-                    },
-                    () => {},
-                    (e) => {
-                        reject(e);
-                    },
-                );
+                    const model = this.models.get(String(options.modelId));
+                    if (model !== undefined) {
+                        this.scene.add(model);
+                    }
+                    // TODO: move an activation of the control to the mega method
+                    this.control?.show({
+                        modelId: 777,
+                        floorId: 0,
+                        floorLevels: [
+                            {
+                                icon: 'building',
+                                text: '',
+                            },
+                            {
+                                floorId: 0,
+                                icon: 'parking',
+                                text: '',
+                            },
+                            { floorId: 1, text: '1-9' },
+                            { floorId: 3, text: '10-11' },
+                            { floorId: 4, text: '12-13' },
+                            { floorId: 5, text: '14-15' },
+                            { floorId: 6, text: '16-19' },
+                            { floorId: 7, text: '20' },
+                            { floorId: 8, text: '21-22' },
+                            { floorId: 9, text: '23-25' },
+                            { floorId: 10, text: '25-30' },
+                            { floorId: 11, text: '31-34' },
+                            { floorId: 12, text: '35' },
+                        ],
+                    });
+                    this.map.triggerRerender();
+                }
             });
         });
 
@@ -153,6 +156,65 @@ export class GltfPlugin {
                 this.map.triggerRerender();
             }
         });
+    }
+
+    public async addModel(options: ModelOptions) {
+        await this.waitForPluginInit;
+        return this.loader.loadModel(options).then(() => {
+            if (options.linkedIds) {
+                this.map.setHiddenObjects(options.linkedIds);
+            }
+
+            const model = this.models.get(String(options.modelId));
+            if (model !== undefined) {
+                this.scene.add(model);
+            }
+            this.map.triggerRerender();
+        });
+    }
+
+    public removeModel(id: string | number) {
+        const model = this.models.get(String(id));
+        if (model === undefined) {
+            return;
+        }
+        this.scene.remove(model);
+        this.map.triggerRerender();
+    }
+
+    public async addPoiGroup(options: AddPoiGroupOptions, state?: BuildingState) {
+        await this.waitForPluginInit;
+
+        this.poiGroup.addPoiGroup(options, state);
+    }
+
+    public removePoiGroup(options: RemovePoiGroupOptions) {
+        this.poiGroup.removePoiGroup(options);
+    }
+
+    private invalidateViewport() {
+        const container = this.map.getContainer();
+        this.viewport = container.getBoundingClientRect();
+        this.eventSource?.updateViewport(this.viewport);
+    }
+
+    private initEventHandlers() {
+        this.map.on('resize', () => {
+            this.invalidateViewport();
+        });
+
+        this.eventSource = new EventSource(this.map, this.viewport, this.camera, this.scene);
+        for (let eventName of this.eventSource.getEvents()) {
+            this.eventSource.on(eventName, (e) => {
+                this.emit(eventName, e);
+            });
+        }
+
+        if (this.control) {
+            this.control.on('floorChange', (e) => {
+                console.log(e);
+            });
+        }
     }
 
     private render() {
@@ -174,6 +236,16 @@ export class GltfPlugin {
         );
 
         this.renderer.resetState();
+
+        // setViewport discards the same settings
+        // so it has no effect on performance
+        this.renderer.setViewport(
+            0,
+            0,
+            this.viewport.width * window.devicePixelRatio,
+            this.viewport.height * window.devicePixelRatio,
+        );
+
         this.renderer.render(this.scene, this.camera);
     }
 
@@ -193,14 +265,16 @@ export class GltfPlugin {
         const light = new THREE.AmbientLight(color, intencity);
         this.scene.add(light);
 
-        this.onThreeJsInit();
+        this.onPluginInit();
     }
 
-    private initLoader() {
-        const loadingManager = new THREE.LoadingManager();
-        const dracoLoader = new DRACOLoader(loadingManager).setDecoderPath(
-            this.options.dracoScriptsUrl,
-        );
-        this.loader.setDRACOLoader(dracoLoader);
+    private addThreeJsLayer() {
+        this.map.addLayer({
+            id: 'threeJsLayer',
+            type: 'custom',
+            onAdd: () => this.initThree(),
+            render: () => this.render(),
+            onRemove: () => {},
+        });
     }
 }

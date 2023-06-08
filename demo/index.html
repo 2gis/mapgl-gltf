@@ -12,12 +12,23 @@
                 margin: 0;
             }
 
-            #container {
+            .outer {
+                display: flex;
                 height: 100%;
+                align-items: center;
+                justify-content: center;
+            }
+
+            #container {
+                height: 50%;
+                width: 90%;
             }
         </style>
     </head>
     <body>
-        <div id="container"></div>
+        <div class="outer">
+            <div class="aux"></div>
+            <div id="container"></div>
+        </div>
     </body>
 </html>

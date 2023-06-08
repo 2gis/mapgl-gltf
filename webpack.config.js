@@ -28,6 +28,24 @@ module.exports = function (env, _argv) {
                 test: /\.ts$/,
                 loader: 'ts-loader',
             },
+            // For CSS modules
+            {
+                test: /\.module\.css$/i,
+                use: [
+                    'style-loader',
+                    {
+                        loader: 'css-loader',
+                        options: {
+                            modules: {
+                                localIdentName:
+                                    env.type === 'production'
+                                        ? 'mapgl_[hash:base64]'
+                                        : '[path][name]__[local]',
+                            },
+                        },
+                    },
+                ],
+            },
         ],
     };
 
