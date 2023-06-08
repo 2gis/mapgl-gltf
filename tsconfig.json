@@ -1,15 +1,16 @@
 {
   "compilerOptions": {
+    "types": ["jest", "node"],
     "lib": ["dom", "es6"],
     "target": "es6",
     "module": "es6",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
     "outDir": "dist/",
-    "sourceMap": true
+    "sourceMap": true,
   },
-  "include": ["project.d.ts","modules.d.ts", "src/**/*.ts"]
+  "include": ["project.d.ts","modules.d.ts", "src/**/*.ts", "test/test.d.ts"]
 }
