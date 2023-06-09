@@ -48,14 +48,14 @@ describe('plugin', () => {
         await page.evaluate(() => {
             return window.gltfPlugin.addModels([
                 {
-                    id: 1,
+                    modelId: 1,
                     coordinates: [82.886554, 54.980988],
                     modelUrl: 'models/cube_draco.glb',
                     rotateX: 90,
                     scale: 1000,
                 },
                 {
-                    id: 2,
+                    modelId: 2,
                     coordinates: [82.886454, 54.980388],
                     modelUrl: 'models/cube_draco.glb',
                     rotateX: 90,
