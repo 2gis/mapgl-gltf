@@ -23,9 +23,12 @@
     "test:integration": "webpack --env type=test && TEST_SUITE=integration jest --colors",
     "test:screenshots": "webpack --env type=test && TEST_SUITE=screenshots jest --colors",
     "test:screenshots:update": "webpack --env type=test && TEST_SUITE=screenshots jest -u",
+    "test:typings": "tsc -p tsconfig.typings.validation.json",
     "demo": "webpack --env type=demo",
     "prettier": "prettier --check \"./**/*.{ts,js,html,css}\"",
-    "prettier:write": "prettier --write \"./**/*.{ts,js,html,css}\""
+    "prettier:write": "prettier --write \"./**/*.{ts,js,html,css}\"",
+    "docker:test": "docker-compose up --build test",
+    "docker:screenshot:update": "docker-compose up --build screenshot-update"
   },
   "author": "2GIS WebMaps Team",
   "license": "BSD-2-Clause",

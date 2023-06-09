@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+    test:
+        build:
+            context: .
+        volumes:
+            - './test/screenshots/__screenshots__/:/mapgl-gltf/test/screenshots/__screenshots__'
+        command: ['npm', 'run', 'test']
+
+    screenshot-update:
+        build:
+            context: .
+        volumes:
+            - './test/screenshots/__screenshots__/:/mapgl-gltf/test/screenshots/__screenshots__'
+        command: ['npm', 'run', 'test:screenshots:update']
