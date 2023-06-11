@@ -1,8 +1,8 @@
 import * as _mapgl from '@2gis/mapgl/types';
-import { GltfPlugin } from './src';
+import { GltfPlugin as GltfPluginOriginal } from './src';
 
 declare module '@2gis/mapgl/types' {
-    export { GltfPlugin };
+    let GltfPlugin: typeof GltfPluginOriginal;
 
     export interface Map {
         getProjectionMatrixForGltfPlugin(): number[];
@@ -11,7 +11,7 @@ declare module '@2gis/mapgl/types' {
 }
 
 interface MapglPluginsRegistry {
-    GltfPlugin: typeof GltfPlugin;
+    GltfPlugin: typeof GltfPluginOriginal;
 }
 
 declare global {
