@@ -11,8 +11,8 @@ jobs:
     typings-validation:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v2
-            - uses: actions/setup-node@v2
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
               with:
                   node-version: 16
             - run: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true npm ci
@@ -22,10 +22,10 @@ jobs:
     run-tests:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - name: Build container and run tests
               run: docker-compose up --build --exit-code-from test test
-            - uses: actions/upload-artifact@v2
+            - uses: actions/upload-artifact@v3
               if: ${{ failure() }}
               with:
                   path: test/screenshots/__screenshots__/**/__diff_output__/*.png

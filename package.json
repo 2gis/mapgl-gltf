@@ -18,7 +18,7 @@
     "build:typings": "tsc -p tsconfig.typings.json --declaration --emitDeclarationOnly",
     "build:transpile": "tsc -p tsconfig.transpile.json --declaration",
     "dev": "webpack-dev-server --env type=development",
-    "test": "npm run prettier && npm run test:unit && npm run test:integration && npm run test:screenshots",
+    "test": "npm run test:unit && npm run test:integration && npm run test:screenshots",
     "test:unit": "jest --colors",
     "test:integration": "webpack --env type=test && TEST_SUITE=integration jest --colors",
     "test:screenshots": "webpack --env type=test && TEST_SUITE=screenshots jest --colors",

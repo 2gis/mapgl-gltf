@@ -6,14 +6,14 @@ import type { ModelOptions } from '../src/types/plugin';
 async function start() {
     const mapglAPI = await load();
 
-    const map = ((window as any).map = new mapglAPI.Map('container', {
+    const map = new mapglAPI.Map('container', {
         center: [82.886554, 54.980988],
         zoom: 15.5,
         key: 'cb20c5bf-34d3-4f0e-9b2b-33e9b8edb57f',
         pitch: 45,
         rotation: 330,
         enableTrackResize: true,
-    }));
+    });
 
     const plugin = new GltfPlugin(map, {
         modelsLoadStrategy: 'dontWaitAll',
