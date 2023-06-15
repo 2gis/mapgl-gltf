@@ -65,6 +65,7 @@ export class PoiGroup {
     public removePoiGroup(groupOptions: RemovePoiGroupOptions) {
         const { id } = groupOptions;
         const source = this.poiSources.get(String(id));
+        this.poiSources.delete(String(id));
         source?.destroy();
         this.map.removeLayer('plugin-poi-' + String(id));
     }

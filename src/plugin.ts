@@ -37,6 +37,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private control?: GltfFloorControl;
     private activeModel?: ModelSceneOptions;
     private activeModelId?: number | string;
+    private activePoiGroupIds: Array<number | string> = [];
 
     /**
      * Example:
@@ -298,11 +299,20 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
+    private clearPoiGroups() {
+        this.activePoiGroupIds.forEach((id) => {
+            this.removePoiGroup({ id });
+        });
+
+        this.activePoiGroupIds = [];
+    }
+
     private floorChangeHandler(ev: FloorChangeEvent) {
         const model = this.activeModel;
         if (model !== undefined && model.floors !== undefined) {
             // click to the building button
             if (ev.floorId === undefined) {
+                this.clearPoiGroups();
                 this.addModel({
                     modelId: model.modelId,
                     coordinates: model.coordinates,
@@ -320,6 +330,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             // click to the floor button
             if (ev.floorId !== undefined) {
                 const selectedFloor = model.floors.find((floor) => floor.id === ev.floorId);
+                const oldId = this.activeModelId;
                 if (selectedFloor !== undefined && this.activeModelId !== undefined) {
                     this.addModel({
                         modelId: selectedFloor.id,
@@ -333,6 +344,18 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                             this.removeModel(this.activeModelId);
                         }
                         this.activeModelId = selectedFloor.id;
+
+                        this.clearPoiGroups();
+
+                        selectedFloor.poiGroups?.forEach((poiGroup) => {
+                            if (oldId) {
+                                this.addPoiGroup(poiGroup, {
+                                    modelId: oldId,
+                                    floorId: selectedFloor.id,
+                                });
+                                this.activePoiGroupIds.push(poiGroup.id);
+                            }
+                        });
                     });
                 }
             }

@@ -15,6 +15,8 @@ async function start() {
         enableTrackResize: true,
     });
 
+    (window as any).map = map;
+
     const plugin = new GltfPlugin(map, {
         modelsLoadStrategy: 'dontWaitAll',
         dracoScriptsUrl: 'libs/draco/',
@@ -39,21 +41,91 @@ async function start() {
             scale: 191.637678,
             linkedIds: ['70030076555821177'],
             mapOptions: {
-                center: [47.245286302641034, 56.134743473834099],
+                center: [47.24538001651252, 56.13465445203847],
                 pitch: 40,
                 zoom: 19,
-                rotation: 10,
+                rotation: -25,
             },
             floors: [
                 {
                     id: '235034',
                     text: '1-10',
                     modelUrl: 'http://localhost:3300/zgktechnology1_floor 2.glb',
+                    poiGroups: [
+                        {
+                            id: 1111,
+                            type: 'primary',
+                            minZoom: 18,
+                            elevation: 5,
+                            fontSize: 14,
+                            fontColor: '#3a3a3a',
+                            data: [
+                                {
+                                    coordinates: [47.245048150280994, 56.134470449142164],
+                                    label: '3к\n78.4 м²',
+                                    userData: {
+                                        url: 'https://a101.ru/kvartiry/360810/',
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            id: 2222,
+                            type: 'secondary',
+                            minZoom: 18.5,
+                            elevation: 5,
+                            fontSize: 12,
+                            data: [
+                                {
+                                    coordinates: [47.24509503176751, 56.13443599902181],
+                                    label: '10 м²',
+                                    userData: {
+                                        url: 'https://a101.ru/kvartiry/360810/',
+                                    },
+                                },
+                            ],
+                        },
+                    ],
                 },
                 {
                     id: '000034',
                     text: '11',
                     modelUrl: 'http://localhost:3300/zgktechnology1_floor 11.glb',
+                    poiGroups: [
+                        {
+                            id: 1111,
+                            type: 'primary',
+                            minZoom: 18,
+                            elevation: 35,
+                            fontSize: 14,
+                            fontColor: '#3a3a3a',
+                            data: [
+                                {
+                                    coordinates: [47.24522432278589, 56.134443278054704],
+                                    label: '2к\n70 м²',
+                                    userData: {
+                                        url: 'https://a101.ru/kvartiry/360810/',
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            id: 2222,
+                            type: 'secondary',
+                            minZoom: 18.5,
+                            elevation: 35,
+                            fontSize: 12,
+                            data: [
+                                {
+                                    coordinates: [47.24516420395748, 56.13443265820253],
+                                    label: '10 м²',
+                                    userData: {
+                                        url: 'https://a101.ru/kvartiry/360810/',
+                                    },
+                                },
+                            ],
+                        },
+                    ],
                 },
             ],
         },
@@ -66,7 +138,7 @@ async function start() {
             scale: 191.637678,
             linkedIds: ['70030076555823021'],
             mapOptions: {
-                center: [47.245286302641034, 56.134743473834099],
+                center: [47.24503949969271, 56.13473264797348],
                 pitch: 40,
                 zoom: 18.7,
                 rotation: -70,
