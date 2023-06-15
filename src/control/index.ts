@@ -1,6 +1,6 @@
 import type { Map as MapGL, ControlOptions } from '@2gis/mapgl/types';
 
-import type { ShowOptions, Id } from './types';
+import type { ControlShowOptions, Id } from './types';
 
 import icon_building from 'raw-loader!./icon_building.svg';
 import icon_parking from 'raw-loader!./icon_parking.svg';
@@ -47,10 +47,10 @@ export class GltfFloorControl extends Control {
         this._root.style.display = 'none';
     }
 
-    public show(options: ShowOptions) {
+    public show(options: ControlShowOptions) {
         this._removeButtonsEventListeners();
 
-        const { modelId, floorId, floorLevels } = options;
+        const { modelId, floorId, floorLevels = [] } = options;
 
         this._currentFloorId = this.createId(modelId, floorId);
         this._root.style.display = 'block';

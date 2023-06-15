@@ -38,6 +38,18 @@ async function start() {
             rotateY: -15.1240072739039,
             scale: 191.637678,
             linkedIds: ['70030076555821177'],
+            floors: [
+                {
+                    id: '235034',
+                    text: '1-10',
+                    modelUrl: 'http://localhost:3300/zgktechnology1_floor 2.glb',
+                },
+                {
+                    id: '000034',
+                    text: '11-15',
+                    modelUrl: 'http://localhost:3300/zgktechnology1_floor 11.glb',
+                },
+            ],
         },
         {
             modelId: '1ba234cb',
@@ -59,7 +71,11 @@ async function start() {
         },
     ];
 
-    plugin.megaMethod(scene);
+    const defaultState = {
+        modelId: '03a234cb',
+        // floorId: '235034',
+    };
+    plugin.megaMethod(scene, defaultState);
 
     (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {

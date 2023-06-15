@@ -17,6 +17,7 @@ import type {
 } from './types/plugin';
 import type { GltfPluginEventTable } from './types/events';
 import { GltfFloorControl } from './control';
+import { ControlShowOptions, FloorLevel } from './control/types';
 
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private renderer = new THREE.WebGLRenderer();
@@ -155,7 +156,38 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.poiGroup.removePoiGroup(options);
     }
 
-    public async megaMethod(scene: ModelSceneOptions[]) {
+    private createControlOptions(scene: ModelSceneOptions[], buildingState: BuildingState) {
+        const { modelId, floorId } = buildingState;
+        const options: ControlShowOptions = {
+            modelId: modelId,
+        };
+        if (floorId) {
+            options.floorId = floorId;
+        }
+        const activeModel = scene.filter((scenePart) => scenePart.modelId === modelId);
+        if (activeModel.length === 0) {
+            return options;
+        }
+
+        if (activeModel[0].floors !== undefined) {
+            const floorLevels: FloorLevel[] = [
+                {
+                    icon: 'building',
+                    text: '',
+                },
+            ];
+            activeModel[0].floors.forEach((floor) => {
+                floorLevels.push({
+                    floorId: floor.id,
+                    text: floor.text,
+                });
+            });
+            options.floorLevels = floorLevels;
+        }
+        return options;
+    }
+
+    public async megaMethod(scene: ModelSceneOptions[], state?: BuildingState) {
         await this.waitForPluginInit;
 
         const { position } = this.options.floorsControl;
@@ -163,33 +195,13 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.control.on('floorChange', (e) => {
             console.log(e);
         });
-        this.control?.show({
-            modelId: 777,
-            floorId: 0,
-            floorLevels: [
-                {
-                    icon: 'building',
-                    text: '',
-                },
-                {
-                    floorId: 0,
-                    icon: 'parking',
-                    text: '',
-                },
-                { floorId: 1, text: '1-9' },
-                { floorId: 3, text: '10-11' },
-                { floorId: 4, text: '12-13' },
-                { floorId: 5, text: '14-15' },
-                { floorId: 6, text: '16-19' },
-                { floorId: 7, text: '20' },
-                { floorId: 8, text: '21-22' },
-                { floorId: 9, text: '23-25' },
-                { floorId: 10, text: '25-30' },
-                { floorId: 11, text: '31-34' },
-                { floorId: 12, text: '35' },
-            ],
-        });
-        this.eventSource?.setCurrentFloorId(1234342);
+        if (state !== undefined) {
+            const controlOptions = this.createControlOptions(scene, state);
+            this.control?.show(controlOptions);
+            if (state.floorId) {
+                this.eventSource?.setCurrentFloorId(state.floorId);
+            }
+        }
 
         const mainModels = scene.map(
             ({ modelId, coordinates, modelUrl, rotateX, rotateY, scale, linkedIds }) => ({

@@ -12,10 +12,10 @@ export interface FloorLevel {
 /**
  * Options for the method show
  */
-export interface ShowOptions {
+export interface ControlShowOptions {
     modelId: Id;
     floorId?: Id;
-    floorLevels: FloorLevel[];
+    floorLevels?: FloorLevel[];
 }
 
 /**
