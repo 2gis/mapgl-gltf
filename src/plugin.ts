@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Map as MapGL } from '@2gis/mapgl/types';
+import type { Map as MapGL, AnimationOptions } from '@2gis/mapgl/types';
 
 import { Evented } from './external/evented';
 import { EventSource } from './eventSource';
@@ -196,17 +196,21 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             return;
         }
 
+        const animationOptions: AnimationOptions = {
+            easing: 'easeInSine',
+            duration: 500,
+        };
         if (options.center) {
-            this.map.setCenter(options.center);
+            this.map.setCenter(options.center, animationOptions);
         }
         if (options.pitch) {
-            this.map.setPitch(options.pitch);
+            this.map.setPitch(options.pitch, animationOptions);
         }
         if (options.rotation) {
-            this.map.setRotation(options.rotation);
+            this.map.setRotation(options.rotation, animationOptions);
         }
         if (options.zoom) {
-            this.map.setZoom(options.zoom);
+            this.map.setZoom(options.zoom, animationOptions);
         }
     }
 
