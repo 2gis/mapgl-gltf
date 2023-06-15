@@ -272,6 +272,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                                 rotateY: this.activeModel.rotateY,
                                 scale: this.activeModel.scale,
                             }).then(() => {
+                                this.clearPoiGroups();
                                 this.removeModel(oldId);
                             });
                         }

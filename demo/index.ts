@@ -148,11 +148,81 @@ async function start() {
                     id: 'aaa777',
                     text: '2-15',
                     modelUrl: 'http://localhost:3300/zgktechnology2_floor 2.glb',
+                    poiGroups: [
+                        {
+                            id: 1111,
+                            type: 'primary',
+                            minZoom: 18,
+                            elevation: 5,
+                            fontSize: 14,
+                            fontColor: '#3a3a3a',
+                            data: [
+                                {
+                                    coordinates: [47.24452417991248, 56.13469284843933],
+                                    label: '1к\n14.4 м²',
+                                    userData: {
+                                        url: 'https://a101.ru/kvartiry/360810/',
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            id: 2222,
+                            type: 'secondary',
+                            minZoom: 18.5,
+                            elevation: 5,
+                            fontSize: 12,
+                            data: [
+                                {
+                                    coordinates: [47.244517818982104, 56.13468687293689],
+                                    label: '12 м²',
+                                    userData: {
+                                        url: 'https://a101.ru/kvartiry/360810/',
+                                    },
+                                },
+                            ],
+                        },
+                    ],
                 },
                 {
                     id: 'bbb555',
                     text: '16',
                     modelUrl: 'http://localhost:3300/zgktechnology2_floor 16.glb',
+                    poiGroups: [
+                        {
+                            id: 1111,
+                            type: 'primary',
+                            minZoom: 18,
+                            elevation: 55,
+                            fontSize: 14,
+                            fontColor: '#3a3a3a',
+                            data: [
+                                {
+                                    coordinates: [47.24448821942699, 56.13463786869349],
+                                    label: '2к\n35.7 м²',
+                                    userData: {
+                                        url: 'https://a101.ru/kvartiry/360810/',
+                                    },
+                                },
+                            ],
+                        },
+                        {
+                            id: 2222,
+                            type: 'secondary',
+                            minZoom: 18.5,
+                            elevation: 55,
+                            fontSize: 12,
+                            data: [
+                                {
+                                    coordinates: [47.24446541051179, 56.13462279154826],
+                                    label: '12 м²',
+                                    userData: {
+                                        url: 'https://a101.ru/kvartiry/360810/',
+                                    },
+                                },
+                            ],
+                        },
+                    ],
                 },
             ],
         },
