@@ -14,6 +14,7 @@ import type {
     AddPoiGroupOptions,
     RemovePoiGroupOptions,
     ModelSceneOptions,
+    ModelMapOptions,
 } from './types/plugin';
 import type { GltfPluginEventTable } from './types/events';
 import { GltfFloorControl } from './control';
@@ -190,6 +191,25 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         return options;
     }
 
+    private setMapOptions(options?: ModelMapOptions) {
+        if (options === undefined) {
+            return;
+        }
+
+        if (options.center) {
+            this.map.setCenter(options.center);
+        }
+        if (options.pitch) {
+            this.map.setPitch(options.pitch);
+        }
+        if (options.rotation) {
+            this.map.setRotation(options.rotation);
+        }
+        if (options.zoom) {
+            this.map.setZoom(options.zoom);
+        }
+    }
+
     public async megaMethod(scene: ModelSceneOptions[], state?: BuildingState) {
         await this.waitForPluginInit;
 
@@ -197,6 +217,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         if (state) {
             this.activeModel = scene.find((model) => model.modelId === state.modelId);
             this.activeModelId = this.activeModel?.modelId;
+            this.setMapOptions(this.activeModel?.mapOptions);
         }
 
         // initialize control
@@ -252,6 +273,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                     }
                     this.activeModel = selectedModel;
                     this.activeModelId = selectedModel?.modelId;
+                    this.setMapOptions(this.activeModel?.mapOptions);
                     this.control?.destroy();
                     // initialize control
                     const { position } = this.options.floorsControl;

@@ -38,6 +38,12 @@ async function start() {
             rotateY: -15.1240072739039,
             scale: 191.637678,
             linkedIds: ['70030076555821177'],
+            mapOptions: {
+                center: [47.245286302641034, 56.134743473834099],
+                pitch: 40,
+                zoom: 19,
+                rotation: 10,
+            },
             floors: [
                 {
                     id: '235034',
@@ -59,6 +65,12 @@ async function start() {
             rotateY: -15.1240072739039,
             scale: 191.637678,
             linkedIds: ['70030076555823021'],
+            mapOptions: {
+                center: [47.245286302641034, 56.134743473834099],
+                pitch: 40,
+                zoom: 18.7,
+                rotation: -70,
+            },
             floors: [
                 {
                     id: 'aaa777',
@@ -87,7 +99,7 @@ async function start() {
         modelId: '03a234cb',
         // floorId: '235034',
     };
-    plugin.megaMethod(scene, defaultState);
+    plugin.megaMethod(scene /*, defaultState */);
 
     (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {

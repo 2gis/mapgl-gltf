@@ -169,10 +169,11 @@ export interface ModelOptions {
     userData?: any;
 }
 
-interface ModelMapOptions {
+export interface ModelMapOptions {
     center?: number[];
     pitch?: number;
     rotation?: number;
+    zoom?: number;
 }
 
 interface ModelFloorsOptions {
