@@ -2,7 +2,6 @@ export const REFERENCE_DEMO = 'http://localhost:8080/test.html';
 
 export const PAGE_WIDTH = 150;
 export const PAGE_HEIGHT = 150;
-export const PAGE_CENTER = [PAGE_WIDTH / 2, PAGE_HEIGHT / 2];
 
 export const WAIT_FOR_TIMEOUT = 150000;
 
