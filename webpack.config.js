@@ -124,4 +124,36 @@ module.exports = function (env, _argv) {
             plugins: developmentPluginsConfig,
         };
     }
+
+    if (env.type === 'test') {
+        return {
+            mode: 'production',
+            entry: './test/index.ts',
+            output: {
+                path: path.resolve(__dirname, 'dist/'),
+                filename: 'test.js',
+            },
+            resolve: resolveConfig,
+            module: moduleConfig,
+            plugins: [
+                new CleanWebpackPlugin(),
+                new CopyWebpackPlugin({
+                    patterns: [
+                        {
+                            from: 'node_modules/three/examples/jsm/libs/draco',
+                            to: 'libs/draco',
+                        },
+                        {
+                            from: 'demo/models',
+                            to: 'models',
+                        },
+                        {
+                            from: 'test/index.html',
+                            to: 'test.html',
+                        },
+                    ],
+                }),
+            ],
+        };
+    }
 };
