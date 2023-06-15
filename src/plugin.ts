@@ -17,7 +17,7 @@ import type {
 } from './types/plugin';
 import type { GltfPluginEventTable } from './types/events';
 import { GltfFloorControl } from './control';
-import { ControlShowOptions, FloorLevel } from './control/types';
+import { ControlShowOptions, FloorLevel, FloorChangeEvent } from './control/types';
 
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private renderer = new THREE.WebGLRenderer();
@@ -34,6 +34,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private waitForPluginInit = new Promise<void>((resolve) => (this.onPluginInit = resolve));
     private models;
     private control?: GltfFloorControl;
+    private activeModel?: ModelSceneOptions;
+    private activeModelId?: number | string;
 
     /**
      * Example:
@@ -142,6 +144,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         if (model === undefined) {
             return;
         }
+        this.models.delete(String(id));
         this.scene.remove(model);
         this.map.triggerRerender();
     }
@@ -190,11 +193,15 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     public async megaMethod(scene: ModelSceneOptions[], state?: BuildingState) {
         await this.waitForPluginInit;
 
+        // set activeModel
+        if (state) {
+            this.activeModel = scene.find((model) => model.modelId === state.modelId);
+            this.activeModelId = this.activeModel?.modelId;
+        }
+
+        // initialize control
         const { position } = this.options.floorsControl;
         this.control = new GltfFloorControl(this.map, { position });
-        this.control.on('floorChange', (e) => {
-            console.log(e);
-        });
         if (state !== undefined) {
             const controlOptions = this.createControlOptions(scene, state);
             this.control?.show(controlOptions);
@@ -203,6 +210,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             }
         }
 
+        // initialize initial scene
         const mainModels = scene.map(
             ({ modelId, coordinates, modelUrl, rotateX, rotateY, scale, linkedIds }) => ({
                 modelId,
@@ -215,6 +223,94 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             }),
         );
         this.addModels(mainModels);
+
+        // bind events
+        this.on('click', (ev) => {
+            if (ev.target.type === 'model') {
+                // set activeModel
+                const selectedModel = scene.find((model) => model.modelId === ev.target.modelId);
+                if (selectedModel?.modelId !== this.activeModel?.modelId) {
+                    // click to the different building
+                    if (this.activeModel) {
+                        // if currently visible a floor plan, then show a whole building
+                        if (
+                            this.activeModelId &&
+                            this.activeModelId !== this.activeModel?.modelId
+                        ) {
+                            const oldId = this.activeModelId;
+                            this.addModel({
+                                modelId: this.activeModel.modelId,
+                                coordinates: this.activeModel.coordinates,
+                                modelUrl: this.activeModel.modelUrl,
+                                rotateX: this.activeModel.rotateX,
+                                rotateY: this.activeModel.rotateY,
+                                scale: this.activeModel.scale,
+                            }).then(() => {
+                                this.removeModel(oldId);
+                            });
+                        }
+                    }
+                    this.activeModel = selectedModel;
+                    this.activeModelId = selectedModel?.modelId;
+                    this.control?.destroy();
+                    // initialize control
+                    const { position } = this.options.floorsControl;
+                    this.control = new GltfFloorControl(this.map, { position });
+                    if (selectedModel) {
+                        const state = { modelId: selectedModel.modelId };
+                        const controlOptions = this.createControlOptions(scene, state);
+                        this.control?.show(controlOptions);
+                        this.control.on('floorChange', (ev) => {
+                            this.floorChangeHandler(ev);
+                        });
+                    }
+                }
+            }
+        });
+        this.control.on('floorChange', (ev) => {
+            this.floorChangeHandler(ev);
+        });
+    }
+
+    private floorChangeHandler(ev: FloorChangeEvent) {
+        const model = this.activeModel;
+        if (model !== undefined && model.floors !== undefined) {
+            // click to the building button
+            if (ev.floorId === undefined) {
+                this.addModel({
+                    modelId: model.modelId,
+                    coordinates: model.coordinates,
+                    modelUrl: model.modelUrl,
+                    rotateX: model.rotateX,
+                    rotateY: model.rotateY,
+                    scale: model.scale,
+                }).then(() => {
+                    if (this.activeModelId) {
+                        this.removeModel(this.activeModelId);
+                    }
+                    this.activeModelId = model.modelId;
+                });
+            }
+            // click to the floor button
+            if (ev.floorId !== undefined) {
+                const selectedFloor = model.floors.find((floor) => floor.id === ev.floorId);
+                if (selectedFloor !== undefined && this.activeModelId !== undefined) {
+                    this.addModel({
+                        modelId: selectedFloor.id,
+                        coordinates: model.coordinates,
+                        modelUrl: selectedFloor.modelUrl,
+                        rotateX: model.rotateX,
+                        rotateY: model.rotateY,
+                        scale: model.scale,
+                    }).then(() => {
+                        if (this.activeModelId) {
+                            this.removeModel(this.activeModelId);
+                        }
+                        this.activeModelId = selectedFloor.id;
+                    });
+                }
+            }
+        }
     }
 
     private invalidateViewport() {

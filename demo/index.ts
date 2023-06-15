@@ -46,7 +46,7 @@ async function start() {
                 },
                 {
                     id: '000034',
-                    text: '11-15',
+                    text: '11',
                     modelUrl: 'http://localhost:3300/zgktechnology1_floor 11.glb',
                 },
             ],
@@ -59,6 +59,18 @@ async function start() {
             rotateY: -15.1240072739039,
             scale: 191.637678,
             linkedIds: ['70030076555823021'],
+            floors: [
+                {
+                    id: 'aaa777',
+                    text: '2-15',
+                    modelUrl: 'http://localhost:3300/zgktechnology2_floor 2.glb',
+                },
+                {
+                    id: 'bbb555',
+                    text: '16',
+                    modelUrl: 'http://localhost:3300/zgktechnology2_floor 16.glb',
+                },
+            ],
         },
         {
             modelId: 'eda234cb',
