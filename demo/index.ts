@@ -67,6 +67,34 @@ async function start() {
                                         url: 'https://a101.ru/kvartiry/360810/',
                                     },
                                 },
+                                {
+                                    coordinates: [47.24520807647288, 56.13443854463778],
+                                    label: '2к\n67 м²',
+                                    userData: {
+                                        url: 'https://a101.ru/kvartiry/360810/',
+                                    },
+                                },
+                                {
+                                    coordinates: [47.245350349632965, 56.134414208205776],
+                                    label: '1к\n40 м²',
+                                    userData: {
+                                        url: 'https://a101.ru/kvartiry/360810/',
+                                    },
+                                },
+                                {
+                                    coordinates: [47.24542896512635, 56.13448965532694],
+                                    label: '3к\n90 м²',
+                                    userData: {
+                                        url: 'https://a101.ru/kvartiry/360810/',
+                                    },
+                                },
+                                {
+                                    coordinates: [47.24510451854659, 56.134541185948585],
+                                    label: '3к\n77.2 м²',
+                                    userData: {
+                                        url: 'https://a101.ru/kvartiry/360810/',
+                                    },
+                                },
                             ],
                         },
                         {
@@ -237,11 +265,14 @@ async function start() {
         },
     ];
 
+    /*
     const defaultState = {
         modelId: '03a234cb',
-        // floorId: '235034',
+        floorId: '235034',
     };
-    plugin.megaMethod(scene /*, defaultState */);
+    */
+
+    plugin.megaMethod(scene);
 
     (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {
