@@ -83,28 +83,14 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     /**
-     * Add models to the map
+     * Add all models to the map
      *
      * @param modelOptions An array of models' options
      */
     public async addModels(modelOptions: ModelOptions[]) {
         await this.waitForPluginInit;
 
-        const loadedModels = modelOptions.map((options) => {
-            return this.loader.loadModel(options).then(() => {
-                if (this.options.modelsLoadStrategy === 'dontWaitAll') {
-                    if (options.linkedIds) {
-                        this.map.setHiddenObjects(options.linkedIds);
-                    }
-
-                    const model = this.models.get(String(options.modelId));
-                    if (model !== undefined) {
-                        this.scene.add(model);
-                    }
-                    this.map.triggerRerender();
-                }
-            });
-        });
+        const loadedModels = this.startModelLoading(modelOptions);
 
         return Promise.all(loadedModels).then(() => {
             if (this.options.modelsLoadStrategy === 'waitAll') {
@@ -115,6 +101,35 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 }
                 for (let [_id, model] of this.models) {
                     this.scene.add(model);
+                }
+                this.map.triggerRerender();
+            }
+        });
+    }
+
+    /**
+     * Add models to the map partially
+     *
+     * @param modelOptions An array of models' options
+     * @param ids An orray of idenifiers of the models that must be added to the scene
+     */
+    public async addModelsPartially(modelOptions: ModelOptions[], ids: Array<string | number>) {
+        await this.waitForPluginInit;
+
+        const loadedModels = this.startModelLoading(modelOptions);
+
+        return Promise.all(loadedModels).then(() => {
+            if (this.options.modelsLoadStrategy === 'waitAll') {
+                for (let options of modelOptions) {
+                    if (options.linkedIds) {
+                        this.map.setHiddenObjects(options.linkedIds);
+                    }
+                }
+                for (let id of ids) {
+                    const model = this.models.get(String(id));
+                    if (model !== undefined) {
+                        this.scene.add(model);
+                    }
                 }
                 this.map.triggerRerender();
             }
@@ -243,6 +258,24 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             onAdd: () => this.initThree(),
             render: () => this.render(),
             onRemove: () => {},
+        });
+    }
+
+    private startModelLoading(modelOptions: ModelOptions[]) {
+        return modelOptions.map((options) => {
+            return this.loader.loadModel(options).then(() => {
+                if (this.options.modelsLoadStrategy === 'dontWaitAll') {
+                    if (options.linkedIds) {
+                        this.map.setHiddenObjects(options.linkedIds);
+                    }
+
+                    const model = this.models.get(String(options.modelId));
+                    if (model !== undefined) {
+                        this.scene.add(model);
+                    }
+                    this.map.triggerRerender();
+                }
+            });
         });
     }
 }
