@@ -256,7 +256,7 @@ async function start() {
     };
     */
 
-    plugin.megaMethod(scene);
+    plugin.addRealtyScene(scene);
 
     (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {
