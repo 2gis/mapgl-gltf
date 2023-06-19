@@ -35,7 +35,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private waitForPluginInit = new Promise<void>((resolve) => (this.onPluginInit = resolve));
     private models;
     private control?: GltfFloorControl;
-    private activeModel?: ModelSceneOptions;
+    private activeBuilding?: ModelSceneOptions;
     private activeModelId?: number | string;
     private activePoiGroupIds: Array<number | string> = [];
 
@@ -163,25 +163,28 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
     private createControlOptions(scene: ModelSceneOptions[], buildingState: BuildingState) {
         const { modelId, floorId } = buildingState;
+        const buildingData = scene.find((scenePart) => scenePart.modelId === modelId);
+        if (!buildingData) {
+            throw new Error(
+                `There is no building's model with id ${modelId}. Please check options of method addScene`,
+            );
+        }
+
         const options: ControlShowOptions = {
             modelId: modelId,
         };
         if (floorId) {
             options.floorId = floorId;
         }
-        const activeModel = scene.filter((scenePart) => scenePart.modelId === modelId);
-        if (activeModel.length === 0) {
-            return options;
-        }
 
-        if (activeModel[0].floors !== undefined) {
+        if (buildingData.floors !== undefined) {
             const floorLevels: FloorLevel[] = [
                 {
                     icon: 'building',
                     text: '',
                 },
             ];
-            activeModel[0].floors.forEach((floor) => {
+            buildingData.floors.forEach((floor) => {
                 floorLevels.push({
                     floorId: floor.id,
                     text: floor.text,
@@ -218,11 +221,11 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     public async megaMethod(scene: ModelSceneOptions[], state?: BuildingState) {
         await this.waitForPluginInit;
 
-        // set activeModel
+        // set activeBuilding
         if (state) {
-            this.activeModel = scene.find((model) => model.modelId === state.modelId);
-            this.activeModelId = this.activeModel?.modelId;
-            this.setMapOptions(this.activeModel?.mapOptions);
+            this.activeBuilding = scene.find((model) => model.modelId === state.modelId);
+            this.activeModelId = this.activeBuilding?.modelId;
+            this.setMapOptions(this.activeBuilding?.mapOptions);
         }
 
         // initialize control
@@ -253,45 +256,46 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         // bind events
         this.on('click', (ev) => {
             if (ev.target.type === 'model') {
-                // set activeModel
-                const selectedModel = scene.find((model) => model.modelId === ev.target.modelId);
-                if (selectedModel?.modelId !== this.activeModel?.modelId) {
-                    // click to the different building
-                    if (this.activeModel) {
-                        // if currently visible a floor plan, then show a whole building
-                        if (
-                            this.activeModelId &&
-                            this.activeModelId !== this.activeModel?.modelId
-                        ) {
-                            const oldId = this.activeModelId;
-                            this.addModel({
-                                modelId: this.activeModel.modelId,
-                                coordinates: this.activeModel.coordinates,
-                                modelUrl: this.activeModel.modelUrl,
-                                rotateX: this.activeModel.rotateX,
-                                rotateY: this.activeModel.rotateY,
-                                scale: this.activeModel.scale,
-                            }).then(() => {
-                                this.clearPoiGroups();
-                                this.removeModel(oldId);
-                            });
-                        }
-                    }
-                    this.activeModel = selectedModel;
-                    this.activeModelId = selectedModel?.modelId;
-                    this.setMapOptions(this.activeModel?.mapOptions);
-                    this.control?.destroy();
-                    // initialize control
-                    const { position } = this.options.floorsControl;
-                    this.control = new GltfFloorControl(this.map, { position });
-                    if (selectedModel) {
-                        const state = { modelId: selectedModel.modelId };
-                        const controlOptions = this.createControlOptions(scene, state);
-                        this.control?.show(controlOptions);
-                        this.control.on('floorChange', (ev) => {
-                            this.floorChangeHandler(ev);
+                // set activeBuilding
+                const selectedBuilding = scene.find((model) => model.modelId === ev.target.modelId);
+                if (!selectedBuilding) {
+                    return;
+                }
+                if (selectedBuilding.modelId !== this.activeBuilding?.modelId) {
+                    // if there is a visible floor plan, then show the whole building
+                    // before focusing on the different building
+                    if (
+                        this.activeBuilding &&
+                        this.activeModelId &&
+                        this.activeModelId !== this.activeBuilding?.modelId
+                    ) {
+                        const oldId = this.activeModelId;
+                        this.addModel({
+                            modelId: this.activeBuilding.modelId,
+                            coordinates: this.activeBuilding.coordinates,
+                            modelUrl: this.activeBuilding.modelUrl,
+                            rotateX: this.activeBuilding.rotateX,
+                            rotateY: this.activeBuilding.rotateY,
+                            scale: this.activeBuilding.scale,
+                        }).then(() => {
+                            this.clearPoiGroups();
+                            this.removeModel(oldId);
                         });
                     }
+                    this.activeBuilding = selectedBuilding;
+                    this.activeModelId = selectedBuilding.modelId;
+                    this.setMapOptions(this.activeBuilding?.mapOptions);
+
+                    // initialize control
+                    const { position } = this.options.floorsControl;
+                    this.control?.destroy();
+                    this.control = new GltfFloorControl(this.map, { position });
+                    const state = { modelId: selectedBuilding.modelId };
+                    const controlOptions = this.createControlOptions(scene, state);
+                    this.control?.show(controlOptions);
+                    this.control.on('floorChange', (ev) => {
+                        this.floorChangeHandler(ev);
+                    });
                 }
             }
         });
@@ -309,7 +313,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     private floorChangeHandler(ev: FloorChangeEvent) {
-        const model = this.activeModel;
+        const model = this.activeBuilding;
         if (model !== undefined && model.floors !== undefined) {
             // click to the building button
             if (ev.floorId === undefined) {
