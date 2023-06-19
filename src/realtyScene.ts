@@ -2,7 +2,12 @@ import type { Map as MapGL, AnimationOptions } from '@2gis/mapgl/types';
 
 import { EventSource } from './eventSource';
 import { GltfPlugin } from './plugin';
-import type { BuildingState, ModelSceneOptions, ModelMapOptions } from './types/plugin';
+import type {
+    BuildingState,
+    ModelSceneOptions,
+    ModelMapOptions,
+    ModelOptions,
+} from './types/plugin';
 import { defaultOptions } from './defaultOptions';
 import { ControlShowOptions, FloorLevel, FloorChangeEvent } from './control/types';
 import { GltfFloorControl } from './control';
@@ -97,18 +102,45 @@ export class RealtyScene {
         }
 
         // initialize initial scene
-        const mainModels = scene.map(
-            ({ modelId, coordinates, modelUrl, rotateX, rotateY, scale, linkedIds }) => ({
-                modelId,
-                coordinates,
-                modelUrl,
-                rotateX,
-                rotateY,
-                scale,
-                linkedIds,
-            }),
-        );
-        this.plugin.addModels(mainModels);
+        const models: ModelOptions[] = [];
+        const modelIds: Array<string | number> = [];
+        scene.forEach((scenePart) => {
+            models.push({
+                modelId: scenePart.modelId,
+                coordinates: scenePart.coordinates,
+                modelUrl: scenePart.modelUrl,
+                rotateX: scenePart.rotateX,
+                rotateY: scenePart.rotateY,
+                rotateZ: scenePart.rotateZ,
+                offsetX: scenePart.offsetX,
+                offsetY: scenePart.offsetY,
+                offsetZ: scenePart.offsetZ,
+                scale: scenePart.scale,
+                linkedIds: scenePart.linkedIds,
+            });
+            modelIds.push(scenePart.modelId);
+            if (this.options.modelsLoadStrategy === 'waitAll') {
+                const { floors } = scenePart;
+                if (floors !== undefined) {
+                    floors.forEach((floor) => {
+                        models.push({
+                            modelId: floor.id,
+                            coordinates: scenePart.coordinates,
+                            modelUrl: floor.modelUrl,
+                            rotateX: scenePart.rotateX,
+                            rotateY: scenePart.rotateY,
+                            rotateZ: scenePart.rotateZ,
+                            offsetX: scenePart.offsetX,
+                            offsetY: scenePart.offsetY,
+                            offsetZ: scenePart.offsetZ,
+                            scale: scenePart.scale,
+                            linkedIds: scenePart.linkedIds,
+                        });
+                    });
+                }
+            }
+        });
+        this.plugin.addModelsPartially(models, modelIds);
 
         // bind events
         this.plugin.on('click', (ev) => {
@@ -138,7 +170,7 @@ export class RealtyScene {
                             })
                             .then(() => {
                                 this.clearPoiGroups();
-                                this.plugin.removeModel(oldId);
+                                this.plugin.removeModel(oldId, true);
                             });
                     }
                     this.activeBuilding = selectedBuilding;
@@ -180,7 +212,7 @@ export class RealtyScene {
                     })
                     .then(() => {
                         if (this.activeModelId) {
-                            this.plugin.removeModel(this.activeModelId);
+                            this.plugin.removeModel(this.activeModelId, true);
                         }
                         this.activeModelId = model.modelId;
                     });
@@ -201,7 +233,7 @@ export class RealtyScene {
                         })
                         .then(() => {
                             if (this.activeModelId) {
-                                this.plugin.removeModel(this.activeModelId);
+                                this.plugin.removeModel(this.activeModelId, true);
                             }
                             this.activeModelId = selectedFloor.id;
 

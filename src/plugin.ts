@@ -99,8 +99,9 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                         this.map.setHiddenObjects(options.linkedIds);
                     }
                 }
-                for (let [_id, model] of this.models) {
-                    this.scene.add(model);
+                const ids = modelOptions.map((opt) => opt.modelId);
+                for (let id of ids) {
+                    this.addModelFromCache(id);
                 }
                 this.map.triggerRerender();
             }
@@ -126,10 +127,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                     }
                 }
                 for (let id of ids) {
-                    const model = this.models.get(String(id));
-                    if (model !== undefined) {
-                        this.scene.add(model);
-                    }
+                    this.addModelFromCache(id);
                 }
                 this.map.triggerRerender();
             }
@@ -138,25 +136,29 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
     public async addModel(options: ModelOptions) {
         await this.waitForPluginInit;
+
+        const wasAdded = this.addModelFromCache(options.modelId);
+        if (wasAdded) {
+            return Promise.resolve();
+        }
+
         return this.loader.loadModel(options).then(() => {
             if (options.linkedIds) {
                 this.map.setHiddenObjects(options.linkedIds);
             }
-
-            const model = this.models.get(String(options.modelId));
-            if (model !== undefined) {
-                this.scene.add(model);
-            }
+            this.addModelFromCache(options.modelId);
             this.map.triggerRerender();
         });
     }
 
-    public removeModel(id: string | number) {
+    public removeModel(id: string | number, preserveCache?: boolean) {
         const model = this.models.get(String(id));
         if (model === undefined) {
             return;
         }
-        this.models.delete(String(id));
+        if (!preserveCache) {
+            this.models.delete(String(id));
+        }
         this.scene.remove(model);
         this.map.triggerRerender();
     }
@@ -268,14 +270,18 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                     if (options.linkedIds) {
                         this.map.setHiddenObjects(options.linkedIds);
                     }
-
-                    const model = this.models.get(String(options.modelId));
-                    if (model !== undefined) {
-                        this.scene.add(model);
-                    }
+                    this.addModelFromCache(options.modelId);
                     this.map.triggerRerender();
                 }
             });
         });
+    }
+
+    private addModelFromCache(id: string | number) {
+        const model = this.models.get(String(id));
+        if (model !== undefined) {
+            this.scene.add(model);
+        }
+        return Boolean(model);
     }
 }

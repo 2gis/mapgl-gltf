@@ -18,7 +18,7 @@ async function start() {
     (window as any).map = map;
 
     const plugin = new GltfPlugin(map, {
-        modelsLoadStrategy: 'dontWaitAll',
+        modelsLoadStrategy: 'waitAll',
         dracoScriptsUrl: 'libs/draco/',
         ambientLight: { color: '#ffffff', intencity: 2.5 },
         poiConfig: {
