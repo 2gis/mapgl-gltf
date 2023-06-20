@@ -176,7 +176,7 @@ export interface ModelMapOptions {
     zoom?: number;
 }
 
-interface ModelFloorsOptions {
+export interface ModelFloorsOptions {
     id: number | string;
     text: string;
     modelUrl: string;

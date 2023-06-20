@@ -124,7 +124,7 @@ export class GltfFloorControl extends Control {
     }
 
     private _controlHandler = (modelId: Id, floorId?: Id) => () => {
-        this._switchCurrentFloorLevel(modelId, floorId);
+        this.switchCurrentFloorLevel(modelId, floorId);
 
         this.emit('floorChange', {
             modelId,
@@ -132,7 +132,7 @@ export class GltfFloorControl extends Control {
         });
     };
 
-    private _switchCurrentFloorLevel(modelId: Id, floorId?: Id) {
+    public switchCurrentFloorLevel(modelId: Id, floorId?: Id) {
         if (this._currentFloorId === undefined) {
             return;
         }

@@ -7,6 +7,7 @@ import type {
     ModelSceneOptions,
     ModelMapOptions,
     ModelOptions,
+    ModelFloorsOptions,
 } from './types/plugin';
 import { defaultOptions } from './defaultOptions';
 import { ControlShowOptions, FloorLevel, FloorChangeEvent } from './control/types';
@@ -145,14 +146,14 @@ export class RealtyScene {
         // bind events
         this.plugin.on('click', (ev) => {
             if (ev.target.type === 'model') {
-                // set activeBuilding
                 const selectedBuilding = scene.find((model) => model.modelId === ev.target.modelId);
                 if (!selectedBuilding || selectedBuilding.nonInteractive) {
                     return;
                 }
+
                 if (selectedBuilding.modelId !== this.activeBuilding?.modelId) {
                     // if there is a visible floor plan, then show the whole building
-                    // before focusing on the different building
+                    // before focusing on the new building
                     if (
                         this.activeBuilding &&
                         this.activeModelId &&
@@ -173,9 +174,34 @@ export class RealtyScene {
                                 this.plugin.removeModel(oldId, true);
                             });
                     }
+
+                    // show the highest floor after a click on the new building
+                    const floors = selectedBuilding.floors;
+                    if (floors && floors.length !== 0) {
+                        const floorOptions = floors[floors.length - 1];
+                        this.plugin
+                            .addModel({
+                                modelId: floorOptions.id,
+                                coordinates: selectedBuilding.coordinates,
+                                modelUrl: floorOptions.modelUrl,
+                                rotateX: selectedBuilding.rotateX,
+                                rotateY: selectedBuilding.rotateY,
+                                scale: selectedBuilding.scale,
+                            })
+                            .then(() => {
+                                this.plugin.removeModel(selectedBuilding.modelId, true);
+                                this.addFloorPoi(floorOptions);
+                                this.control?.switchCurrentFloorLevel(
+                                    selectedBuilding.modelId,
+                                    floorOptions.id,
+                                );
+                            });
+                    } else {
+                        this.activeModelId = selectedBuilding.modelId;
+                        this.setMapOptions(selectedBuilding.mapOptions);
+                    }
+
                     this.activeBuilding = selectedBuilding;
-                    this.activeModelId = selectedBuilding.modelId;
-                    this.setMapOptions(this.activeBuilding?.mapOptions);
 
                     // initialize control
                     const { position } = this.options.floorsControl;
@@ -221,7 +247,7 @@ export class RealtyScene {
             // click to the floor button
             if (ev.floorId !== undefined) {
                 const selectedFloor = model.floors.find((floor) => floor.id === ev.floorId);
-                const oldId = this.activeModelId;
+                // const oldId = this.activeModelId;
                 if (selectedFloor !== undefined && this.activeModelId !== undefined) {
                     this.plugin
                         .addModel({
@@ -236,25 +262,30 @@ export class RealtyScene {
                             if (this.activeModelId) {
                                 this.plugin.removeModel(this.activeModelId, true);
                             }
-                            this.activeModelId = selectedFloor.id;
 
-                            this.setMapOptions(selectedFloor?.mapOptions);
-
-                            this.clearPoiGroups();
-
-                            selectedFloor.poiGroups?.forEach((poiGroup) => {
-                                if (oldId) {
-                                    this.plugin.addPoiGroup(poiGroup, {
-                                        modelId: oldId,
-                                        floorId: selectedFloor.id,
-                                    });
-                                    this.activePoiGroupIds.push(poiGroup.id);
-                                }
-                            });
+                            this.addFloorPoi(selectedFloor);
                         });
                 }
             }
         }
+    }
+
+    private addFloorPoi(floorOptions: ModelFloorsOptions) {
+        this.activeModelId = floorOptions.id;
+
+        this.setMapOptions(floorOptions?.mapOptions);
+
+        this.clearPoiGroups();
+
+        floorOptions.poiGroups?.forEach((poiGroup) => {
+            if (this.activeBuilding?.modelId) {
+                this.plugin.addPoiGroup(poiGroup, {
+                    modelId: this.activeBuilding?.modelId,
+                    floorId: floorOptions.id,
+                });
+                this.activePoiGroupIds.push(poiGroup.id);
+            }
+        });
     }
 
     private clearPoiGroups() {
