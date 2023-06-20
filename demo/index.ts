@@ -19,6 +19,7 @@ async function start() {
 
     const plugin = new GltfPlugin(map, {
         modelsLoadStrategy: 'waitAll',
+        modelsBaseUrl: 'https://disk.2gis.com/digital-twin/models_s3/realty_ads/zgktechnology/',
         dracoScriptsUrl: 'libs/draco/',
         ambientLight: { color: '#ffffff', intencity: 2.5 },
         poiConfig: {
@@ -35,7 +36,7 @@ async function start() {
         {
             modelId: '03a234cb',
             coordinates: [47.245286302641034, 56.134743473834099],
-            modelUrl: 'http://localhost:3300/zgktechnology1.glb',
+            modelUrl: 'zgktechnology1.glb',
             rotateX: 90,
             rotateY: -15.1240072739039,
             scale: 191.637678,
@@ -50,7 +51,7 @@ async function start() {
                 {
                     id: '235034',
                     text: '1-10',
-                    modelUrl: 'http://localhost:3300/zgktechnology1_floor 2.glb',
+                    modelUrl: 'zgktechnology1_floor2.glb',
                     poiGroups: [
                         {
                             id: 1111,
@@ -102,7 +103,7 @@ async function start() {
                 {
                     id: '000034',
                     text: '11',
-                    modelUrl: 'http://localhost:3300/zgktechnology1_floor 11.glb',
+                    modelUrl: 'zgktechnology1_floor11.glb',
                     poiGroups: [
                         {
                             id: 1111,
@@ -144,7 +145,7 @@ async function start() {
         {
             modelId: '1ba234cb',
             coordinates: [47.245286302641034, 56.134743473834099],
-            modelUrl: 'http://localhost:3300/zgktechnology2.glb',
+            modelUrl: 'zgktechnology2.glb',
             rotateX: 90,
             rotateY: -15.1240072739039,
             scale: 191.637678,
@@ -159,7 +160,7 @@ async function start() {
                 {
                     id: 'aaa777',
                     text: '2-15',
-                    modelUrl: 'http://localhost:3300/zgktechnology2_floor 2.glb',
+                    modelUrl: 'zgktechnology2_floor2.glb',
                     poiGroups: [
                         {
                             id: 1111,
@@ -199,7 +200,7 @@ async function start() {
                 {
                     id: 'bbb555',
                     text: '16',
-                    modelUrl: 'http://localhost:3300/zgktechnology2_floor 16.glb',
+                    modelUrl: 'zgktechnology2_floor16.glb',
                     poiGroups: [
                         {
                             id: 1111,
@@ -241,7 +242,7 @@ async function start() {
         {
             modelId: 'eda234cb',
             coordinates: [47.245286302641034, 56.134743473834099],
-            modelUrl: 'http://localhost:3300/zgktechnology_construction.glb',
+            modelUrl: 'zgktechnology_construction.glb',
             rotateX: 90,
             rotateY: -15.1240072739039,
             scale: 191.637678,
