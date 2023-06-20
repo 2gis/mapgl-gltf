@@ -6,6 +6,7 @@ import icon_building from 'raw-loader!./icon_building.svg';
 import icon_parking from 'raw-loader!./icon_parking.svg';
 import { Control } from './control';
 import classes from './control.module.css';
+import { createCompoundId } from '../utils/common';
 
 const content = /* HTML */ `
     <div class="${classes.root}">
@@ -52,7 +53,7 @@ export class GltfFloorControl extends Control {
 
         const { modelId, floorId, floorLevels = [] } = options;
 
-        this._currentFloorId = this.createId(modelId, floorId);
+        this._currentFloorId = createCompoundId(modelId, floorId);
         this._root.style.display = 'block';
         this._content.innerHTML = '';
         this._contentHome.innerHTML = '';
@@ -73,7 +74,7 @@ export class GltfFloorControl extends Control {
             }
             button.className = classes.control;
             button.innerHTML = `<div class="${classes.label}">${buttonContent}</div>`;
-            const id = this.createId(modelId, floorId);
+            const id = createCompoundId(modelId, floorId);
             button.name = id;
             if (this._currentFloorId === id) {
                 button.disabled = true;
@@ -137,7 +138,7 @@ export class GltfFloorControl extends Control {
             return;
         }
 
-        const id = this.createId(modelId, floorId);
+        const id = createCompoundId(modelId, floorId);
 
         const buttonToDisabled: HTMLButtonElement | null = this._wrap.querySelector(
             `.${classes.control}[name="${this._currentFloorId}"]`,
@@ -154,12 +155,5 @@ export class GltfFloorControl extends Control {
         }
 
         this._currentFloorId = id;
-    }
-
-    private createId(modelId: Id, floorId?: Id) {
-        if (floorId === undefined) {
-            return String(modelId);
-        }
-        return `${modelId}_${floorId}`;
     }
 }

@@ -12,7 +12,7 @@ import type {
 import { defaultOptions } from './defaultOptions';
 import type { ControlShowOptions, FloorLevel, FloorChangeEvent } from './control/types';
 import { GltfFloorControl } from './control';
-import { clone } from './utils/common';
+import { clone, createCompoundId } from './utils/common';
 
 export class RealtyScene {
     private activeBuilding?: ModelSceneOptions;
@@ -83,6 +83,12 @@ export class RealtyScene {
     }
 
     public async addRealtyScene(scene: ModelSceneOptions[], state?: BuildingState) {
+        // make unique compound identifiers for floor's plans
+        this.makeUniqueFloorIds(scene);
+        if (state?.floorId !== undefined) {
+            state.floorId = createCompoundId(state.modelId, state.floorId);
+        }
+
         // set initial fields
         if (state) {
             this.activeBuilding = scene.find((model) => model.modelId === state.modelId);
@@ -342,5 +348,14 @@ export class RealtyScene {
         });
 
         this.activePoiGroupIds = [];
+    }
+
+    private makeUniqueFloorIds(scene: ModelSceneOptions[]) {
+        for (let scenePart of scene) {
+            const floors = scenePart.floors ?? [];
+            for (let floor of floors) {
+                floor.id = createCompoundId(scenePart.modelId, floor.id);
+            }
+        }
     }
 }
