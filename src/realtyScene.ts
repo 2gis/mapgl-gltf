@@ -13,6 +13,7 @@ import { defaultOptions } from './defaultOptions';
 import type { ControlShowOptions, FloorLevel, FloorChangeEvent } from './control/types';
 import { GltfFloorControl } from './control';
 import { clone, createCompoundId } from './utils/common';
+import type { PoiGeoJsonProperties } from './types/events';
 
 export class RealtyScene {
     private activeBuilding?: ModelSceneOptions;
@@ -196,8 +197,22 @@ export class RealtyScene {
                 if (ev.target.type === 'model' && ev.target.modelId !== undefined) {
                     this.modelClickHandler(scene, ev.target.modelId);
                 }
+
+                if (ev.target.type === 'poi') {
+                    this.poiClickHandler(ev.target.data);
+                }
             });
         });
+    }
+
+    private poiClickHandler(data: PoiGeoJsonProperties) {
+        const url: string | undefined = data.userData.url;
+        if (url !== undefined) {
+            const a = document.createElement('a');
+            a.setAttribute('href', url);
+            a.setAttribute('target', '_blank');
+            a.click();
+        }
     }
 
     private floorChangeHandler(ev: FloorChangeEvent) {
