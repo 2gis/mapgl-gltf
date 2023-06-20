@@ -8,7 +8,7 @@ async function start() {
 
     const map = new mapglAPI.Map('container', {
         center: [47.245286302641034, 56.134743473834099],
-        zoom: 17.5,
+        zoom: 17.9,
         key: 'cb20c5bf-34d3-4f0e-9b2b-33e9b8edb57f',
         pitch: 45,
         rotation: 330,
@@ -37,7 +37,9 @@ async function start() {
         // floorId: '235034',
     };
 
-    plugin.addRealtyScene(realtyScene, defaultState);
+    // plugin.addRealtyScene(realtyScene, defaultState);
+
+    plugin.addRealtyScene(realtyScene);
 
     (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {

@@ -102,17 +102,6 @@ export class RealtyScene {
                 state.floorId !== undefined ? state.floorId : this.activeBuilding.modelId;
         }
 
-        // initialize control
-        const { position } = this.options.floorsControl;
-        this.control = new GltfFloorControl(this.map, { position });
-        if (state !== undefined) {
-            const controlOptions = this.createControlOptions(scene, state);
-            this.control?.show(controlOptions);
-            if (state.floorId) {
-                this.eventSource?.setCurrentFloorId(state.floorId);
-            }
-        }
-
         // initialize initial scene
         const models: ModelOptions[] = [];
         const modelIds: Array<string | number> = [];
@@ -187,16 +176,27 @@ export class RealtyScene {
             } else {
                 this.setMapOptions(this.activeBuilding?.mapOptions);
             }
-        });
 
-        // bind events
-        this.plugin.on('click', (ev) => {
-            if (ev.target.type === 'model' && ev.target.modelId !== undefined) {
-                this.modelClickHandler(scene, ev.target.modelId);
+            // initialize control
+            const { position } = this.options.floorsControl;
+            this.control = new GltfFloorControl(this.map, { position });
+            if (state !== undefined) {
+                const controlOptions = this.createControlOptions(scene, state);
+                this.control?.show(controlOptions);
+                if (state.floorId) {
+                    this.eventSource?.setCurrentFloorId(state.floorId);
+                }
             }
-        });
-        this.control.on('floorChange', (ev) => {
-            this.floorChangeHandler(ev);
+
+            this.control.on('floorChange', (ev) => {
+                this.floorChangeHandler(ev);
+            });
+
+            this.plugin.on('click', (ev) => {
+                if (ev.target.type === 'model' && ev.target.modelId !== undefined) {
+                    this.modelClickHandler(scene, ev.target.modelId);
+                }
+            });
         });
     }
 
@@ -226,7 +226,6 @@ export class RealtyScene {
             // click to the floor button
             if (ev.floorId !== undefined) {
                 const selectedFloor = model.floors.find((floor) => floor.id === ev.floorId);
-                // const oldId = this.activeModelId;
                 if (selectedFloor !== undefined && this.activeModelId !== undefined) {
                     this.plugin
                         .addModel({
