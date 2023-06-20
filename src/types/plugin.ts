@@ -182,6 +182,7 @@ interface ModelFloorsOptions {
     modelUrl: string;
     icon?: 'building' | 'parking' | string;
     poiGroups?: AddPoiGroupOptions[];
+    mapOptions?: ModelMapOptions;
 }
 
 export interface ModelSceneOptions extends ModelOptions {

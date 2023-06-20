@@ -214,6 +214,7 @@ export class RealtyScene {
                         if (this.activeModelId) {
                             this.plugin.removeModel(this.activeModelId, true);
                         }
+                        this.setMapOptions(model?.mapOptions);
                         this.activeModelId = model.modelId;
                     });
             }
@@ -236,6 +237,8 @@ export class RealtyScene {
                                 this.plugin.removeModel(this.activeModelId, true);
                             }
                             this.activeModelId = selectedFloor.id;
+
+                            this.setMapOptions(selectedFloor?.mapOptions);
 
                             this.clearPoiGroups();
 
