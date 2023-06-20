@@ -188,6 +188,7 @@ interface ModelFloorsOptions {
 export interface ModelSceneOptions extends ModelOptions {
     mapOptions?: ModelMapOptions;
     floors?: ModelFloorsOptions[];
+    nonInteractive?: boolean;
 }
 
 export interface PoiOptions {

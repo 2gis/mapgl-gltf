@@ -147,7 +147,7 @@ export class RealtyScene {
             if (ev.target.type === 'model') {
                 // set activeBuilding
                 const selectedBuilding = scene.find((model) => model.modelId === ev.target.modelId);
-                if (!selectedBuilding) {
+                if (!selectedBuilding || selectedBuilding.nonInteractive) {
                     return;
                 }
                 if (selectedBuilding.modelId !== this.activeBuilding?.modelId) {
