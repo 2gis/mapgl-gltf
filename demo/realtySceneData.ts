@@ -163,30 +163,70 @@ export const realtyScene: ModelSceneOptions[] = [
                     {
                         id: 1111,
                         type: 'primary',
-                        minZoom: 18,
-                        elevation: 5,
+                        minZoom: 19,
+                        elevation: 7,
                         fontSize: 14,
                         fontColor: '#3a3a3a',
                         data: [
                             {
                                 coordinates: [47.24452417991248, 56.13469284843933],
-                                label: '1к\n14.4 м²',
+                                label: '1к\n27 м²',
                                 userData: {
                                     url: 'https://a101.ru/kvartiry/360810/',
                                 },
                             },
-                        ],
-                    },
-                    {
-                        id: 2222,
-                        type: 'secondary',
-                        minZoom: 18.5,
-                        elevation: 5,
-                        fontSize: 12,
-                        data: [
                             {
-                                coordinates: [47.244517818982104, 56.13468687293689],
-                                label: '12 м²',
+                                coordinates: [47.24457199258783, 56.13477179423035],
+                                label: '2к\n54.4 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.244491707517696, 56.13463324895681],
+                                label: '1к\n27 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.244467722972786, 56.13455859493207],
+                                label: '3к\n67 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.24459718584492, 56.13483803780593],
+                                label: '1к\n30 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.24474865936005, 56.13481340001352],
+                                label: '2к\n45 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.244714550432995, 56.13474141463477],
+                                label: '3к\n54.4 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.24464159162246, 56.134578465378226],
+                                label: '1к\n33 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.24461054223749, 56.13451937931448],
+                                label: '2к\n45 м²',
                                 userData: {
                                     url: 'https://a101.ru/kvartiry/360810/',
                                 },
@@ -202,37 +242,77 @@ export const realtyScene: ModelSceneOptions[] = [
                 mapOptions: {
                     center: [47.24498428988907, 56.134514900849325],
                     pitch: 35,
-                    zoom: 19.1,
+                    zoom: 19.2,
                     rotation: -130,
                 },
                 poiGroups: [
                     {
                         id: 1111,
                         type: 'primary',
-                        minZoom: 18,
-                        elevation: 55,
+                        minZoom: 18.5,
+                        elevation: 53,
                         fontSize: 14,
                         fontColor: '#3a3a3a',
                         data: [
                             {
-                                coordinates: [47.24448821942699, 56.13463786869349],
-                                label: '2к\n35.7 м²',
+                                coordinates: [47.24452417991248, 56.13469284843933],
+                                label: '1к\n27 м²',
                                 userData: {
                                     url: 'https://a101.ru/kvartiry/360810/',
                                 },
                             },
-                        ],
-                    },
-                    {
-                        id: 2222,
-                        type: 'secondary',
-                        minZoom: 18.5,
-                        elevation: 55,
-                        fontSize: 12,
-                        data: [
                             {
-                                coordinates: [47.24446541051179, 56.13462279154826],
-                                label: '12 м²',
+                                coordinates: [47.24457199258783, 56.13477179423035],
+                                label: '2к\n54.4 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.244491707517696, 56.13463324895681],
+                                label: '1к\n27 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.244467722972786, 56.13455859493207],
+                                label: '3к\n67 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.24459718584492, 56.13483803780593],
+                                label: '1к\n30 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.24474865936005, 56.13481340001352],
+                                label: '2к\n45 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.244714550432995, 56.13474141463477],
+                                label: '3к\n54.4 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.24464159162246, 56.134578465378226],
+                                label: '1к\n33 м²',
+                                userData: {
+                                    url: 'https://a101.ru/kvartiry/360810/',
+                                },
+                            },
+                            {
+                                coordinates: [47.24461054223749, 56.13451937931448],
+                                label: '2к\n45 м²',
                                 userData: {
                                     url: 'https://a101.ru/kvartiry/360810/',
                                 },
