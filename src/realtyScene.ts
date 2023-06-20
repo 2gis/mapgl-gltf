@@ -9,10 +9,10 @@ import type {
     ModelOptions,
     ModelFloorsOptions,
 } from './types/plugin';
-import type { GltfPluginModelEvent } from './types/events';
 import { defaultOptions } from './defaultOptions';
-import { ControlShowOptions, FloorLevel, FloorChangeEvent } from './control/types';
+import type { ControlShowOptions, FloorLevel, FloorChangeEvent } from './control/types';
 import { GltfFloorControl } from './control';
+import { clone } from './utils/common';
 
 export class RealtyScene {
     private activeBuilding?: ModelSceneOptions;
@@ -29,18 +29,16 @@ export class RealtyScene {
 
     private createControlOptions(scene: ModelSceneOptions[], buildingState: BuildingState) {
         const { modelId, floorId } = buildingState;
-        const buildingData = scene.find((scenePart) => scenePart.modelId === modelId);
-        if (!buildingData) {
-            throw new Error(
-                `There is no building's model with id ${modelId}. Please check options of method addRealtyScene`,
-            );
-        }
-
         const options: ControlShowOptions = {
             modelId: modelId,
         };
-        if (floorId) {
+        if (floorId !== undefined) {
             options.floorId = floorId;
+        }
+
+        const buildingData = scene.find((scenePart) => scenePart.modelId === modelId);
+        if (!buildingData) {
+            return options;
         }
 
         if (buildingData.floors !== undefined) {
@@ -85,11 +83,17 @@ export class RealtyScene {
     }
 
     public async addRealtyScene(scene: ModelSceneOptions[], state?: BuildingState) {
-        // set activeBuilding
+        // set initial fields
         if (state) {
             this.activeBuilding = scene.find((model) => model.modelId === state.modelId);
-            this.activeModelId = this.activeBuilding?.modelId;
-            this.setMapOptions(this.activeBuilding?.mapOptions);
+            if (this.activeBuilding === undefined) {
+                throw new Error(
+                    `There is no building's model with id ${state.modelId}. ` +
+                        `Please check options of method addRealtyScene`,
+                );
+            }
+            this.activeModelId =
+                state.floorId !== undefined ? state.floorId : this.activeBuilding.modelId;
         }
 
         // initialize control
@@ -107,7 +111,7 @@ export class RealtyScene {
         const models: ModelOptions[] = [];
         const modelIds: Array<string | number> = [];
         scene.forEach((scenePart) => {
-            models.push({
+            const modelOptions = {
                 modelId: scenePart.modelId,
                 coordinates: scenePart.coordinates,
                 modelUrl: scenePart.modelUrl,
@@ -119,30 +123,65 @@ export class RealtyScene {
                 offsetZ: scenePart.offsetZ,
                 scale: scenePart.scale,
                 linkedIds: scenePart.linkedIds,
-            });
-            modelIds.push(scenePart.modelId);
+            };
+
+            const floors = scenePart.floors ?? [];
+            let hasFloorByDefault = false;
+
+            if (state?.floorId !== undefined) {
+                for (let floor of floors) {
+                    if (floor.id === state.floorId) {
+                        // push origial building
+                        models.push(modelOptions);
+                        // push modified options for floor
+                        const clonedOptions = clone(modelOptions);
+                        clonedOptions.modelId = floor.id;
+                        clonedOptions.modelUrl = floor.modelUrl;
+                        models.push(clonedOptions);
+                        modelIds.push(floor.id);
+                        hasFloorByDefault = true;
+                        break;
+                    }
+                }
+            }
+            if (!hasFloorByDefault) {
+                models.push(modelOptions);
+                modelIds.push(scenePart.modelId);
+            }
+
             if (this.options.modelsLoadStrategy === 'waitAll') {
-                const { floors } = scenePart;
-                if (floors !== undefined) {
-                    floors.forEach((floor) => {
-                        models.push({
-                            modelId: floor.id,
-                            coordinates: scenePart.coordinates,
-                            modelUrl: floor.modelUrl,
-                            rotateX: scenePart.rotateX,
-                            rotateY: scenePart.rotateY,
-                            rotateZ: scenePart.rotateZ,
-                            offsetX: scenePart.offsetX,
-                            offsetY: scenePart.offsetY,
-                            offsetZ: scenePart.offsetZ,
-                            scale: scenePart.scale,
-                            linkedIds: scenePart.linkedIds,
-                        });
+                for (let floor of floors) {
+                    if (floor.id === state?.floorId) {
+                        continue;
+                    }
+                    models.push({
+                        modelId: floor.id,
+                        coordinates: scenePart.coordinates,
+                        modelUrl: floor.modelUrl,
+                        rotateX: scenePart.rotateX,
+                        rotateY: scenePart.rotateY,
+                        rotateZ: scenePart.rotateZ,
+                        offsetX: scenePart.offsetX,
+                        offsetY: scenePart.offsetY,
+                        offsetZ: scenePart.offsetZ,
+                        scale: scenePart.scale,
+                        linkedIds: scenePart.linkedIds,
                     });
                 }
             }
         });
-        this.plugin.addModelsPartially(models, modelIds);
+
+        this.plugin.addModelsPartially(models, modelIds).then(() => {
+            // set options after adding models
+            if (state?.floorId !== undefined) {
+                const floors = this.activeBuilding?.floors ?? [];
+                const activeFloor = floors.find((floor) => floor.id === state.floorId);
+                this.setMapOptions(activeFloor?.mapOptions);
+                this.addFloorPoi(activeFloor);
+            } else {
+                this.setMapOptions(this.activeBuilding?.mapOptions);
+            }
+        });
 
         // bind events
         this.plugin.on('click', (ev) => {
@@ -275,7 +314,11 @@ export class RealtyScene {
         }
     }
 
-    private addFloorPoi(floorOptions: ModelFloorsOptions) {
+    private addFloorPoi(floorOptions?: ModelFloorsOptions) {
+        if (floorOptions === undefined) {
+            return;
+        }
+
         this.activeModelId = floorOptions.id;
 
         this.setMapOptions(floorOptions?.mapOptions);

@@ -32,14 +32,12 @@ async function start() {
         },
     });
 
-    /*
     const defaultState = {
         modelId: '03a234cb',
-        floorId: '235034',
+        // floorId: '235034',
     };
-    */
 
-    plugin.addRealtyScene(realtyScene);
+    plugin.addRealtyScene(realtyScene, defaultState);
 
     (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {
