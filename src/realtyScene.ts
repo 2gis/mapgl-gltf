@@ -9,6 +9,7 @@ import type {
     ModelOptions,
     ModelFloorsOptions,
 } from './types/plugin';
+import type { GltfPluginModelEvent } from './types/events';
 import { defaultOptions } from './defaultOptions';
 import { ControlShowOptions, FloorLevel, FloorChangeEvent } from './control/types';
 import { GltfFloorControl } from './control';
@@ -145,75 +146,8 @@ export class RealtyScene {
 
         // bind events
         this.plugin.on('click', (ev) => {
-            if (ev.target.type === 'model') {
-                const selectedBuilding = scene.find((model) => model.modelId === ev.target.modelId);
-                if (!selectedBuilding || selectedBuilding.nonInteractive) {
-                    return;
-                }
-
-                if (selectedBuilding.modelId !== this.activeBuilding?.modelId) {
-                    // if there is a visible floor plan, then show the whole building
-                    // before focusing on the new building
-                    if (
-                        this.activeBuilding &&
-                        this.activeModelId &&
-                        this.activeModelId !== this.activeBuilding?.modelId
-                    ) {
-                        const oldId = this.activeModelId;
-                        this.plugin
-                            .addModel({
-                                modelId: this.activeBuilding.modelId,
-                                coordinates: this.activeBuilding.coordinates,
-                                modelUrl: this.activeBuilding.modelUrl,
-                                rotateX: this.activeBuilding.rotateX,
-                                rotateY: this.activeBuilding.rotateY,
-                                scale: this.activeBuilding.scale,
-                            })
-                            .then(() => {
-                                this.clearPoiGroups();
-                                this.plugin.removeModel(oldId, true);
-                            });
-                    }
-
-                    // show the highest floor after a click on the new building
-                    const floors = selectedBuilding.floors;
-                    if (floors && floors.length !== 0) {
-                        const floorOptions = floors[floors.length - 1];
-                        this.plugin
-                            .addModel({
-                                modelId: floorOptions.id,
-                                coordinates: selectedBuilding.coordinates,
-                                modelUrl: floorOptions.modelUrl,
-                                rotateX: selectedBuilding.rotateX,
-                                rotateY: selectedBuilding.rotateY,
-                                scale: selectedBuilding.scale,
-                            })
-                            .then(() => {
-                                this.plugin.removeModel(selectedBuilding.modelId, true);
-                                this.addFloorPoi(floorOptions);
-                                this.control?.switchCurrentFloorLevel(
-                                    selectedBuilding.modelId,
-                                    floorOptions.id,
-                                );
-                            });
-                    } else {
-                        this.activeModelId = selectedBuilding.modelId;
-                        this.setMapOptions(selectedBuilding.mapOptions);
-                    }
-
-                    this.activeBuilding = selectedBuilding;
-
-                    // initialize control
-                    const { position } = this.options.floorsControl;
-                    this.control?.destroy();
-                    this.control = new GltfFloorControl(this.map, { position });
-                    const state = { modelId: selectedBuilding.modelId };
-                    const controlOptions = this.createControlOptions(scene, state);
-                    this.control?.show(controlOptions);
-                    this.control.on('floorChange', (ev) => {
-                        this.floorChangeHandler(ev);
-                    });
-                }
+            if (ev.target.type === 'model' && ev.target.modelId !== undefined) {
+                this.modelClickHandler(scene, ev.target.modelId);
             }
         });
         this.control.on('floorChange', (ev) => {
@@ -267,6 +201,77 @@ export class RealtyScene {
                         });
                 }
             }
+        }
+    }
+
+    private modelClickHandler(scene: ModelSceneOptions[], modelId: string | number) {
+        const selectedBuilding = scene.find((model) => model.modelId === modelId);
+        if (!selectedBuilding || selectedBuilding.nonInteractive) {
+            return;
+        }
+
+        if (selectedBuilding.modelId !== this.activeBuilding?.modelId) {
+            // if there is a visible floor plan, then show the whole building
+            // before focusing on the new building
+            if (
+                this.activeBuilding &&
+                this.activeModelId &&
+                this.activeModelId !== this.activeBuilding?.modelId
+            ) {
+                const oldId = this.activeModelId;
+                this.plugin
+                    .addModel({
+                        modelId: this.activeBuilding.modelId,
+                        coordinates: this.activeBuilding.coordinates,
+                        modelUrl: this.activeBuilding.modelUrl,
+                        rotateX: this.activeBuilding.rotateX,
+                        rotateY: this.activeBuilding.rotateY,
+                        scale: this.activeBuilding.scale,
+                    })
+                    .then(() => {
+                        this.clearPoiGroups();
+                        this.plugin.removeModel(oldId, true);
+                    });
+            }
+
+            // show the highest floor after a click on the new building
+            const floors = selectedBuilding.floors;
+            if (floors && floors.length !== 0) {
+                const floorOptions = floors[floors.length - 1];
+                this.plugin
+                    .addModel({
+                        modelId: floorOptions.id,
+                        coordinates: selectedBuilding.coordinates,
+                        modelUrl: floorOptions.modelUrl,
+                        rotateX: selectedBuilding.rotateX,
+                        rotateY: selectedBuilding.rotateY,
+                        scale: selectedBuilding.scale,
+                    })
+                    .then(() => {
+                        this.plugin.removeModel(selectedBuilding.modelId, true);
+                        this.addFloorPoi(floorOptions);
+                        this.control?.switchCurrentFloorLevel(
+                            selectedBuilding.modelId,
+                            floorOptions.id,
+                        );
+                    });
+            } else {
+                this.activeModelId = selectedBuilding.modelId;
+                this.setMapOptions(selectedBuilding.mapOptions);
+            }
+
+            this.activeBuilding = selectedBuilding;
+
+            // initialize control
+            const { position } = this.options.floorsControl;
+            this.control?.destroy();
+            this.control = new GltfFloorControl(this.map, { position });
+            const state = { modelId: selectedBuilding.modelId };
+            const controlOptions = this.createControlOptions(scene, state);
+            this.control?.show(controlOptions);
+            this.control.on('floorChange', (ev) => {
+                this.floorChangeHandler(ev);
+            });
         }
     }
 
