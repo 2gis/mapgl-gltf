@@ -21,7 +21,7 @@ export class RealtyScene {
     private control?: GltfFloorControl;
     private activePoiGroupIds: Array<number | string> = [];
     private container: HTMLElement;
-    private buildingIds: Array<number | string> = [];
+    private buildingFacadeIds: Array<number | string> = [];
 
     constructor(
         private plugin: GltfPlugin,
@@ -111,7 +111,7 @@ export class RealtyScene {
         const models: ModelOptions[] = [];
         const modelIds: Array<string | number> = [];
         scene.forEach((scenePart) => {
-            this.buildingIds.push(scenePart.modelId);
+            this.buildingFacadeIds.push(scenePart.modelId);
 
             const modelOptions = {
                 modelId: scenePart.modelId,
@@ -201,8 +201,11 @@ export class RealtyScene {
             });
 
             this.plugin.on('click', (ev) => {
-                if (ev.target.type === 'model' && ev.target.modelId !== undefined) {
-                    this.buildingClickHandler(scene, ev.target.modelId);
+                if (ev.target.type === 'model') {
+                    const id = ev.target.modelId;
+                    if (this.isFacadeBuilding(id) && id !== undefined) {
+                        this.buildingClickHandler(scene, id);
+                    }
                 }
 
                 if (ev.target.type === 'poi') {
@@ -212,8 +215,7 @@ export class RealtyScene {
 
             this.plugin.on('mouseover', (ev) => {
                 if (ev.target.type === 'model') {
-                    console.log('mouseover', ev.target.modelId);
-                    if (ev.target.modelId && this.buildingIds.includes(ev.target.modelId)) {
+                    if (this.isFacadeBuilding(ev.target.modelId)) {
                         this.container.style.cursor = 'pointer';
                     }
                 }
@@ -221,13 +223,21 @@ export class RealtyScene {
 
             this.plugin.on('mouseout', (ev) => {
                 if (ev.target.type === 'model') {
-                    console.log('mouseout', ev.target.modelId);
-                    if (ev.target.modelId && this.buildingIds.includes(ev.target.modelId)) {
+                    if (this.isFacadeBuilding(ev.target.modelId)) {
                         this.container.style.cursor = '';
                     }
                 }
             });
         });
+    }
+
+    // checks if the modelId is external facade of the building
+    private isFacadeBuilding(modelId?: number | string) {
+        if (modelId === undefined) {
+            return false;
+        }
+
+        return this.buildingFacadeIds.includes(modelId);
     }
 
     private poiClickHandler(data: PoiGeoJsonProperties) {
@@ -296,58 +306,59 @@ export class RealtyScene {
 
         this.container.style.cursor = '';
 
-        if (selectedBuilding.modelId !== this.activeBuilding?.modelId) {
-            // if there is a visible floor plan, then show the whole building
-            // before focusing on the new building
-            if (
-                this.activeBuilding &&
-                this.activeModelId &&
-                this.activeModelId !== this.activeBuilding?.modelId
-            ) {
-                const oldId = this.activeModelId;
-                this.plugin
-                    .addModel({
-                        modelId: this.activeBuilding.modelId,
-                        coordinates: this.activeBuilding.coordinates,
-                        modelUrl: this.activeBuilding.modelUrl,
-                        rotateX: this.activeBuilding.rotateX,
-                        rotateY: this.activeBuilding.rotateY,
-                        scale: this.activeBuilding.scale,
-                    })
-                    .then(() => {
-                        this.clearPoiGroups();
-                        this.plugin.removeModel(oldId, true);
-                    });
-            }
+        // if there is a visible floor plan, then show the whole building
+        // before focusing on the new building
+        if (
+            this.activeBuilding &&
+            this.activeModelId &&
+            this.activeModelId !== this.activeBuilding?.modelId
+        ) {
+            const oldId = this.activeModelId;
+            this.plugin
+                .addModel({
+                    modelId: this.activeBuilding.modelId,
+                    coordinates: this.activeBuilding.coordinates,
+                    modelUrl: this.activeBuilding.modelUrl,
+                    rotateX: this.activeBuilding.rotateX,
+                    rotateY: this.activeBuilding.rotateY,
+                    scale: this.activeBuilding.scale,
+                })
+                .then(() => {
+                    this.clearPoiGroups();
+                    this.plugin.removeModel(oldId, true);
+                });
+        }
 
-            // show the highest floor after a click on the new building
-            const floors = selectedBuilding.floors ?? [];
-            if (floors.length !== 0) {
-                const floorOptions = floors[floors.length - 1];
-                this.plugin
-                    .addModel({
-                        modelId: floorOptions.id,
-                        coordinates: selectedBuilding.coordinates,
-                        modelUrl: floorOptions.modelUrl,
-                        rotateX: selectedBuilding.rotateX,
-                        rotateY: selectedBuilding.rotateY,
-                        scale: selectedBuilding.scale,
-                    })
-                    .then(() => {
-                        this.plugin.removeModel(selectedBuilding.modelId, true);
-                        this.addFloorPoi(floorOptions);
-                        this.control?.switchCurrentFloorLevel(
-                            selectedBuilding.modelId,
-                            floorOptions.id,
-                        );
-                    });
-            } else {
-                this.activeModelId = selectedBuilding.modelId;
-                this.setMapOptions(selectedBuilding.mapOptions);
-            }
+        // show the highest floor after a click on the building
+        const floors = selectedBuilding.floors ?? [];
+        if (floors.length !== 0) {
+            const floorOptions = floors[floors.length - 1];
+            this.plugin
+                .addModel({
+                    modelId: floorOptions.id,
+                    coordinates: selectedBuilding.coordinates,
+                    modelUrl: floorOptions.modelUrl,
+                    rotateX: selectedBuilding.rotateX,
+                    rotateY: selectedBuilding.rotateY,
+                    scale: selectedBuilding.scale,
+                })
+                .then(() => {
+                    this.plugin.removeModel(selectedBuilding.modelId, true);
+                    this.addFloorPoi(floorOptions);
+                    this.control?.switchCurrentFloorLevel(
+                        selectedBuilding.modelId,
+                        floorOptions.id,
+                    );
+                });
+        } else {
+            this.activeModelId = selectedBuilding.modelId;
+            this.setMapOptions(selectedBuilding.mapOptions);
+        }
 
-            this.activeBuilding = selectedBuilding;
-
+        if (
+            this.activeBuilding === undefined ||
+            selectedBuilding.modelId !== this.activeBuilding?.modelId
+        ) {
             // initialize control
             const { position } = this.options.floorsControl;
             this.control?.destroy();
@@ -359,6 +370,8 @@ export class RealtyScene {
                 this.floorChangeHandler(ev);
             });
         }
+
+        this.activeBuilding = selectedBuilding;
     }
 
     private addFloorPoi(floorOptions?: ModelFloorsOptions) {
