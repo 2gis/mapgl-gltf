@@ -32,16 +32,17 @@ export class RealtyScene {
         this.container = map.getContainer();
     }
 
-    public async addRealtyScene(scene: ModelSceneOptions[], state?: BuildingState) {
+    public async addRealtyScene(scene: ModelSceneOptions[], originalState?: BuildingState) {
         // make unique compound identifiers for floor's plans
+        let state = originalState === undefined ? originalState : clone(originalState);
         this.makeUniqueFloorIds(scene);
         if (state?.floorId !== undefined) {
             state.floorId = createCompoundId(state.modelId, state.floorId);
         }
 
         // set initial fields
-        if (state) {
-            this.activeBuilding = scene.find((model) => model.modelId === state.modelId);
+        if (state !== undefined) {
+            this.activeBuilding = scene.find((model) => model.modelId === state?.modelId);
             if (this.activeBuilding === undefined) {
                 throw new Error(
                     `There is no building's model with id ${state.modelId}. ` +
@@ -123,14 +124,14 @@ export class RealtyScene {
             // set options after adding models
             if (state?.floorId !== undefined) {
                 const floors = this.activeBuilding?.floors ?? [];
-                const activeFloor = floors.find((floor) => floor.id === state.floorId);
+                const activeFloor = floors.find((floor) => floor.id === state?.floorId);
                 this.setMapOptions(activeFloor?.mapOptions);
                 this.addFloorPoi(activeFloor);
             } else {
                 this.setMapOptions(this.activeBuilding?.mapOptions);
             }
 
-            // initialize control
+            // initialize floors' control
             const { position } = this.options.floorsControl;
             this.control = new GltfFloorControl(this.map, { position });
             if (state !== undefined) {
