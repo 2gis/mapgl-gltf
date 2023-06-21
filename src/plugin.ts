@@ -14,9 +14,9 @@ import type {
     ModelOptions,
     BuildingState,
     AddPoiGroupOptions,
-    ModelSceneOptions,
     RemovePoiGroupOptions,
 } from './types/plugin';
+import type { BuildingOptions } from './types/realtyScene';
 import type { GltfPluginEventTable } from './types/events';
 
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
@@ -174,7 +174,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.poiGroup.removePoiGroup(options);
     }
 
-    public async addRealtyScene(scene: ModelSceneOptions[], state?: BuildingState) {
+    public async addRealtyScene(scene: BuildingOptions[], state?: BuildingState) {
         await this.waitForPluginInit;
         if (!this.eventSource) {
             return;

@@ -1,6 +1,6 @@
-import type { ModelSceneOptions } from '../src/types/plugin';
+import type { BuildingOptions } from '../src/types/realtyScene';
 
-export const realtyScene: ModelSceneOptions[] = [
+export const realtyScene: BuildingOptions[] = [
     {
         modelId: '03a234cb',
         coordinates: [47.245286302641034, 56.134743473834099],

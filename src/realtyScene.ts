@@ -2,22 +2,17 @@ import type { Map as MapGL, AnimationOptions } from '@2gis/mapgl/types';
 
 import { EventSource } from './eventSource';
 import { GltfPlugin } from './plugin';
-import type {
-    Id,
-    BuildingState,
-    ModelSceneOptions,
-    ModelMapOptions,
-    ModelOptions,
-    ModelFloorsOptions,
-} from './types/plugin';
 import { defaultOptions } from './defaultOptions';
-import type { ControlShowOptions, FloorLevel, FloorChangeEvent } from './control/types';
 import { GltfFloorControl } from './control';
 import { clone, createCompoundId } from './utils/common';
+
+import type { Id, BuildingState, ModelOptions } from './types/plugin';
+import type { BuildingOptions, MapOptions, BuildingFloorOptions } from './types/realtyScene';
+import type { ControlShowOptions, FloorLevel, FloorChangeEvent } from './control/types';
 import type { PoiGeoJsonProperties } from './types/events';
 
 export class RealtyScene {
-    private activeBuilding?: ModelSceneOptions;
+    private activeBuilding?: BuildingOptions;
     private activeModelId?: Id;
     private control?: GltfFloorControl;
     private activePoiGroupIds: Id[] = [];
@@ -33,7 +28,7 @@ export class RealtyScene {
         this.container = map.getContainer();
     }
 
-    public async addRealtyScene(scene: ModelSceneOptions[], originalState?: BuildingState) {
+    public async addRealtyScene(scene: BuildingOptions[], originalState?: BuildingState) {
         // make unique compound identifiers for floor's plans
         let state = originalState === undefined ? originalState : clone(originalState);
         this.makeUniqueFloorIds(scene);
@@ -148,7 +143,7 @@ export class RealtyScene {
         });
     }
 
-    private bindRealtySceneEvents(scene: ModelSceneOptions[]) {
+    private bindRealtySceneEvents(scene: BuildingOptions[]) {
         if (this.control === undefined) {
             return;
         }
@@ -187,7 +182,7 @@ export class RealtyScene {
         });
     }
 
-    private createControlOptions(scene: ModelSceneOptions[], buildingState: BuildingState) {
+    private createControlOptions(scene: BuildingOptions[], buildingState: BuildingState) {
         const { modelId, floorId } = buildingState;
         const options: ControlShowOptions = {
             modelId: modelId,
@@ -219,7 +214,7 @@ export class RealtyScene {
         return options;
     }
 
-    private setMapOptions(options?: ModelMapOptions) {
+    private setMapOptions(options?: MapOptions) {
         if (options === undefined) {
             return;
         }
@@ -309,7 +304,7 @@ export class RealtyScene {
         }
     }
 
-    private buildingClickHandler(scene: ModelSceneOptions[], modelId: Id) {
+    private buildingClickHandler(scene: BuildingOptions[], modelId: Id) {
         const selectedBuilding = scene.find((model) => model.modelId === modelId);
         if (selectedBuilding === undefined) {
             return;
@@ -387,7 +382,7 @@ export class RealtyScene {
         this.activeBuilding = selectedBuilding;
     }
 
-    private addFloorPoi(floorOptions?: ModelFloorsOptions) {
+    private addFloorPoi(floorOptions?: BuildingFloorOptions) {
         if (floorOptions === undefined) {
             return;
         }
@@ -417,7 +412,7 @@ export class RealtyScene {
         this.activePoiGroupIds = [];
     }
 
-    private makeUniqueFloorIds(scene: ModelSceneOptions[]) {
+    private makeUniqueFloorIds(scene: BuildingOptions[]) {
         for (let scenePart of scene) {
             const floors = scenePart.floors ?? [];
             for (let floor of floors) {

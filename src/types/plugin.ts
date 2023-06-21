@@ -175,27 +175,6 @@ export interface ModelOptions {
     interactive?: boolean;
 }
 
-export interface ModelMapOptions {
-    center?: number[];
-    pitch?: number;
-    rotation?: number;
-    zoom?: number;
-}
-
-export interface ModelFloorsOptions {
-    id: Id;
-    text: string;
-    modelUrl: string;
-    icon?: 'building' | 'parking' | string;
-    poiGroups?: AddPoiGroupOptions[];
-    mapOptions?: ModelMapOptions;
-}
-
-export interface ModelSceneOptions extends ModelOptions {
-    mapOptions?: ModelMapOptions;
-    floors?: ModelFloorsOptions[];
-}
-
 export interface PoiOptions {
     /**
      * Coordinate of the poi
