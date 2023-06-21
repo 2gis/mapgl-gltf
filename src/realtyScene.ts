@@ -406,7 +406,7 @@ export class RealtyScene {
 
     private clearPoiGroups() {
         this.activePoiGroupIds.forEach((id) => {
-            this.plugin.removePoiGroup({ id });
+            this.plugin.removePoiGroup(id);
         });
 
         this.activePoiGroupIds = [];

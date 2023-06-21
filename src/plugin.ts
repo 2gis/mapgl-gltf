@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import type { Map as MapGL, AnimationOptions } from '@2gis/mapgl/types';
+import type { Map as MapGL } from '@2gis/mapgl/types';
 
 import { Evented } from './external/evented';
 import { EventSource } from './eventSource';
@@ -13,8 +13,7 @@ import type {
     PluginOptions,
     ModelOptions,
     BuildingState,
-    AddPoiGroupOptions,
-    RemovePoiGroupOptions,
+    PoiGroupOptions,
 } from './types/plugin';
 import type { BuildingOptions } from './types/realtyScene';
 import type { GltfPluginEventTable } from './types/events';
@@ -36,6 +35,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private realtyScene?: RealtyScene;
 
     /**
+     * The main class of the plugin
+     *
      * Example:
      * ```js
      * const plugin = new GltfPlugin (map, {
@@ -84,7 +85,9 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     /**
-     * Add all models to the map
+     * Add the list of models to the map
+     * Use this method if you want to add
+     * a list of models to the map at the same time
      *
      * @param modelOptions An array of models' options
      */
@@ -110,10 +113,14 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     /**
-     * Add models to the map partially
+     * Add the list of models to the map partially
+     * Use this method if you want to add to the map
+     * some models from the list of models and want
+     * to preserve remaining ones in the cache without
+     * adding them to the map
      *
      * @param modelOptions An array of models' options
-     * @param ids An orray of idenifiers of the models that must be added to the scene
+     * @param ids An array of idenifiers of the models that must be added to the scene
      */
     public async addModelsPartially(modelOptions: ModelOptions[], ids: Id[]) {
         await this.waitForPluginInit;
@@ -135,23 +142,34 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
-    public async addModel(options: ModelOptions) {
+    /**
+     * Add model to the map
+     *
+     * @param modelOptions The models' options
+     */
+    public async addModel(modelOptions: ModelOptions) {
         await this.waitForPluginInit;
 
-        const wasAdded = this.addModelFromCache(options.modelId);
+        const wasAdded = this.addModelFromCache(modelOptions.modelId);
         if (wasAdded) {
             return Promise.resolve();
         }
 
-        return this.loader.loadModel(options).then(() => {
-            if (options.linkedIds) {
-                this.map.setHiddenObjects(options.linkedIds);
+        return this.loader.loadModel(modelOptions).then(() => {
+            if (modelOptions.linkedIds) {
+                this.map.setHiddenObjects(modelOptions.linkedIds);
             }
-            this.addModelFromCache(options.modelId);
+            this.addModelFromCache(modelOptions.modelId);
             this.map.triggerRerender();
         });
     }
 
+    /**
+     * Remove the model from the map and cache or from the map only
+     *
+     * @param id Identifier of the model to delete
+     * @param preserveCache Flag to keep the model in the cache
+     */
     public removeModel(id: Id, preserveCache?: boolean) {
         const model = this.models.get(String(id));
         if (model === undefined) {
@@ -164,16 +182,33 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.map.triggerRerender();
     }
 
-    public async addPoiGroup(options: AddPoiGroupOptions, state?: BuildingState) {
+    /**
+     * Add the group of poi to the map
+     *
+     * @param options Options of the group of poi to add to the map
+     * @param state State of the active building to connect with added the group of poi
+     */
+    public async addPoiGroup(options: PoiGroupOptions, state?: BuildingState) {
         await this.waitForPluginInit;
 
         this.poiGroup.addPoiGroup(options, state);
     }
 
-    public removePoiGroup(options: RemovePoiGroupOptions) {
-        this.poiGroup.removePoiGroup(options);
+    /**
+     * Remove the group of poi from the map
+     *
+     * @param id Identifier of the group of poi to remove
+     */
+    public removePoiGroup(id: Id) {
+        this.poiGroup.removePoiGroup(id);
     }
 
+    /**
+     * Add the interactive realty scene to the map
+     *
+     * @param scene The options of the scene to add to the map
+     * @param state State of the active building to connect with added scene
+     */
     public async addRealtyScene(scene: BuildingOptions[], state?: BuildingState) {
         await this.waitForPluginInit;
         if (!this.eventSource) {

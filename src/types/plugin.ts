@@ -175,6 +175,9 @@ export interface ModelOptions {
     interactive?: boolean;
 }
 
+/**
+ * Options for a poi
+ */
 export interface PoiOptions {
     /**
      * Coordinate of the poi
@@ -195,9 +198,9 @@ export interface PoiOptions {
 }
 
 /**
- * Options for the method addPoiGroup
+ * Options for a poi group
  */
-export interface AddPoiGroupOptions {
+export interface PoiGroupOptions {
     /**
      * Identifier of the poi group to add
      */
@@ -230,14 +233,4 @@ export interface AddPoiGroupOptions {
      * Color of the poi's font
      */
     fontColor?: string;
-}
-
-/**
- * Options for the method removePoiGroup
- */
-export interface RemovePoiGroupOptions {
-    /**
-     * Identifier of the poi group to delete
-     */
-    id: Id;
 }
