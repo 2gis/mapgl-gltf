@@ -20,13 +20,16 @@ export class RealtyScene {
     private activeModelId?: number | string;
     private control?: GltfFloorControl;
     private activePoiGroupIds: Array<number | string> = [];
+    private container: HTMLElement;
 
     constructor(
         private plugin: GltfPlugin,
         private map: MapGL,
         private eventSource: EventSource,
         private options: typeof defaultOptions,
-    ) {}
+    ) {
+        this.container = map.getContainer();
+    }
 
     private createControlOptions(scene: ModelSceneOptions[], buildingState: BuildingState) {
         const { modelId, floorId } = buildingState;
@@ -200,6 +203,19 @@ export class RealtyScene {
 
                 if (ev.target.type === 'poi') {
                     this.poiClickHandler(ev.target.data);
+                }
+            });
+
+            this.plugin.on('mouseover', (ev) => {
+                if (ev.target.type === 'model') {
+                    console.log('mouseover', ev.target.modelId);
+                    this.container.style.cursor = 'pointer';
+                }
+            });
+            this.plugin.on('mouseout', (ev) => {
+                if (ev.target.type === 'model') {
+                    console.log('mouseout', ev.target.modelId);
+                    this.container.style.cursor = '';
                 }
             });
         });
