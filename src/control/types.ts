@@ -28,7 +28,7 @@ export interface FloorChangeEvent {
 
 export interface ControlEventTable {
     /**
-     * Emitted when floors' plan was changed
+     * Emitted when floor's plan was changed
      */
     floorChange: FloorChangeEvent;
 }
