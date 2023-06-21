@@ -106,6 +106,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 }
                 this.map.triggerRerender();
             }
+            this.invalidateViewport();
         });
     }
 
@@ -136,6 +137,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 }
                 this.map.triggerRerender();
             }
+            this.invalidateViewport();
         });
     }
 
@@ -158,6 +160,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             }
             this.addModelFromCache(modelOptions.modelId);
             this.map.triggerRerender();
+            this.invalidateViewport();
         });
     }
 
