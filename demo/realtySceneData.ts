@@ -32,7 +32,7 @@ export const realtyScene: ModelSceneOptions[] = [
                         type: 'primary',
                         minZoom: 19,
                         elevation: 5,
-                        fontSize: 14,
+                        fontSize: 12,
                         fontColor: '#3a3a3a',
                         data: [
                             {
@@ -90,7 +90,7 @@ export const realtyScene: ModelSceneOptions[] = [
                         type: 'primary',
                         minZoom: 18.5,
                         elevation: 35,
-                        fontSize: 14,
+                        fontSize: 12,
                         fontColor: '#3a3a3a',
                         data: [
                             {
@@ -165,7 +165,7 @@ export const realtyScene: ModelSceneOptions[] = [
                         type: 'primary',
                         minZoom: 19,
                         elevation: 7,
-                        fontSize: 14,
+                        fontSize: 12,
                         fontColor: '#3a3a3a',
                         data: [
                             {
@@ -251,7 +251,7 @@ export const realtyScene: ModelSceneOptions[] = [
                         type: 'primary',
                         minZoom: 18.5,
                         elevation: 53,
-                        fontSize: 14,
+                        fontSize: 12,
                         fontColor: '#3a3a3a',
                         data: [
                             {
