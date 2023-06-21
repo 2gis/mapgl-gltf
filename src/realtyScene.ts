@@ -32,61 +32,6 @@ export class RealtyScene {
         this.container = map.getContainer();
     }
 
-    private createControlOptions(scene: ModelSceneOptions[], buildingState: BuildingState) {
-        const { modelId, floorId } = buildingState;
-        const options: ControlShowOptions = {
-            modelId: modelId,
-        };
-        if (floorId !== undefined) {
-            options.floorId = floorId;
-        }
-
-        const buildingData = scene.find((scenePart) => scenePart.modelId === modelId);
-        if (!buildingData) {
-            return options;
-        }
-
-        if (buildingData.floors !== undefined) {
-            const floorLevels: FloorLevel[] = [
-                {
-                    icon: 'building',
-                    text: '',
-                },
-            ];
-            buildingData.floors.forEach((floor) => {
-                floorLevels.push({
-                    floorId: floor.id,
-                    text: floor.text,
-                });
-            });
-            options.floorLevels = floorLevels;
-        }
-        return options;
-    }
-
-    private setMapOptions(options?: ModelMapOptions) {
-        if (options === undefined) {
-            return;
-        }
-
-        const animationOptions: AnimationOptions = {
-            easing: 'easeInSine',
-            duration: 500,
-        };
-        if (options.center) {
-            this.map.setCenter(options.center, animationOptions);
-        }
-        if (options.pitch) {
-            this.map.setPitch(options.pitch, animationOptions);
-        }
-        if (options.rotation) {
-            this.map.setRotation(options.rotation, animationOptions);
-        }
-        if (options.zoom) {
-            this.map.setZoom(options.zoom, animationOptions);
-        }
-    }
-
     public async addRealtyScene(scene: ModelSceneOptions[], state?: BuildingState) {
         // make unique compound identifiers for floor's plans
         this.makeUniqueFloorIds(scene);
@@ -196,39 +141,103 @@ export class RealtyScene {
                 }
             }
 
-            this.control.on('floorChange', (ev) => {
-                this.floorChangeHandler(ev);
-            });
-
-            this.plugin.on('click', (ev) => {
-                if (ev.target.type === 'model') {
-                    const id = ev.target.modelId;
-                    if (this.isFacadeBuilding(id) && id !== undefined) {
-                        this.buildingClickHandler(scene, id);
-                    }
-                }
-
-                if (ev.target.type === 'poi') {
-                    this.poiClickHandler(ev.target.data);
-                }
-            });
-
-            this.plugin.on('mouseover', (ev) => {
-                if (ev.target.type === 'model') {
-                    if (this.isFacadeBuilding(ev.target.modelId)) {
-                        this.container.style.cursor = 'pointer';
-                    }
-                }
-            });
-
-            this.plugin.on('mouseout', (ev) => {
-                if (ev.target.type === 'model') {
-                    if (this.isFacadeBuilding(ev.target.modelId)) {
-                        this.container.style.cursor = '';
-                    }
-                }
-            });
+            // bind all events
+            this.bindRealtySceneEvents(scene);
         });
+    }
+
+    private bindRealtySceneEvents(scene: ModelSceneOptions[]) {
+        if (this.control === undefined) {
+            return;
+        }
+
+        this.control.on('floorChange', (ev) => {
+            this.floorChangeHandler(ev);
+        });
+
+        this.plugin.on('click', (ev) => {
+            if (ev.target.type === 'model') {
+                const id = ev.target.modelId;
+                if (this.isFacadeBuilding(id) && id !== undefined) {
+                    this.buildingClickHandler(scene, id);
+                }
+            }
+
+            if (ev.target.type === 'poi') {
+                this.poiClickHandler(ev.target.data);
+            }
+        });
+
+        this.plugin.on('mouseover', (ev) => {
+            if (ev.target.type === 'model') {
+                if (this.isFacadeBuilding(ev.target.modelId)) {
+                    this.container.style.cursor = 'pointer';
+                }
+            }
+        });
+
+        this.plugin.on('mouseout', (ev) => {
+            if (ev.target.type === 'model') {
+                if (this.isFacadeBuilding(ev.target.modelId)) {
+                    this.container.style.cursor = '';
+                }
+            }
+        });
+    }
+
+    private createControlOptions(scene: ModelSceneOptions[], buildingState: BuildingState) {
+        const { modelId, floorId } = buildingState;
+        const options: ControlShowOptions = {
+            modelId: modelId,
+        };
+        if (floorId !== undefined) {
+            options.floorId = floorId;
+        }
+
+        const buildingData = scene.find((scenePart) => scenePart.modelId === modelId);
+        if (!buildingData) {
+            return options;
+        }
+
+        if (buildingData.floors !== undefined) {
+            const floorLevels: FloorLevel[] = [
+                {
+                    icon: 'building',
+                    text: '',
+                },
+            ];
+            buildingData.floors.forEach((floor) => {
+                floorLevels.push({
+                    floorId: floor.id,
+                    text: floor.text,
+                });
+            });
+            options.floorLevels = floorLevels;
+        }
+        return options;
+    }
+
+    private setMapOptions(options?: ModelMapOptions) {
+        if (options === undefined) {
+            return;
+        }
+
+        const animationOptions: AnimationOptions = {
+            easing: 'easeInSine',
+            duration: 500,
+        };
+        if (options.center) {
+            this.map.setCenter(options.center, animationOptions);
+        }
+        if (options.pitch) {
+            this.map.setPitch(options.pitch, animationOptions);
+        }
+        if (options.rotation) {
+            this.map.setRotation(options.rotation, animationOptions);
+        }
+        if (options.zoom) {
+            this.map.setZoom(options.zoom, animationOptions);
+        }
     }
 
     // checks if the modelId is external facade of the building
@@ -306,8 +315,8 @@ export class RealtyScene {
 
         this.container.style.cursor = '';
 
-        // if there is a visible floor plan, then show the whole building
-        // before focusing on the new building
+        // if there is a visible floor plan, then show the external
+        // facade of the building before focusing on the new building
         if (
             this.activeBuilding &&
             this.activeModelId &&
