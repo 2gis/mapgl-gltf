@@ -331,6 +331,6 @@ export const realtyScene: ModelSceneOptions[] = [
         rotateY: -15.1240072739039,
         scale: 191.637678,
         linkedIds: ['70030076561388553'],
-        nonInteractive: true,
+        interactive: false,
     },
 ];

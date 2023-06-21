@@ -21,6 +21,7 @@ export class RealtyScene {
     private control?: GltfFloorControl;
     private activePoiGroupIds: Array<number | string> = [];
     private container: HTMLElement;
+    private buildingIds: Array<number | string> = [];
 
     constructor(
         private plugin: GltfPlugin,
@@ -110,6 +111,8 @@ export class RealtyScene {
         const models: ModelOptions[] = [];
         const modelIds: Array<string | number> = [];
         scene.forEach((scenePart) => {
+            this.buildingIds.push(scenePart.modelId);
+
             const modelOptions = {
                 modelId: scenePart.modelId,
                 coordinates: scenePart.coordinates,
@@ -122,15 +125,15 @@ export class RealtyScene {
                 offsetZ: scenePart.offsetZ,
                 scale: scenePart.scale,
                 linkedIds: scenePart.linkedIds,
+                interactive: scenePart.interactive,
             };
 
             const floors = scenePart.floors ?? [];
             let hasFloorByDefault = false;
-
             if (state?.floorId !== undefined) {
                 for (let floor of floors) {
                     if (floor.id === state.floorId) {
-                        // push origial building
+                        // for convenience push original building
                         models.push(modelOptions);
                         // push modified options for floor
                         const clonedOptions = clone(modelOptions);
@@ -165,6 +168,7 @@ export class RealtyScene {
                         offsetZ: scenePart.offsetZ,
                         scale: scenePart.scale,
                         linkedIds: scenePart.linkedIds,
+                        interactive: scenePart.interactive,
                     });
                 }
             }
@@ -198,7 +202,7 @@ export class RealtyScene {
 
             this.plugin.on('click', (ev) => {
                 if (ev.target.type === 'model' && ev.target.modelId !== undefined) {
-                    this.modelClickHandler(scene, ev.target.modelId);
+                    this.buildingClickHandler(scene, ev.target.modelId);
                 }
 
                 if (ev.target.type === 'poi') {
@@ -209,13 +213,18 @@ export class RealtyScene {
             this.plugin.on('mouseover', (ev) => {
                 if (ev.target.type === 'model') {
                     console.log('mouseover', ev.target.modelId);
-                    this.container.style.cursor = 'pointer';
+                    if (ev.target.modelId && this.buildingIds.includes(ev.target.modelId)) {
+                        this.container.style.cursor = 'pointer';
+                    }
                 }
             });
+
             this.plugin.on('mouseout', (ev) => {
                 if (ev.target.type === 'model') {
                     console.log('mouseout', ev.target.modelId);
-                    this.container.style.cursor = '';
+                    if (ev.target.modelId && this.buildingIds.includes(ev.target.modelId)) {
+                        this.container.style.cursor = '';
+                    }
                 }
             });
         });
@@ -279,11 +288,13 @@ export class RealtyScene {
         }
     }
 
-    private modelClickHandler(scene: ModelSceneOptions[], modelId: string | number) {
+    private buildingClickHandler(scene: ModelSceneOptions[], modelId: string | number) {
         const selectedBuilding = scene.find((model) => model.modelId === modelId);
-        if (!selectedBuilding || selectedBuilding.nonInteractive) {
+        if (selectedBuilding === undefined) {
             return;
         }
+
+        this.container.style.cursor = '';
 
         if (selectedBuilding.modelId !== this.activeBuilding?.modelId) {
             // if there is a visible floor plan, then show the whole building
@@ -310,8 +321,8 @@ export class RealtyScene {
             }
 
             // show the highest floor after a click on the new building
-            const floors = selectedBuilding.floors;
-            if (floors && floors.length !== 0) {
+            const floors = selectedBuilding.floors ?? [];
+            if (floors.length !== 0) {
                 const floorOptions = floors[floors.length - 1];
                 this.plugin
                     .addModel({

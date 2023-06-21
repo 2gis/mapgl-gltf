@@ -194,7 +194,9 @@ export class EventSource extends Evented<GltfPluginEventTable> {
         if (target) {
             const modelOptions = target.userData as ModelOptions;
             const eventData = this.createModelEventData(e, modelOptions);
-            this.emit('click', eventData);
+            if (modelOptions.interactive !== false) {
+                this.emit('click', eventData);
+            }
         }
     }
 
@@ -204,7 +206,8 @@ export class EventSource extends Evented<GltfPluginEventTable> {
 
     private emitModelMouseMoveEvents(e: MapPointerEvent) {
         const currTargetMesh = this.getEventTargetMesh(e.originalEvent);
-        if (currTargetMesh) {
+        const isInteractive = currTargetMesh?.userData?.interactive;
+        if (currTargetMesh && isInteractive !== false) {
             const modelOptions = currTargetMesh.userData as ModelOptions;
             const currEventData = this.createModelEventData(e, modelOptions);
 
@@ -227,7 +230,6 @@ export class EventSource extends Evented<GltfPluginEventTable> {
 
             // when user move the mouse pointer from one model to another model
             if (prevModelUrl !== currModelUrl) {
-                console.log(this.prevTargetMesh, currTargetMesh);
                 const modelOptions = this.prevTargetMesh.userData as ModelOptions;
                 const prevEventData = this.createModelEventData(e, modelOptions);
                 this.emit('mouseout', prevEventData);
@@ -239,6 +241,7 @@ export class EventSource extends Evented<GltfPluginEventTable> {
         }
 
         // when user move the mouse pointer from a model to the map
+        // or non interactive model
         if (this.prevTargetMesh !== null) {
             const modelOptions = this.prevTargetMesh.userData as ModelOptions;
             const prevEventData = this.createModelEventData(e, modelOptions);

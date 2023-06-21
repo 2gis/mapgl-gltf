@@ -167,6 +167,10 @@ export interface ModelOptions {
      * User specific data
      */
     userData?: any;
+    /**
+     * Interactivity of model. All models are interactive by default
+     */
+    interactive?: boolean;
 }
 
 export interface ModelMapOptions {
@@ -188,7 +192,6 @@ export interface ModelFloorsOptions {
 export interface ModelSceneOptions extends ModelOptions {
     mapOptions?: ModelMapOptions;
     floors?: ModelFloorsOptions[];
-    nonInteractive?: boolean;
 }
 
 export interface PoiOptions {
