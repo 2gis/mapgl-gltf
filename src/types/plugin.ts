@@ -1,3 +1,5 @@
+export type Id = string | number;
+
 export type ColorModelString = `${'rgb' | 'hsl'}(${string})`;
 export type HexColorString = `#${string}`;
 /**
@@ -107,12 +109,12 @@ export interface BuildingState {
     /**
      * Identifier of the building's model
      */
-    modelId: number | string;
+    modelId: Id;
 
     /**
      * Identifier of the floor's model
      */
-    floorId?: number | string;
+    floorId?: Id;
 }
 
 /**
@@ -122,7 +124,7 @@ export interface ModelOptions {
     /**
      * Identifier of the model should be unique for every model
      */
-    modelId: number | string;
+    modelId: Id;
     /**
      * Geographical coordinates [longitude, latitude]
      */
@@ -181,7 +183,7 @@ export interface ModelMapOptions {
 }
 
 export interface ModelFloorsOptions {
-    id: number | string;
+    id: Id;
     text: string;
     modelUrl: string;
     icon?: 'building' | 'parking' | string;
@@ -220,7 +222,7 @@ export interface AddPoiGroupOptions {
     /**
      * Identifier of the poi group to add
      */
-    id: string | number;
+    id: Id;
     /**
      * Type of the poi
      */
@@ -258,5 +260,5 @@ export interface RemovePoiGroupOptions {
     /**
      * Identifier of the poi group to delete
      */
-    id: number | string;
+    id: Id;
 }

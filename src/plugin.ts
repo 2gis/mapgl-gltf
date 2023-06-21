@@ -9,6 +9,7 @@ import { RealtyScene } from './realtyScene';
 import { defaultOptions } from './defaultOptions';
 
 import type {
+    Id,
     PluginOptions,
     ModelOptions,
     BuildingState,
@@ -114,7 +115,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      * @param modelOptions An array of models' options
      * @param ids An orray of idenifiers of the models that must be added to the scene
      */
-    public async addModelsPartially(modelOptions: ModelOptions[], ids: Array<string | number>) {
+    public async addModelsPartially(modelOptions: ModelOptions[], ids: Id[]) {
         await this.waitForPluginInit;
 
         const loadedModels = this.startModelLoading(modelOptions);
@@ -151,7 +152,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
-    public removeModel(id: string | number, preserveCache?: boolean) {
+    public removeModel(id: Id, preserveCache?: boolean) {
         const model = this.models.get(String(id));
         if (model === undefined) {
             return;
@@ -277,7 +278,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
-    private addModelFromCache(id: string | number) {
+    private addModelFromCache(id: Id) {
         const model = this.models.get(String(id));
         if (model !== undefined) {
             this.scene.add(model);

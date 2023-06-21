@@ -3,6 +3,7 @@ import type { Map as MapGL, AnimationOptions } from '@2gis/mapgl/types';
 import { EventSource } from './eventSource';
 import { GltfPlugin } from './plugin';
 import type {
+    Id,
     BuildingState,
     ModelSceneOptions,
     ModelMapOptions,
@@ -17,11 +18,11 @@ import type { PoiGeoJsonProperties } from './types/events';
 
 export class RealtyScene {
     private activeBuilding?: ModelSceneOptions;
-    private activeModelId?: number | string;
+    private activeModelId?: Id;
     private control?: GltfFloorControl;
-    private activePoiGroupIds: Array<number | string> = [];
+    private activePoiGroupIds: Id[] = [];
     private container: HTMLElement;
-    private buildingFacadeIds: Array<number | string> = [];
+    private buildingFacadeIds: Id[] = [];
 
     constructor(
         private plugin: GltfPlugin,
@@ -55,7 +56,7 @@ export class RealtyScene {
 
         // initialize initial scene
         const models: ModelOptions[] = [];
-        const modelIds: Array<string | number> = [];
+        const modelIds: Id[] = [];
         scene.forEach((scenePart) => {
             this.buildingFacadeIds.push(scenePart.modelId);
 
@@ -242,7 +243,7 @@ export class RealtyScene {
     }
 
     // checks if the modelId is external facade of the building
-    private isFacadeBuilding(modelId?: number | string) {
+    private isFacadeBuilding(modelId?: Id) {
         if (modelId === undefined) {
             return false;
         }
@@ -308,7 +309,7 @@ export class RealtyScene {
         }
     }
 
-    private buildingClickHandler(scene: ModelSceneOptions[], modelId: string | number) {
+    private buildingClickHandler(scene: ModelSceneOptions[], modelId: Id) {
         const selectedBuilding = scene.find((model) => model.modelId === modelId);
         if (selectedBuilding === undefined) {
             return;

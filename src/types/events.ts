@@ -1,15 +1,15 @@
-import type { ModelOptions, PoiOptions } from '../types/plugin';
+import type { Id, ModelOptions, PoiOptions } from '../types/plugin';
 
 export type PoiGeoJsonProperties = PoiOptions & {
     /**
      * Identifier of the building's model
      */
-    modelId?: number | string;
+    modelId?: Id;
 
     /**
      * Identifier of the floor's model
      */
-    floorId?: number | string;
+    floorId?: Id;
 
     /**
      * Type of the poi
@@ -31,12 +31,12 @@ export interface ModelTarget {
     /**
      * Identifier of the building's model
      */
-    modelId?: number | string;
+    modelId?: Id;
 
     /**
      * Identifier of the current floor
      */
-    floorId?: number | string;
+    floorId?: Id;
 }
 
 export interface PoiTarget {
@@ -53,12 +53,12 @@ export interface PoiTarget {
     /**
      * Identifier of the building's model
      */
-    modelId?: number | string;
+    modelId?: Id;
 
     /**
      * Identifier of the current floor
      */
-    floorId?: number | string;
+    floorId?: Id;
 }
 
 /**

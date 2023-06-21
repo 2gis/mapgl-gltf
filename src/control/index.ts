@@ -1,6 +1,7 @@
 import type { Map as MapGL, ControlOptions } from '@2gis/mapgl/types';
 
-import type { ControlShowOptions, Id } from './types';
+import type { Id } from '../types/plugin';
+import type { ControlShowOptions } from './types';
 
 import icon_building from 'raw-loader!./icon_building.svg';
 import icon_parking from 'raw-loader!./icon_parking.svg';
