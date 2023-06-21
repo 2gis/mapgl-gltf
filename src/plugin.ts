@@ -4,7 +4,7 @@ import type { Map as MapGL } from '@2gis/mapgl/types';
 import { Evented } from './external/evented';
 import { EventSource } from './eventSource';
 import { Loader } from './loader';
-import { PoiGroup } from './poiGroup';
+import { PoiGroups } from './poiGroups';
 import { RealtyScene } from './realtyScene';
 import { defaultOptions } from './defaultOptions';
 
@@ -27,7 +27,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private map: MapGL;
     private options = defaultOptions;
     private loader: Loader;
-    private poiGroup: PoiGroup;
+    private poiGroups: PoiGroups;
     private eventSource?: EventSource;
     private onPluginInit = () => {}; // resolve of waitForPluginInit
     private waitForPluginInit = new Promise<void>((resolve) => (this.onPluginInit = resolve));
@@ -72,13 +72,10 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
         this.models = this.loader.getModels();
 
-        this.poiGroup = new PoiGroup({
-            map: this.map,
-            poiConfig: this.options.poiConfig,
-        });
+        this.poiGroups = new PoiGroups(this.map, this.options.poiConfig);
 
         map.once('idle', () => {
-            this.poiGroup.addIcons();
+            this.poiGroups.addIcons();
             this.addThreeJsLayer();
             this.initEventHandlers();
         });
@@ -191,7 +188,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     public async addPoiGroup(options: PoiGroupOptions, state?: BuildingState) {
         await this.waitForPluginInit;
 
-        this.poiGroup.addPoiGroup(options, state);
+        this.poiGroups.add(options, state);
     }
 
     /**
@@ -200,7 +197,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      * @param id Identifier of the group of poi to remove
      */
     public removePoiGroup(id: Id) {
-        this.poiGroup.removePoiGroup(id);
+        this.poiGroups.remove(id);
     }
 
     /**

@@ -6,15 +6,10 @@ import type { PoiGeoJsonProperties } from './types/events';
 
 type FeaturePoint = Feature<Point, PoiGeoJsonProperties>;
 
-export class PoiGroup {
+export class PoiGroups {
     private poiSources = new Map<string, GeoJsonSource>();
-    private map: MapGL;
-    private poiConfig: PluginOptions['poiConfig'];
 
-    constructor(options: { map: MapGL; poiConfig: PluginOptions['poiConfig'] }) {
-        this.map = options.map;
-        this.poiConfig = options.poiConfig;
-    }
+    constructor(private map: MapGL, private poiConfig: PluginOptions['poiConfig']) {}
 
     public addIcons() {
         this.map.addIcon('km_pillar_gray_border', {
@@ -27,7 +22,7 @@ export class PoiGroup {
         });
     }
 
-    public async addPoiGroup(groupOptions: PoiGroupOptions, state?: BuildingState) {
+    public async add(groupOptions: PoiGroupOptions, state?: BuildingState) {
         const { id, data } = groupOptions;
         const actualId = String(id);
         if (this.poiSources.get(actualId) !== undefined) {
@@ -51,7 +46,7 @@ export class PoiGroup {
         this.addPoiStyleLayer(groupOptions);
     }
 
-    public removePoiGroup(origId: Id) {
+    public remove(origId: Id) {
         const id = String(origId);
         const source = this.poiSources.get(id);
         this.poiSources.delete(id);
