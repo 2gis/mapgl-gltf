@@ -314,10 +314,12 @@ export class RealtyScene {
             return;
         }
 
+        // don't show the pointer cursor on the model when user
+        // started to interact with the building
         this.container.style.cursor = '';
 
         // if there is a visible floor plan, then show the external
-        // facade of the building before focusing on the new building
+        // facade of the active building before focusing on the new building
         if (
             this.activeBuilding &&
             this.activeModelId &&
