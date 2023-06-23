@@ -323,33 +323,29 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     /**
-     * https://github.com/Marco-Sulla/my3/blob/master/my3.js#L125-L162
+     * Delete from memory all allocated objects by Object3D
+     * https://threejs.org/docs/#manual/en/introduction/How-to-dispose-of-objects
      */
-    private disposeObject(obj: THREE.Object3D | THREE.Mesh) {
-        const children = obj.children;
-        if (children) {
-            for (let i = 0; i < children.length; i += 1) {
-                this.disposeObject(children[i]);
-            }
-        }
+    private disposeObject(inputObj: THREE.Object3D) {
+        inputObj.traverse((obj) => {
+            if (obj instanceof THREE.Mesh) {
+                const geometry = obj.geometry;
+                const material = obj.material;
 
-        if (obj instanceof THREE.Mesh) {
-            const geometry = obj.geometry;
-            const material = obj.material;
-
-            if (geometry) {
-                geometry.dispose();
-            }
-
-            if (material) {
-                const texture = material.map;
-
-                if (texture) {
-                    texture.dispose();
+                if (geometry) {
+                    geometry.dispose();
                 }
 
-                material.dispose();
+                if (material) {
+                    const texture = material.map;
+
+                    if (texture) {
+                        texture.dispose();
+                    }
+
+                    material.dispose();
+                }
             }
-        }
+        });
     }
 }
