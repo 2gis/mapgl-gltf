@@ -177,6 +177,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         }
         if (!preserveCache) {
             this.models.delete(String(id));
+            this.disposeObject(model);
         }
         this.scene.remove(model);
         this.map.triggerRerender();
@@ -319,5 +320,35 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.scene.add(model);
         }
         return Boolean(model);
+    }
+
+    /**
+     * https://github.com/Marco-Sulla/my3/blob/master/my3.js#L125-L162
+     * FIXME: fix types
+     */
+    private disposeObject(obj: any) {
+        const children = obj.children;
+        if (children) {
+            for (let i = 0; i < children.length; i += 1) {
+                this.disposeObject(children[i]);
+            }
+        }
+
+        const geometry = obj.geometry;
+        const material = obj.material;
+
+        if (geometry) {
+            geometry.dispose();
+        }
+
+        if (material) {
+            const texture = material.map;
+
+            if (texture) {
+                texture.dispose();
+            }
+
+            material.dispose();
+        }
     }
 }
