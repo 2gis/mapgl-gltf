@@ -37,8 +37,6 @@ async function start() {
         // floorId: '235034',
     };
 
-    // plugin.addRealtyScene(realtyScene, defaultState);
-
     plugin.addRealtyScene(realtyScene);
 
     (['click'] as const).forEach((eventName) => {
