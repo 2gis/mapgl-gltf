@@ -175,11 +175,11 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         if (model === undefined) {
             return;
         }
+        this.scene.remove(model);
         if (!preserveCache) {
             this.models.delete(String(id));
             this.disposeObject(model);
         }
-        this.scene.remove(model);
         this.map.triggerRerender();
     }
 
