@@ -150,13 +150,11 @@ export class EventSource extends Evented<GltfPluginEventTable> {
         this.map.on('mouseover', (e) => {
             const poiProperties = this.getPoiProperties(e);
             if (poiProperties) {
-                this.prevTargetMesh = null;
                 const eventData = this.createPoiEvenData(e, poiProperties);
                 this.emit('mouseover', eventData);
 
-                const currTargetModel = this.getEventTargetMesh(e.originalEvent);
-                if (currTargetModel && this.isMouseOutToPoi) {
-                    const modelOptions = currTargetModel.userData as ModelOptions;
+                if (this.prevTargetMesh && this.isMouseOutToPoi) {
+                    const modelOptions = this.prevTargetMesh.userData as ModelOptions;
                     const currEventData = this.createModelEventData(e, modelOptions);
                     this.emit('mouseout', currEventData);
                     this.isMouseOutToPoi = false;

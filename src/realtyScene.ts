@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import type { Map as MapGL, AnimationOptions } from '@2gis/mapgl/types';
 
 import { EventSource } from './eventSource';
@@ -23,6 +24,7 @@ export class RealtyScene {
         private plugin: GltfPlugin,
         private map: MapGL,
         private eventSource: EventSource,
+        private models: Map<string, THREE.Object3D>,
         private options: typeof defaultOptions,
     ) {
         this.container = map.getContainer();
@@ -169,6 +171,7 @@ export class RealtyScene {
             if (ev.target.type === 'model') {
                 if (this.isFacadeBuilding(ev.target.modelId)) {
                     this.container.style.cursor = 'pointer';
+                    this.toggleHighlightModel(ev.target.modelId);
                 }
             }
         });
@@ -177,6 +180,7 @@ export class RealtyScene {
             if (ev.target.type === 'model') {
                 if (this.isFacadeBuilding(ev.target.modelId)) {
                     this.container.style.cursor = '';
+                    this.toggleHighlightModel(ev.target.modelId);
                 }
             }
         });
@@ -419,5 +423,37 @@ export class RealtyScene {
                 floor.id = createCompoundId(scenePart.modelId, floor.id);
             }
         }
+    }
+
+    public toggleHighlightModel(modelId?: Id) {
+        if (modelId === undefined) {
+            return;
+        }
+
+        const model = this.models.get(String(modelId));
+
+        if (model === undefined) {
+            return;
+        }
+
+        model.traverse((obj) => {
+            if (obj instanceof THREE.Mesh) {
+                if (obj.material instanceof THREE.MeshBasicMaterial) {
+                    const newMaterial = new THREE.MeshStandardMaterial({
+                        map: obj.material.map,
+                    });
+                    obj.material = newMaterial;
+                    obj.material.emissive = new THREE.Color('#ffffff');
+                    obj.material.emissiveIntensity = 0.25;
+                } else {
+                    const newMaterial = new THREE.MeshBasicMaterial({
+                        map: obj.material.map,
+                    });
+                    obj.material = newMaterial;
+                }
+            }
+        });
+
+        this.map.triggerRerender();
     }
 }

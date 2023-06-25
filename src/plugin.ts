@@ -216,7 +216,13 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             return;
         }
 
-        this.realtyScene = new RealtyScene(this, this.map, this.eventSource, this.options);
+        this.realtyScene = new RealtyScene(
+            this,
+            this.map,
+            this.eventSource,
+            this.models,
+            this.options,
+        );
         this.realtyScene.addRealtyScene(scene, state);
     }
 
