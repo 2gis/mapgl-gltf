@@ -19,6 +19,9 @@ export class RealtyScene {
     private activePoiGroupIds: Id[] = [];
     private container: HTMLElement;
     private buildingFacadeIds: Id[] = [];
+    // this field is needed when the hightlited
+    // model is placed under the floors' control
+    private highlightedModelId: Id | null = null;
 
     constructor(
         private plugin: GltfPlugin,
@@ -182,7 +185,9 @@ export class RealtyScene {
                 const id = ev.target.modelId;
                 if (this.isFacadeBuilding(id)) {
                     this.container.style.cursor = '';
-                    this.toggleHighlightModel(id);
+                    if (this.highlightedModelId !== null) {
+                        this.toggleHighlightModel(id);
+                    }
                 }
             }
         });
@@ -267,6 +272,10 @@ export class RealtyScene {
         if (model !== undefined && model.floors !== undefined) {
             // click to the building button
             if (ev.floorId === undefined) {
+                if (this.highlightedModelId !== null) {
+                    this.toggleHighlightModel(this.highlightedModelId);
+                }
+
                 this.clearPoiGroups();
                 this.plugin
                     .addModel({
@@ -443,11 +452,13 @@ export class RealtyScene {
                     obj.material = newMaterial;
                     obj.material.emissive = new THREE.Color('#ffffff');
                     obj.material.emissiveIntensity = 0.25;
+                    this.highlightedModelId = modelId;
                 } else {
                     const newMaterial = new THREE.MeshBasicMaterial({
                         map: obj.material.map,
                     });
                     obj.material = newMaterial;
+                    this.highlightedModelId = null;
                 }
             }
         });
