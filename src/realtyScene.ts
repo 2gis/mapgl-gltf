@@ -157,7 +157,7 @@ export class RealtyScene {
         this.plugin.on('click', (ev) => {
             if (ev.target.type === 'model') {
                 const id = ev.target.modelId;
-                if (this.isFacadeBuilding(id) && id !== undefined) {
+                if (this.isFacadeBuilding(id)) {
                     this.buildingClickHandler(scene, id);
                 }
             }
@@ -169,18 +169,20 @@ export class RealtyScene {
 
         this.plugin.on('mouseover', (ev) => {
             if (ev.target.type === 'model') {
-                if (this.isFacadeBuilding(ev.target.modelId)) {
+                const id = ev.target.modelId;
+                if (this.isFacadeBuilding(id)) {
                     this.container.style.cursor = 'pointer';
-                    this.toggleHighlightModel(ev.target.modelId);
+                    this.toggleHighlightModel(id);
                 }
             }
         });
 
         this.plugin.on('mouseout', (ev) => {
             if (ev.target.type === 'model') {
-                if (this.isFacadeBuilding(ev.target.modelId)) {
+                const id = ev.target.modelId;
+                if (this.isFacadeBuilding(id)) {
                     this.container.style.cursor = '';
-                    this.toggleHighlightModel(ev.target.modelId);
+                    this.toggleHighlightModel(id);
                 }
             }
         });
@@ -242,7 +244,7 @@ export class RealtyScene {
     }
 
     // checks if the modelId is external facade of the building
-    private isFacadeBuilding(modelId?: Id) {
+    private isFacadeBuilding(modelId?: Id): modelId is Id {
         if (modelId === undefined) {
             return false;
         }
@@ -425,11 +427,7 @@ export class RealtyScene {
         }
     }
 
-    public toggleHighlightModel(modelId?: Id) {
-        if (modelId === undefined) {
-            return;
-        }
-
+    public toggleHighlightModel(modelId: Id) {
         const model = this.models.get(String(modelId));
 
         if (model === undefined) {
