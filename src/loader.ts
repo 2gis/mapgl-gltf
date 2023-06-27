@@ -60,6 +60,7 @@ export class Loader extends GLTFLoader {
                     });
 
                     const model = new THREE.Object3D();
+
                     model.add(gltf.scene);
 
                     // rotation
@@ -75,6 +76,18 @@ export class Loader extends GLTFLoader {
                         mapPointsOffsetZ,
                     ];
                     model.position.set(mapPointCenter[0], mapPointCenter[1], mapPointCenter[2]);
+
+                    // Change material so that it can be highlighted
+                    model.traverse((obj) => {
+                        if (obj instanceof THREE.Mesh) {
+                            const newMaterial = new THREE.MeshStandardMaterial({
+                                map: obj.material.map,
+                            });
+                            obj.material = newMaterial;
+                            obj.material.emissive = new THREE.Color('#ffffff');
+                            obj.material.emissiveIntensity = 0.0;
+                        }
+                    });
 
                     const actualModelId = String(modelId);
                     try {

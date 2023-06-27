@@ -21,7 +21,7 @@ export class RealtyScene {
     private buildingFacadeIds: Id[] = [];
     // this field is needed when the hightlited
     // model is placed under the floors' control
-    private highlightedModelId: Id | null = null;
+    private prevHoveredModelId: Id | null = null;
 
     constructor(
         private plugin: GltfPlugin,
@@ -185,7 +185,7 @@ export class RealtyScene {
                 const id = ev.target.modelId;
                 if (this.isFacadeBuilding(id)) {
                     this.container.style.cursor = '';
-                    if (this.highlightedModelId !== null) {
+                    if (this.prevHoveredModelId !== null) {
                         this.toggleHighlightModel(id);
                     }
                 }
@@ -272,8 +272,8 @@ export class RealtyScene {
         if (model !== undefined && model.floors !== undefined) {
             // click to the building button
             if (ev.floorId === undefined) {
-                if (this.highlightedModelId !== null) {
-                    this.toggleHighlightModel(this.highlightedModelId);
+                if (this.prevHoveredModelId !== null) {
+                    this.toggleHighlightModel(this.prevHoveredModelId);
                 }
 
                 this.clearPoiGroups();
@@ -443,26 +443,19 @@ export class RealtyScene {
             return;
         }
 
+        let shouldUnsetFlag = false;
         model.traverse((obj) => {
             if (obj instanceof THREE.Mesh) {
-                if (obj.material instanceof THREE.MeshBasicMaterial) {
-                    const newMaterial = new THREE.MeshStandardMaterial({
-                        map: obj.material.map,
-                    });
-                    obj.material = newMaterial;
-                    obj.material.emissive = new THREE.Color('#ffffff');
-                    obj.material.emissiveIntensity = 0.25;
-                    this.highlightedModelId = modelId;
+                if (modelId === this.prevHoveredModelId) {
+                    obj.material.emissiveIntensity = 0.0;
+                    shouldUnsetFlag = true;
                 } else {
-                    const newMaterial = new THREE.MeshBasicMaterial({
-                        map: obj.material.map,
-                    });
-                    obj.material = newMaterial;
-                    this.highlightedModelId = null;
+                    obj.material.emissiveIntensity = 0.25;
                 }
             }
         });
 
+        this.prevHoveredModelId = shouldUnsetFlag ? null : modelId;
         this.map.triggerRerender();
     }
 }
