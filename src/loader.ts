@@ -40,6 +40,12 @@ export class Loader extends GLTFLoader {
             offsetY = 0,
             offsetZ = 0,
         } = modelOptions;
+
+        const actualModelId = String(modelId);
+        if (this.models.has(actualModelId)) {
+            return Promise.resolve();
+        }
+
         const modelPosition = mapPointFromLngLat(coordinates);
         const mapPointsOffsetX = geoToMapDistance(coordinates, offsetX);
         const mapPointsOffsetY = geoToMapDistance(coordinates, offsetY);
