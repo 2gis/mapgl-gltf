@@ -47,7 +47,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      *
      * plugin.addModels([
      *     {
-     *         id: 1,
+     *         modelId: '03a234cb',
      *         coordinates: [82.886554, 54.980988],
      *         modelUrl: 'models/cube_draco.glb',
      *         rotateX: 90,
@@ -148,11 +148,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      */
     public async addModel(modelOptions: ModelOptions) {
         await this.waitForPluginInit;
-
-        const wasAdded = this.addModelFromCache(modelOptions.modelId);
-        if (wasAdded) {
-            return Promise.resolve();
-        }
 
         return this.loader.loadModel(modelOptions).then(() => {
             if (modelOptions.linkedIds) {
