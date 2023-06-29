@@ -26,7 +26,7 @@ const map = new mapglAPI.Map('container', {
 
 const plugin = new GltfPlugin(map);
 plugin.addModels([{
-    id: 1,
+    modelId: '03a234cb',
     coordinates: [82.886554, 54.980988],
     modelUrl: 'models/cube_draco.glb',
     rotateX: 90,
