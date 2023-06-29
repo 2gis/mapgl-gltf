@@ -19,7 +19,7 @@ export class RealtyScene {
     private activePoiGroupIds: Id[] = [];
     private container: HTMLElement;
     private buildingFacadeIds: Id[] = [];
-    // this field is needed when the hightlited
+    // this field is needed when the highlighted
     // model is placed under the floors' control
     private prevHoveredModelId: Id | null = null;
 
@@ -437,6 +437,13 @@ export class RealtyScene {
     }
 
     public toggleHighlightModel(modelId: Id) {
+        // skip toggle if user is using default emissiveIntensity
+        // that means that model won't be hovered
+        const { intencity } = this.options.hoverHighlight;
+        if (intencity === 0) {
+            return;
+        }
+
         const model = this.models.get(String(modelId));
 
         if (model === undefined) {
@@ -450,7 +457,7 @@ export class RealtyScene {
                     obj.material.emissiveIntensity = 0.0;
                     shouldUnsetFlag = true;
                 } else {
-                    obj.material.emissiveIntensity = 0.25;
+                    obj.material.emissiveIntensity = intencity;
                 }
             }
         });

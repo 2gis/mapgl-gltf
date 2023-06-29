@@ -5,8 +5,9 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { degToRad } from './utils/common';
 import { concatUrl, isAbsoluteUrl } from './utils/url';
 import { mapPointFromLngLat, geoToMapDistance } from './utils/geo';
+import { defaultOptions } from './defaultOptions';
 
-import type { ModelOptions } from './types/plugin';
+import type { ModelOptions, HightlightOptions } from './types/plugin';
 
 interface LoaderOptions {
     dracoScriptsUrl: string;
@@ -16,6 +17,7 @@ interface LoaderOptions {
 export class Loader extends GLTFLoader {
     private options: LoaderOptions;
     private models = new Map<string, THREE.Object3D>();
+    private hoverParams = defaultOptions.hoverHighlight;
 
     constructor(options: LoaderOptions) {
         super();
@@ -90,7 +92,7 @@ export class Loader extends GLTFLoader {
                                 map: obj.material.map,
                             });
                             obj.material = newMaterial;
-                            obj.material.emissive = new THREE.Color('#ffffff');
+                            obj.material.emissive = new THREE.Color(this.hoverParams.color);
                             obj.material.emissiveIntensity = 0.0;
                         }
                     });
@@ -120,5 +122,9 @@ export class Loader extends GLTFLoader {
 
     public getModels() {
         return this.models;
+    }
+
+    public setHoverParams(color: HightlightOptions) {
+        this.hoverParams = color;
     }
 }

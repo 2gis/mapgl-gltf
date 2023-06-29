@@ -70,6 +70,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             modelsBaseUrl: this.options.modelsBaseUrl,
             dracoScriptsUrl: this.options.dracoScriptsUrl,
         });
+        this.loader.setHoverParams(this.options.hoverHighlight);
         this.models = this.loader.getModels();
 
         this.poiGroups = new PoiGroups(this.map, this.options.poiConfig);

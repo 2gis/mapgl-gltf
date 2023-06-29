@@ -12,13 +12,13 @@ export type ColorRepresentation = ColorModelString | HexColorString | number;
  */
 export interface AmbientLightOptions {
     /**
-     * Numeric value of the RGB component of the color.
-     * Default is 0xffffff
+     * Color of the ambient light.
+     * @default '#ffffff'
      */
     color: ColorRepresentation;
     /**
      * Numeric value of the light's strength/intensity.
-     * Default is 1
+     * @default 3
      */
     intencity: number;
 }
@@ -61,6 +61,22 @@ export interface ControlOptions {
 }
 
 /**
+ * Options for the highlight color of hovered models
+ */
+export interface HightlightOptions {
+    /**
+     * Color of the hover
+     * @default '#ffffff'
+     */
+    color?: ColorRepresentation;
+    /**
+     * Intensity of the color on the hover in the range from 0 to 1
+     * @default 0.0
+     */
+    intencity: number;
+}
+
+/**
  * Options for the plugin
  */
 export interface PluginOptions {
@@ -95,11 +111,14 @@ export interface PluginOptions {
          */
         secondary?: PoiConfigGranular;
     };
-
     /**
-     * Floors control
+     * Settings for floors' control
      */
     floorsControl?: ControlOptions;
+    /**
+     * Settings of the highlighted models
+     */
+    hoverHighlight?: HightlightOptions;
 }
 
 /**

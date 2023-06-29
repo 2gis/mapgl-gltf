@@ -29,6 +29,9 @@ async function start() {
                 fontSize: 14,
             },
         },
+        hoverHighlight: {
+            intencity: 0.1,
+        },
     });
 
     const defaultState = {
