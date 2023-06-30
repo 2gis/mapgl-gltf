@@ -8,6 +8,17 @@ export function degToRad(degrees: number): number {
     return (degrees * Math.PI) / 180;
 }
 
+export function radToDeg(radians: number): number {
+    return (radians / Math.PI) * 180;
+}
+
 export function clone<T>(obj: T): T {
     return JSON.parse(JSON.stringify(obj));
+}
+
+export function createCompoundId(modelId: string | number, floorId?: string | number) {
+    if (floorId === undefined) {
+        return String(modelId);
+    }
+    return `${modelId}_${floorId}`;
 }

@@ -1,7 +1,7 @@
-export type Id = number | string;
+import { Id } from '../types/plugin';
 
 /**
- * Floor level data.
+ * Floor level data
  */
 export interface FloorLevel {
     floorId?: Id;
@@ -12,10 +12,10 @@ export interface FloorLevel {
 /**
  * Options for the method show
  */
-export interface ShowOptions {
+export interface ControlShowOptions {
     modelId: Id;
     floorId?: Id;
-    floorLevels: FloorLevel[];
+    floorLevels?: FloorLevel[];
 }
 
 /**
@@ -28,7 +28,7 @@ export interface FloorChangeEvent {
 
 export interface ControlEventTable {
     /**
-     * Emitted when model floor plan is change.
+     * Emitted when floor's plan was changed
      */
     floorChange: FloorChangeEvent;
 }

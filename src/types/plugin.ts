@@ -1,3 +1,5 @@
+export type Id = string | number;
+
 export type ColorModelString = `${'rgb' | 'hsl'}(${string})`;
 export type HexColorString = `#${string}`;
 /**
@@ -10,13 +12,13 @@ export type ColorRepresentation = ColorModelString | HexColorString | number;
  */
 export interface AmbientLightOptions {
     /**
-     * Numeric value of the RGB component of the color.
-     * Default is 0xffffff
+     * Color of the ambient light.
+     * @default '#ffffff'
      */
     color: ColorRepresentation;
     /**
      * Numeric value of the light's strength/intensity.
-     * Default is 1
+     * @default 3
      */
     intencity: number;
 }
@@ -36,7 +38,7 @@ export interface PoiConfigGranular {
 }
 
 /**
- * Possible position of the control.
+ * Possible positions of the control.
  */
 export type ControlPosition =
     | 'topLeft'
@@ -56,6 +58,22 @@ export interface ControlOptions {
      * Position of the control.
      */
     position: ControlPosition;
+}
+
+/**
+ * Options for the highlight color of hovered models
+ */
+export interface HightlightOptions {
+    /**
+     * Color of the hover
+     * @default '#ffffff'
+     */
+    color?: ColorRepresentation;
+    /**
+     * Intensity of the color on the hover in the range from 0 to 1
+     * @default 0.0
+     */
+    intencity: number;
 }
 
 /**
@@ -93,11 +111,14 @@ export interface PluginOptions {
          */
         secondary?: PoiConfigGranular;
     };
-
     /**
-     * Floors control
+     * Settings for floors' control
      */
-    floorsControl?: boolean | ControlOptions;
+    floorsControl?: ControlOptions;
+    /**
+     * Settings of the highlighted models
+     */
+    hoverHighlight?: HightlightOptions;
 }
 
 /**
@@ -107,12 +128,12 @@ export interface BuildingState {
     /**
      * Identifier of the building's model
      */
-    modelId: number | string;
+    modelId: Id;
 
     /**
      * Identifier of the floor's model
      */
-    floorId?: number | string;
+    floorId?: Id;
 }
 
 /**
@@ -122,7 +143,7 @@ export interface ModelOptions {
     /**
      * Identifier of the model should be unique for every model
      */
-    modelId: number | string;
+    modelId: Id;
     /**
      * Geographical coordinates [longitude, latitude]
      */
@@ -167,8 +188,15 @@ export interface ModelOptions {
      * User specific data
      */
     userData?: any;
+    /**
+     * Interactivity of model. All models are interactive by default
+     */
+    interactive?: boolean;
 }
 
+/**
+ * Options for a poi
+ */
 export interface PoiOptions {
     /**
      * Coordinate of the poi
@@ -189,13 +217,13 @@ export interface PoiOptions {
 }
 
 /**
- * Options for the method addPoiGroup
+ * Options for a poi group
  */
-export interface AddPoiGroupOptions {
+export interface PoiGroupOptions {
     /**
      * Identifier of the poi group to add
      */
-    id: string | number;
+    id: Id;
     /**
      * Type of the poi
      */
@@ -224,14 +252,4 @@ export interface AddPoiGroupOptions {
      * Color of the poi's font
      */
     fontColor?: string;
-}
-
-/**
- * Options for the method removePoiGroup
- */
-export interface RemovePoiGroupOptions {
-    /**
-     * Identifier of the poi group to delete
-     */
-    id: number | string;
 }

@@ -1,24 +1,26 @@
 import { load } from '@2gis/mapgl';
-import { GltfPlugin } from '../src/index';
 
-import type { ModelOptions } from '../src/types/plugin';
+import { GltfPlugin } from '../src/index';
+import { realtyScene } from './realtySceneData';
 
 async function start() {
     const mapglAPI = await load();
 
     const map = new mapglAPI.Map('container', {
-        center: [82.886554, 54.980988],
-        zoom: 15.5,
+        center: [47.245286302641034, 56.134743473834099],
+        zoom: 17.9,
         key: 'cb20c5bf-34d3-4f0e-9b2b-33e9b8edb57f',
         pitch: 45,
         rotation: 330,
         enableTrackResize: true,
     });
 
+    (window as any).map = map;
+
     const plugin = new GltfPlugin(map, {
-        modelsLoadStrategy: 'dontWaitAll',
+        modelsLoadStrategy: 'waitAll',
+        modelsBaseUrl: 'https://disk.2gis.com/digital-twin/models_s3/realty_ads/zgktechnology/',
         dracoScriptsUrl: 'libs/draco/',
-        ambientLight: { color: '#ffffff', intencity: 2.5 },
         poiConfig: {
             primary: {
                 fontSize: 14,
@@ -27,8 +29,17 @@ async function start() {
                 fontSize: 14,
             },
         },
-        floorsControl: true,
+        hoverHighlight: {
+            intencity: 0.1,
+        },
     });
+
+    const defaultState = {
+        modelId: '03a234cb',
+        // floorId: '235034',
+    };
+
+    plugin.addRealtyScene(realtyScene);
 
     (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {
@@ -37,28 +48,6 @@ async function start() {
     });
 
     /*
-    const models: ModelOptions[] = [
-        {
-            id: '03a234cb',
-            coordinates: [82.886554, 54.980988],
-            modelUrl: 'models/cube_draco.glb',
-            rotateX: 90,
-            scale: 1000,
-            linkedIds: ['141373143530065', '70030076379181421'],
-        },
-        {
-            id: 'e3a837ff',
-            coordinates: [82.886454, 54.980388],
-            modelUrl: 'models/cube_draco.glb',
-            rotateX: 90,
-            rotateY: 31,
-            scale: 700,
-            linkedIds: ['141373143530064', '70030076379180575'],
-            offsetX: 30,
-        },
-    ];
-    */
-
     const models: ModelOptions[] = [];
     for (let i = 0; i < 10; i++) {
         let lonRnd = (Math.random() / 100) * (Math.random() > 0.5 ? 1 : -1);
@@ -131,6 +120,7 @@ async function start() {
             floorId: '234234',
         },
     );
+    */
 }
 
 start();

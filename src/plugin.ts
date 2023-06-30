@@ -4,18 +4,19 @@ import type { Map as MapGL } from '@2gis/mapgl/types';
 import { Evented } from './external/evented';
 import { EventSource } from './eventSource';
 import { Loader } from './loader';
-import { PoiGroup } from './poiGroup';
+import { PoiGroups } from './poiGroups';
+import { RealtyScene } from './realtyScene';
 import { defaultOptions } from './defaultOptions';
 
 import type {
+    Id,
     PluginOptions,
     ModelOptions,
     BuildingState,
-    AddPoiGroupOptions,
-    RemovePoiGroupOptions,
+    PoiGroupOptions,
 } from './types/plugin';
+import type { BuildingOptions } from './types/realtyScene';
 import type { GltfPluginEventTable } from './types/events';
-import { GltfFloorControl } from './control';
 
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private renderer = new THREE.WebGLRenderer();
@@ -26,14 +27,16 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private map: MapGL;
     private options = defaultOptions;
     private loader: Loader;
-    private poiGroup: PoiGroup;
+    private poiGroups: PoiGroups;
     private eventSource?: EventSource;
     private onPluginInit = () => {}; // resolve of waitForPluginInit
     private waitForPluginInit = new Promise<void>((resolve) => (this.onPluginInit = resolve));
     private models;
-    private control?: GltfFloorControl;
+    private realtyScene?: RealtyScene;
 
     /**
+     * The main class of the plugin
+     *
      * Example:
      * ```js
      * const plugin = new GltfPlugin (map, {
@@ -44,7 +47,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      *
      * plugin.addModels([
      *     {
-     *         id: 1,
+     *         modelId: '03a234cb',
      *         coordinates: [82.886554, 54.980988],
      *         modelUrl: 'models/cube_draco.glb',
      *         rotateX: 90,
@@ -67,81 +70,29 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             modelsBaseUrl: this.options.modelsBaseUrl,
             dracoScriptsUrl: this.options.dracoScriptsUrl,
         });
+        this.loader.setHoverParams(this.options.hoverHighlight);
         this.models = this.loader.getModels();
 
-        this.poiGroup = new PoiGroup({
-            map: this.map,
-            poiConfig: this.options.poiConfig,
-        });
+        this.poiGroups = new PoiGroups(this.map, this.options.poiConfig);
 
         map.once('idle', () => {
-            this.poiGroup.addIcons();
+            this.poiGroups.addIcons();
             this.addThreeJsLayer();
             this.initEventHandlers();
         });
-
-        if (pluginOptions?.floorsControl) {
-            const position =
-                typeof pluginOptions.floorsControl === 'boolean'
-                    ? 'centerLeft'
-                    : pluginOptions.floorsControl.position;
-            this.control = new GltfFloorControl(this.map, { position });
-        }
     }
 
     /**
-     * Add models to the map
+     * Add the list of models to the map
+     * Use this method if you want to add
+     * a list of models to the map at the same time
      *
      * @param modelOptions An array of models' options
      */
     public async addModels(modelOptions: ModelOptions[]) {
         await this.waitForPluginInit;
 
-        // TODO: move to mega method
-        this.eventSource?.setCurrentFloorId(1234342);
-
-        const loadedModels = modelOptions.map((options) => {
-            return this.loader.loadModel(options).then(() => {
-                if (this.options.modelsLoadStrategy === 'dontWaitAll') {
-                    if (options.linkedIds) {
-                        this.map.setHiddenObjects(options.linkedIds);
-                    }
-
-                    const model = this.models.get(String(options.modelId));
-                    if (model !== undefined) {
-                        this.scene.add(model);
-                    }
-                    // TODO: move an activation of the control to the mega method
-                    this.control?.show({
-                        modelId: 777,
-                        floorId: 0,
-                        floorLevels: [
-                            {
-                                icon: 'building',
-                                text: '',
-                            },
-                            {
-                                floorId: 0,
-                                icon: 'parking',
-                                text: '',
-                            },
-                            { floorId: 1, text: '1-9' },
-                            { floorId: 3, text: '10-11' },
-                            { floorId: 4, text: '12-13' },
-                            { floorId: 5, text: '14-15' },
-                            { floorId: 6, text: '16-19' },
-                            { floorId: 7, text: '20' },
-                            { floorId: 8, text: '21-22' },
-                            { floorId: 9, text: '23-25' },
-                            { floorId: 10, text: '25-30' },
-                            { floorId: 11, text: '31-34' },
-                            { floorId: 12, text: '35' },
-                        ],
-                    });
-                    this.map.triggerRerender();
-                }
-            });
-        });
+        const loadedModels = this.startModelLoading(modelOptions);
 
         return Promise.all(loadedModels).then(() => {
             if (this.options.modelsLoadStrategy === 'waitAll') {
@@ -150,46 +101,125 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                         this.map.setHiddenObjects(options.linkedIds);
                     }
                 }
-                for (let [_id, model] of this.models) {
-                    this.scene.add(model);
+                const ids = modelOptions.map((opt) => opt.modelId);
+                for (let id of ids) {
+                    this.addModelFromCache(id);
                 }
                 this.map.triggerRerender();
             }
+            this.invalidateViewport();
         });
     }
 
-    public async addModel(options: ModelOptions) {
+    /**
+     * Add the list of models to the map partially
+     * Use this method if you want to add to the map
+     * some models from the list of models and want
+     * to preserve remaining ones in the cache without
+     * adding them to the map
+     *
+     * @param modelOptions An array of models' options
+     * @param ids An array of idenifiers of the models that must be added to the scene
+     */
+    public async addModelsPartially(modelOptions: ModelOptions[], ids: Id[]) {
         await this.waitForPluginInit;
-        return this.loader.loadModel(options).then(() => {
-            if (options.linkedIds) {
-                this.map.setHiddenObjects(options.linkedIds);
-            }
 
-            const model = this.models.get(String(options.modelId));
-            if (model !== undefined) {
-                this.scene.add(model);
+        const loadedModels = this.startModelLoading(modelOptions);
+
+        return Promise.all(loadedModels).then(() => {
+            if (this.options.modelsLoadStrategy === 'waitAll') {
+                for (let options of modelOptions) {
+                    if (options.linkedIds) {
+                        this.map.setHiddenObjects(options.linkedIds);
+                    }
+                }
+                for (let id of ids) {
+                    this.addModelFromCache(id);
+                }
+                this.map.triggerRerender();
             }
-            this.map.triggerRerender();
+            this.invalidateViewport();
         });
     }
 
-    public removeModel(id: string | number) {
+    /**
+     * Add model to the map
+     *
+     * @param modelOptions The models' options
+     */
+    public async addModel(modelOptions: ModelOptions) {
+        await this.waitForPluginInit;
+
+        return this.loader.loadModel(modelOptions).then(() => {
+            if (modelOptions.linkedIds) {
+                this.map.setHiddenObjects(modelOptions.linkedIds);
+            }
+            this.addModelFromCache(modelOptions.modelId);
+            this.map.triggerRerender();
+            this.invalidateViewport();
+        });
+    }
+
+    /**
+     * Remove the model from the map and cache or from the map only
+     *
+     * @param id Identifier of the model to delete
+     * @param preserveCache Flag to keep the model in the cache
+     */
+    public removeModel(id: Id, preserveCache?: boolean) {
         const model = this.models.get(String(id));
         if (model === undefined) {
             return;
         }
         this.scene.remove(model);
+        if (!preserveCache) {
+            this.models.delete(String(id));
+            this.disposeObject(model);
+        }
         this.map.triggerRerender();
     }
 
-    public async addPoiGroup(options: AddPoiGroupOptions, state?: BuildingState) {
+    /**
+     * Add the group of poi to the map
+     *
+     * @param options Options of the group of poi to add to the map
+     * @param state State of the active building to connect with added the group of poi
+     */
+    public async addPoiGroup(options: PoiGroupOptions, state?: BuildingState) {
         await this.waitForPluginInit;
 
-        this.poiGroup.addPoiGroup(options, state);
+        this.poiGroups.add(options, state);
     }
 
-    public removePoiGroup(options: RemovePoiGroupOptions) {
-        this.poiGroup.removePoiGroup(options);
+    /**
+     * Remove the group of poi from the map
+     *
+     * @param id Identifier of the group of poi to remove
+     */
+    public removePoiGroup(id: Id) {
+        this.poiGroups.remove(id);
+    }
+
+    /**
+     * Add the interactive realty scene to the map
+     *
+     * @param scene The options of the scene to add to the map
+     * @param state State of the active building to connect with added scene
+     */
+    public async addRealtyScene(scene: BuildingOptions[], state?: BuildingState) {
+        await this.waitForPluginInit;
+        if (!this.eventSource) {
+            return;
+        }
+
+        this.realtyScene = new RealtyScene(
+            this,
+            this.map,
+            this.eventSource,
+            this.models,
+            this.options,
+        );
+        this.realtyScene.addRealtyScene(scene, state);
     }
 
     private invalidateViewport() {
@@ -207,12 +237,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         for (let eventName of this.eventSource.getEvents()) {
             this.eventSource.on(eventName, (e) => {
                 this.emit(eventName, e);
-            });
-        }
-
-        if (this.control) {
-            this.control.on('floorChange', (e) => {
-                console.log(e);
             });
         }
     }
@@ -275,6 +299,55 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             onAdd: () => this.initThree(),
             render: () => this.render(),
             onRemove: () => {},
+        });
+    }
+
+    private startModelLoading(modelOptions: ModelOptions[]) {
+        return modelOptions.map((options) => {
+            return this.loader.loadModel(options).then(() => {
+                if (this.options.modelsLoadStrategy === 'dontWaitAll') {
+                    if (options.linkedIds) {
+                        this.map.setHiddenObjects(options.linkedIds);
+                    }
+                    this.addModelFromCache(options.modelId);
+                    this.map.triggerRerender();
+                }
+            });
+        });
+    }
+
+    private addModelFromCache(id: Id) {
+        const model = this.models.get(String(id));
+        if (model !== undefined) {
+            this.scene.add(model);
+        }
+        return Boolean(model);
+    }
+
+    /**
+     * Delete from memory all allocated objects by Object3D
+     * https://threejs.org/docs/#manual/en/introduction/How-to-dispose-of-objects
+     */
+    private disposeObject(inputObj: THREE.Object3D) {
+        inputObj.traverse((obj) => {
+            if (obj instanceof THREE.Mesh) {
+                const geometry = obj.geometry;
+                const material = obj.material;
+
+                if (geometry) {
+                    geometry.dispose();
+                }
+
+                if (material) {
+                    const texture = material.map;
+
+                    if (texture) {
+                        texture.dispose();
+                    }
+
+                    material.dispose();
+                }
+            }
         });
     }
 }
