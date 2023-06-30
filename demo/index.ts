@@ -21,7 +21,6 @@ async function start() {
         modelsLoadStrategy: 'waitAll',
         modelsBaseUrl: 'https://disk.2gis.com/digital-twin/models_s3/realty_ads/zgktechnology/',
         dracoScriptsUrl: 'libs/draco/',
-        ambientLight: { color: '#ffffff', intencity: 2.5 },
         poiConfig: {
             primary: {
                 fontSize: 14,
@@ -29,6 +28,9 @@ async function start() {
             secondary: {
                 fontSize: 14,
             },
+        },
+        hoverHighlight: {
+            intencity: 0.1,
         },
     });
 

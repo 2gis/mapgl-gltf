@@ -5,8 +5,9 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader';
 import { degToRad } from './utils/common';
 import { concatUrl, isAbsoluteUrl } from './utils/url';
 import { mapPointFromLngLat, geoToMapDistance } from './utils/geo';
+import { defaultOptions } from './defaultOptions';
 
-import type { ModelOptions } from './types/plugin';
+import type { ModelOptions, HightlightOptions } from './types/plugin';
 
 interface LoaderOptions {
     dracoScriptsUrl: string;
@@ -16,6 +17,7 @@ interface LoaderOptions {
 export class Loader extends GLTFLoader {
     private options: LoaderOptions;
     private models = new Map<string, THREE.Object3D>();
+    private hoverParams = defaultOptions.hoverHighlight;
 
     constructor(options: LoaderOptions) {
         super();
@@ -40,6 +42,12 @@ export class Loader extends GLTFLoader {
             offsetY = 0,
             offsetZ = 0,
         } = modelOptions;
+
+        const actualModelId = String(modelId);
+        if (this.models.has(actualModelId)) {
+            return Promise.resolve();
+        }
+
         const modelPosition = mapPointFromLngLat(coordinates);
         const mapPointsOffsetX = geoToMapDistance(coordinates, offsetX);
         const mapPointsOffsetY = geoToMapDistance(coordinates, offsetY);
@@ -60,6 +68,7 @@ export class Loader extends GLTFLoader {
                     });
 
                     const model = new THREE.Object3D();
+
                     model.add(gltf.scene);
 
                     // rotation
@@ -75,6 +84,18 @@ export class Loader extends GLTFLoader {
                         mapPointsOffsetZ,
                     ];
                     model.position.set(mapPointCenter[0], mapPointCenter[1], mapPointCenter[2]);
+
+                    // Change material so that it can be highlighted
+                    model.traverse((obj) => {
+                        if (obj instanceof THREE.Mesh) {
+                            const newMaterial = new THREE.MeshStandardMaterial({
+                                map: obj.material.map,
+                            });
+                            obj.material = newMaterial;
+                            obj.material.emissive = new THREE.Color(this.hoverParams.color);
+                            obj.material.emissiveIntensity = 0.0;
+                        }
+                    });
 
                     const actualModelId = String(modelId);
                     try {
@@ -101,5 +122,9 @@ export class Loader extends GLTFLoader {
 
     public getModels() {
         return this.models;
+    }
+
+    public setHoverParams(color: HightlightOptions) {
+        this.hoverParams = color;
     }
 }

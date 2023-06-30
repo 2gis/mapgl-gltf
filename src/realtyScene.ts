@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import type { Map as MapGL, AnimationOptions } from '@2gis/mapgl/types';
 
 import { EventSource } from './eventSource';
@@ -18,11 +19,15 @@ export class RealtyScene {
     private activePoiGroupIds: Id[] = [];
     private container: HTMLElement;
     private buildingFacadeIds: Id[] = [];
+    // this field is needed when the highlighted
+    // model is placed under the floors' control
+    private prevHoveredModelId: Id | null = null;
 
     constructor(
         private plugin: GltfPlugin,
         private map: MapGL,
         private eventSource: EventSource,
+        private models: Map<string, THREE.Object3D>,
         private options: typeof defaultOptions,
     ) {
         this.container = map.getContainer();
@@ -155,7 +160,7 @@ export class RealtyScene {
         this.plugin.on('click', (ev) => {
             if (ev.target.type === 'model') {
                 const id = ev.target.modelId;
-                if (this.isFacadeBuilding(id) && id !== undefined) {
+                if (this.isFacadeBuilding(id)) {
                     this.buildingClickHandler(scene, id);
                 }
             }
@@ -167,16 +172,22 @@ export class RealtyScene {
 
         this.plugin.on('mouseover', (ev) => {
             if (ev.target.type === 'model') {
-                if (this.isFacadeBuilding(ev.target.modelId)) {
+                const id = ev.target.modelId;
+                if (this.isFacadeBuilding(id)) {
                     this.container.style.cursor = 'pointer';
+                    this.toggleHighlightModel(id);
                 }
             }
         });
 
         this.plugin.on('mouseout', (ev) => {
             if (ev.target.type === 'model') {
-                if (this.isFacadeBuilding(ev.target.modelId)) {
+                const id = ev.target.modelId;
+                if (this.isFacadeBuilding(id)) {
                     this.container.style.cursor = '';
+                    if (this.prevHoveredModelId !== null) {
+                        this.toggleHighlightModel(id);
+                    }
                 }
             }
         });
@@ -238,7 +249,7 @@ export class RealtyScene {
     }
 
     // checks if the modelId is external facade of the building
-    private isFacadeBuilding(modelId?: Id) {
+    private isFacadeBuilding(modelId?: Id): modelId is Id {
         if (modelId === undefined) {
             return false;
         }
@@ -261,6 +272,10 @@ export class RealtyScene {
         if (model !== undefined && model.floors !== undefined) {
             // click to the building button
             if (ev.floorId === undefined) {
+                if (this.prevHoveredModelId !== null) {
+                    this.toggleHighlightModel(this.prevHoveredModelId);
+                }
+
                 this.clearPoiGroups();
                 this.plugin
                     .addModel({
@@ -419,5 +434,35 @@ export class RealtyScene {
                 floor.id = createCompoundId(scenePart.modelId, floor.id);
             }
         }
+    }
+
+    public toggleHighlightModel(modelId: Id) {
+        // skip toggle if user is using default emissiveIntensity
+        // that means that model won't be hovered
+        const { intencity } = this.options.hoverHighlight;
+        if (intencity === 0) {
+            return;
+        }
+
+        const model = this.models.get(String(modelId));
+
+        if (model === undefined) {
+            return;
+        }
+
+        let shouldUnsetFlag = false;
+        model.traverse((obj) => {
+            if (obj instanceof THREE.Mesh) {
+                if (modelId === this.prevHoveredModelId) {
+                    obj.material.emissiveIntensity = 0.0;
+                    shouldUnsetFlag = true;
+                } else {
+                    obj.material.emissiveIntensity = intencity;
+                }
+            }
+        });
+
+        this.prevHoveredModelId = shouldUnsetFlag ? null : modelId;
+        this.map.triggerRerender();
     }
 }

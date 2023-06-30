@@ -3,7 +3,11 @@ import type { PluginOptions } from './types/plugin';
 export const defaultOptions: Required<PluginOptions> = {
     ambientLight: {
         color: '#ffffff',
-        intencity: 1,
+        intencity: 3,
+    },
+    hoverHighlight: {
+        color: '#ffffff',
+        intencity: 0.0,
     },
     dracoScriptsUrl: 'https://unpkg.com/@2gis/mapgl-gltf@^1/dist/libs/draco/',
     modelsBaseUrl: '',
