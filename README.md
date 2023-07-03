@@ -44,8 +44,14 @@ plugin.addModels([{
 1. Make sure the release target is the «master» branch
 1. Paste the release tag into the «Release title» field, for example v1.2.3
 1. Add a release description
-1. Click the «Publish release» button 
+1. Click the «Publish release» button
 1. Go to https://github.com/2gis/mapgl-gltf/actions and wait for completing the release workflow
+
+## Testing
+
+If you write screenshot tests, you will need run `npm run docker:screenshot:update` after coding.
+This command runs your tests on the docker image that is used in pipeline build.
+This guarantees the authenticity of the screenshots used.
 
 ## Documentation
 
