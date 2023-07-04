@@ -5,8 +5,19 @@ mkdirSync('dist', {
     recursive: true,
 });
 
+const excludePaths = [
+    'src/control/',
+    'src/external/',
+    'src/utils/',
+    'src/defaultOptions.ts',
+    'src/eventSource.ts',
+    'src/loader.ts',
+    'src/poiGroups.ts',
+    'src/realtyScene.ts',
+];
+
 new Documentalist()
-    .use(/\.ts$/, new TypescriptPlugin({ excludePaths: ['src/utils.ts'] }))
+    .use(/\.ts$/, new TypescriptPlugin({ excludePaths }))
     .documentGlobs('src/**/*')
     .then((docs) => JSON.stringify(docs))
     .then((json) => writeFileSync('dist/docs.json', json))
