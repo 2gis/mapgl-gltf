@@ -1,0 +1,22 @@
+body {
+    font-family: sans-serif;
+}
+
+.popup {
+    position: relative;
+    background: white;
+    padding: 4px 24px;
+    border-radius: 12px;
+    box-shadow: rgba(0, 0, 0, 0.3) 0 2px 10px;
+    max-width: 300px;
+}
+
+.popup h2 {
+    font-size: 18px;
+    padding-right: 16px;
+}
+
+.popup p {
+    font-size: 12px;
+    line-height: 18px;
+}

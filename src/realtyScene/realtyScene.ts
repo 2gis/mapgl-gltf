@@ -1,16 +1,22 @@
 import * as THREE from 'three';
-import type { Map as MapGL, AnimationOptions } from '@2gis/mapgl/types';
+import type { Map as MapGL, AnimationOptions, HtmlMarker } from '@2gis/mapgl/types';
 
-import { EventSource } from './eventSource';
-import { GltfPlugin } from './plugin';
-import { defaultOptions } from './defaultOptions';
-import { GltfFloorControl } from './control';
-import { clone, createCompoundId } from './utils/common';
+import { EventSource } from '../eventSource';
+import { GltfPlugin } from '../plugin';
+import { defaultOptions } from '../defaultOptions';
+import { GltfFloorControl } from '../control';
+import { clone, createCompoundId } from '../utils/common';
+import classes from './realtyScene.module.css';
 
-import type { Id, BuildingState, ModelOptions } from './types/plugin';
-import type { BuildingOptions, MapOptions, BuildingFloorOptions } from './types/realtyScene';
-import type { ControlShowOptions, FloorLevel, FloorChangeEvent } from './control/types';
-import type { PoiGeoJsonProperties } from './types/events';
+import type { Id, BuildingState, ModelOptions } from '../types/plugin';
+import type {
+    BuildingOptions,
+    MapOptions,
+    BuildingFloorOptions,
+    PopupOptions,
+} from '../types/realtyScene';
+import type { ControlShowOptions, FloorLevel, FloorChangeEvent } from '../control/types';
+import type { PoiGeoJsonProperties } from '../types/events';
 
 export class RealtyScene {
     private activeBuilding?: BuildingOptions;
@@ -22,6 +28,8 @@ export class RealtyScene {
     // this field is needed when the highlighted
     // model is placed under the floors' control
     private prevHoveredModelId: Id | null = null;
+    private popup: HtmlMarker | null = null;
+    private scene: BuildingOptions[] | null = null;
 
     constructor(
         private plugin: GltfPlugin,
@@ -57,6 +65,7 @@ export class RealtyScene {
         // initialize initial scene
         const models: ModelOptions[] = [];
         const modelIds: Id[] = [];
+        this.scene = scene;
         scene.forEach((scenePart) => {
             this.buildingFacadeIds.push(scenePart.modelId);
 
@@ -176,6 +185,10 @@ export class RealtyScene {
                 if (this.isFacadeBuilding(id)) {
                     this.container.style.cursor = 'pointer';
                     this.toggleHighlightModel(id);
+                    let popupOptions = this.getPopupOptions(id);
+                    if (popupOptions) {
+                        this.showPopup(popupOptions);
+                    }
                 }
             }
         });
@@ -185,6 +198,7 @@ export class RealtyScene {
                 const id = ev.target.modelId;
                 if (this.isFacadeBuilding(id)) {
                     this.container.style.cursor = '';
+                    this.hidePopup();
                     if (this.prevHoveredModelId !== null) {
                         this.toggleHighlightModel(id);
                     }
@@ -257,6 +271,17 @@ export class RealtyScene {
         return this.buildingFacadeIds.includes(modelId);
     }
 
+    private getPopupOptions(modelId: Id): PopupOptions | undefined {
+        if (this.scene === null) {
+            return;
+        }
+        let building = this.scene.find((building) => building.modelId === modelId);
+        if (building === undefined) {
+            return;
+        }
+        return building.popupOptions;
+    }
+
     private poiClickHandler(data: PoiGeoJsonProperties) {
         const url: string | undefined = data.userData.url;
         if (url !== undefined) {
@@ -270,6 +295,10 @@ export class RealtyScene {
     private floorChangeHandler(ev: FloorChangeEvent) {
         const model = this.activeBuilding;
         if (model !== undefined && model.floors !== undefined) {
+            if (this.popup !== null) {
+                this.popup.destroy();
+            }
+
             // click to the building button
             if (ev.floorId === undefined) {
                 if (this.prevHoveredModelId !== null) {
@@ -328,6 +357,10 @@ export class RealtyScene {
         // don't show the pointer cursor on the model when user
         // started to interact with the building
         this.container.style.cursor = '';
+
+        if (this.popup !== null) {
+            this.popup.destroy();
+        }
 
         // if there is a visible floor plan, then show the external
         // facade of the active building before focusing on the new building
@@ -464,5 +497,32 @@ export class RealtyScene {
 
         this.prevHoveredModelId = shouldUnsetFlag ? null : modelId;
         this.map.triggerRerender();
+    }
+
+    private showPopup(options: PopupOptions) {
+        this.popup = new mapgl.HtmlMarker(this.map, {
+            coordinates: options.coordinates,
+            html: this.getPopupHtml(options),
+        });
+    }
+
+    private hidePopup() {
+        if (this.popup !== null) {
+            this.popup.destroy();
+            this.popup = null;
+        }
+    }
+
+    private getPopupHtml(data: PopupOptions) {
+        if (data.description === undefined) {
+            return `<div class="${classes.popup}">
+                <h2>${data.title}</h2>
+            </div>`;
+        }
+
+        return `<div class="${classes.popup}">
+            <h2>${data.title}</h2>
+            <p>${data.description}</p>
+        </div>`;
     }
 }

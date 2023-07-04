@@ -5,7 +5,7 @@ import { Evented } from './external/evented';
 import { EventSource } from './eventSource';
 import { Loader } from './loader';
 import { PoiGroups } from './poiGroups';
-import { RealtyScene } from './realtyScene';
+import { RealtyScene } from './realtyScene/realtyScene';
 import { defaultOptions } from './defaultOptions';
 
 import type {
