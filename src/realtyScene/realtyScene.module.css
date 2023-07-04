@@ -1,8 +1,5 @@
-body {
-    font-family: sans-serif;
-}
-
 .popup {
+    font-family: sans-serif;
     position: relative;
     background: white;
     padding: 4px 24px;
@@ -14,9 +11,12 @@ body {
 .popup h2 {
     font-size: 18px;
     padding-right: 16px;
+    margin-bottom: 0;
+    letter-spacing: -0.5px;
 }
 
 .popup p {
     font-size: 12px;
     line-height: 18px;
+    margin-top: 16px;
 }
