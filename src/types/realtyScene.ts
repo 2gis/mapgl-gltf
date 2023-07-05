@@ -52,14 +52,20 @@ export interface BuildingFloorOptions {
     mapOptions?: MapOptions;
 }
 
+/**
+ * Options of popup that appears on hover of buildings
+ */
 export interface PopupOptions {
+    /**
+     * Popup's coordinates
+     */
     coordinates: number[];
     /**
-     * Title of popup that appears on hover
+     * Popup's title
      */
     title: string;
     /**
-     * Description of popup that appears on hover
+     * Popup's description
      */
     description?: string;
 }
