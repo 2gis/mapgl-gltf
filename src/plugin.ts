@@ -233,6 +233,10 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.invalidateViewport();
         });
 
+        window.addEventListener('resize', () => {
+            this.invalidateViewport();
+        });
+
         this.eventSource = new EventSource(this.map, this.viewport, this.camera, this.scene);
         for (let eventName of this.eventSource.getEvents()) {
             this.eventSource.on(eventName, (e) => {
