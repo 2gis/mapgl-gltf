@@ -36,7 +36,7 @@
     "three": "~0.151.3"
   },
   "devDependencies": {
-    "@2gis/mapgl": "1.36.0",
+    "@2gis/mapgl": "1.37.2",
     "@documentalist/compiler": "^2.8.1",
     "@types/jest": "^27.4.0",
     "@types/jest-image-snapshot": "^4.3.1",

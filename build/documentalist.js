@@ -8,12 +8,12 @@ mkdirSync('dist', {
 const excludePaths = [
     'src/control/',
     'src/external/',
+    'src/realtyScene/',
     'src/utils/',
     'src/defaultOptions.ts',
     'src/eventSource.ts',
     'src/loader.ts',
     'src/poiGroups.ts',
-    'src/realtyScene.ts',
 ];
 
 new Documentalist()

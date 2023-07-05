@@ -15,6 +15,11 @@ export const realtyScene: BuildingOptions[] = [
             zoom: 19,
             rotation: -41.4,
         },
+        popupOptions: {
+            coordinates: [47.24511721603574, 56.13451456056651],
+            title: 'Корпус 1. 11 этажей',
+            description: 'Срок сдачи: IV кв. 2024 г. <br />15 мин. пешком до ст. м. Московская',
+        },
         floors: [
             {
                 id: '235034',
@@ -147,6 +152,11 @@ export const realtyScene: BuildingOptions[] = [
             pitch: 45,
             zoom: 18.7,
             rotation: -129,
+        },
+        popupOptions: {
+            coordinates: [47.24448882381944, 56.13468481517748],
+            title: 'Корпус 1. 16 этажей',
+            description: 'Срок сдачи: IV кв. 2024 г. <br /> 15 мин. пешком до ст. м. Московская',
         },
         floors: [
             {

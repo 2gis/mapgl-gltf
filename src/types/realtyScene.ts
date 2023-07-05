@@ -53,6 +53,24 @@ export interface BuildingFloorOptions {
 }
 
 /**
+ * Options of popup that appears on hover of buildings
+ */
+export interface PopupOptions {
+    /**
+     * Popup's coordinates
+     */
+    coordinates: number[];
+    /**
+     * Popup's title
+     */
+    title: string;
+    /**
+     * Popup's description
+     */
+    description?: string;
+}
+
+/**
  * Options for a building on the realty scene
  */
 export interface BuildingOptions extends ModelOptions {
@@ -64,4 +82,8 @@ export interface BuildingOptions extends ModelOptions {
      * List of the floors' plans connected with the particular building
      */
     floors?: BuildingFloorOptions[];
+    /**
+     * Popup options
+     */
+    popupOptions?: PopupOptions;
 }
