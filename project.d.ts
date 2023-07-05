@@ -7,6 +7,7 @@ declare module '@2gis/mapgl/types' {
     export interface Map {
         getProjectionMatrixForGltfPlugin(): number[];
         setHiddenObjects(ids: string[]): void;
+        unsetHiddenObjects(ids: string[]): void;
     }
 }
 

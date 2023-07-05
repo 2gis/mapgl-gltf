@@ -33,6 +33,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private waitForPluginInit = new Promise<void>((resolve) => (this.onPluginInit = resolve));
     private models;
     private realtyScene?: RealtyScene;
+    private modelOptions = new Map<string, ModelOptions>();
 
     /**
      * The main class of the plugin
@@ -97,6 +98,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         return Promise.all(loadedModels).then(() => {
             if (this.options.modelsLoadStrategy === 'waitAll') {
                 for (let options of modelOptions) {
+                    this.modelOptions.set(String(options.modelId), options);
                     if (options.linkedIds) {
                         this.map.setHiddenObjects(options.linkedIds);
                     }
@@ -129,6 +131,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         return Promise.all(loadedModels).then(() => {
             if (this.options.modelsLoadStrategy === 'waitAll') {
                 for (let options of modelOptions) {
+                    this.modelOptions.set(String(options.modelId), options);
                     if (options.linkedIds) {
                         this.map.setHiddenObjects(options.linkedIds);
                     }
@@ -151,6 +154,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         await this.waitForPluginInit;
 
         return this.loader.loadModel(modelOptions).then(() => {
+            this.modelOptions.set(String(modelOptions.modelId), modelOptions);
             if (modelOptions.linkedIds) {
                 this.map.setHiddenObjects(modelOptions.linkedIds);
             }
@@ -173,6 +177,10 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         }
         this.scene.remove(model);
         if (!preserveCache) {
+            const options = this.modelOptions.get(String(id));
+            if (options !== undefined && options.linkedIds !== undefined) {
+                this.map.unsetHiddenObjects(options.linkedIds);
+            }
             this.models.delete(String(id));
             this.disposeObject(model);
         }
