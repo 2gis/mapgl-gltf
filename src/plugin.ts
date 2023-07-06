@@ -126,7 +126,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     public async addModelsPartially(modelOptions: ModelOptions[], ids: Id[]) {
         await this.waitForPluginInit;
 
-        const loadedModels = this.startModelLoading(modelOptions);
+        const loadedModels = this.startModelLoading(modelOptions, ids);
 
         return Promise.all(loadedModels).then(() => {
             if (this.options.modelsLoadStrategy === 'waitAll') {
@@ -314,15 +314,17 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
-    private startModelLoading(modelOptions: ModelOptions[]) {
+    private startModelLoading(modelOptions: ModelOptions[], ids?: Id[]) {
         return modelOptions.map((options) => {
             return this.loader.loadModel(options).then(() => {
                 if (this.options.modelsLoadStrategy === 'dontWaitAll') {
-                    if (options.linkedIds) {
-                        this.map.setHiddenObjects(options.linkedIds);
+                    if (ids === undefined || ids.includes(options.modelId)) {
+                        if (options.linkedIds) {
+                            this.map.setHiddenObjects(options.linkedIds);
+                        }
+                        this.addModelFromCache(options.modelId);
+                        this.map.triggerRerender();
                     }
-                    this.addModelFromCache(options.modelId);
-                    this.map.triggerRerender();
                 }
             });
         });
