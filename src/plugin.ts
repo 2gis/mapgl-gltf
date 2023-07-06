@@ -121,7 +121,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      * adding them to the map
      *
      * @param modelOptions An array of models' options
-     * @param ids An array of idenifiers of the models that must be added to the scene
+     * @param ids An array of identifiers of the models that must be added to the scene
      */
     public async addModelsPartially(modelOptions: ModelOptions[], ids: Id[]) {
         await this.waitForPluginInit;

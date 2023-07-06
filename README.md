@@ -49,7 +49,7 @@ plugin.addModels([{
 
 ## Testing
 
-If you write screenshot tests, you will need run `npm run docker:screenshot:update` after coding.
+If you write screenshot tests, you will need run `npm run docker:test` after coding.
 This command runs your tests on the docker image that is used in pipeline build.
 This guarantees the authenticity of the screenshots used.
 
