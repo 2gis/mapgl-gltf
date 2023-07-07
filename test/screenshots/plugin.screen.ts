@@ -14,7 +14,7 @@ import { sleep } from '../utils';
  * Tests for public methods new Gltf Plugin.
  * Only happy-path
  *
- * **/
+ **/
 describe('plugin', () => {
     let page: Page;
 
@@ -84,7 +84,7 @@ describe('plugin', () => {
 
     it('addModel', async () => {
         await page.evaluate(() => {
-            window.gltfPlugin.addModel(window.OBJECTS_FOR_TESTS.models.cubeBig);
+            return window.gltfPlugin.addModel(window.OBJECTS_FOR_TESTS.models.cubeBig);
         });
 
         await waitForReadiness(page);
@@ -115,7 +115,7 @@ describe('plugin', () => {
 
     it('removeModel', async () => {
         await page.evaluate(() => {
-            window.gltfPlugin.addModel(window.OBJECTS_FOR_TESTS.models.cubeBig);
+            return window.gltfPlugin.addModel(window.OBJECTS_FOR_TESTS.models.cubeBig);
         });
         await sleep(1000);
         await page.evaluate(() => {
@@ -163,16 +163,15 @@ describe('plugin', () => {
         });
         await waitForReadiness(page);
         await page.evaluate(() => {
-            window.gltfPlugin.addRealtyScene(window.OBJECTS_FOR_TESTS.mapRealtyScene);
+            return window.gltfPlugin.addRealtyScene(window.OBJECTS_FOR_TESTS.mapRealtyScene);
         });
-
         await waitForReadiness(page);
         await makeSnapshot(page, dirPath, 'add_realty_scene');
     });
 
     it('addModelsPartially', async () => {
         await page.evaluate(() => {
-            window.gltfPlugin.addModelsPartially(
+            return window.gltfPlugin.addModelsPartially(
                 [
                     window.OBJECTS_FOR_TESTS.models.cubeBig,
                     window.OBJECTS_FOR_TESTS.models.cubeSmall,
@@ -180,7 +179,6 @@ describe('plugin', () => {
                 [window.OBJECTS_FOR_TESTS.models.cubeBig.modelId],
             );
         });
-        // await sleep(3000);
         await waitForReadiness(page);
         await makeSnapshot(page, dirPath, 'add_models_partially');
     });

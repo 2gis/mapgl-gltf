@@ -227,7 +227,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.models,
             this.options,
         );
-        this.realtyScene.addRealtyScene(scene, state);
+        return this.realtyScene.addRealtyScene(scene, state);
     }
 
     private invalidateViewport() {
