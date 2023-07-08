@@ -8,7 +8,6 @@ import {
     blankStyle,
     defaultFontsPath,
 } from '../puppeteer/utils';
-import { sleep } from '../utils';
 
 /**
  * Tests for public methods new Gltf Plugin.
@@ -117,7 +116,6 @@ describe('plugin', () => {
         await page.evaluate(() => {
             return window.gltfPlugin.addModel(window.OBJECTS_FOR_TESTS.models.cubeBig);
         });
-        await sleep(1000);
         await page.evaluate(() => {
             window.gltfPlugin.removeModel(window.OBJECTS_FOR_TESTS.models.cubeBig.modelId);
         });
