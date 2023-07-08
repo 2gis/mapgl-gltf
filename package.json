@@ -22,6 +22,7 @@
     "test:unit": "jest --colors",
     "test:integration": "webpack --env type=test && TEST_SUITE=integration jest --colors",
     "test:screenshots": "webpack --env type=test && TEST_SUITE=screenshots jest --colors",
+    "test:screenshots:watch": "webpack --env type=test && TEST_SUITE=screenshots jest --colors --watchAll",
     "test:screenshots:update": "webpack --env type=test && TEST_SUITE=screenshots jest -u",
     "test:typings": "tsc -p tsconfig.typings.validation.json",
     "demo": "webpack --env type=demo",

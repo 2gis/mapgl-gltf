@@ -130,7 +130,7 @@ export class RealtyScene {
             }
         });
 
-        this.plugin.addModelsPartially(models, modelIds).then(() => {
+        return this.plugin.addModelsPartially(models, modelIds).then(() => {
             // set options after adding models
             if (state?.floorId !== undefined) {
                 const floors = this.activeBuilding?.floors ?? [];

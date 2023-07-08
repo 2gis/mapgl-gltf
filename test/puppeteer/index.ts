@@ -49,7 +49,6 @@ export async function pageSetUp(): Promise<puppeteer.Page> {
 
     page.on('console', async (msg) => {
         const args = await Promise.all(msg.args().map((arg) => describeLog(arg)));
-        console.log(`PAGE LOG: ${msg.text()} ${args.join(' ')}`);
     });
 
     await page.goto(REFERENCE_DEMO);
