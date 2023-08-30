@@ -95,7 +95,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
-    private setLinkedIds(modelOptions: ModelOptions[], ids?: Id[]) {
+    private addLinkedIds(modelOptions: ModelOptions[], ids?: Id[]) {
         modelOptions.forEach(({ modelId, linkedIds }) => {
             if (linkedIds?.length && (!ids || ids.some((id) => id === modelId))) {
                 linkedIds.forEach((id) => this.linkedIds.add(id));
@@ -103,13 +103,14 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
+    private removeLinkedIds(modelId: Id) {
+        const linkedIds = this.modelOptions.get(modelId.toString())?.linkedIds;
+        linkedIds?.forEach((id) => this.linkedIds.delete(id));
+    }
+
     private getLinkedIds() {
         return Array.from(this.linkedIds);
     }
-
-    // private resetLinkedIds() {
-    //     this.linkedIds = new Set();
-    // }
 
     /**
      * Add the list of models to the map partially
@@ -124,7 +125,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     public async addModelsPartially(modelOptions: ModelOptions[], ids: Id[]) {
         await this.waitForPluginInit;
 
-        this.setLinkedIds(modelOptions, ids);
+        this.addLinkedIds(modelOptions, ids);
 
         const loadedModels = this.startModelLoading(modelOptions, ids);
 
@@ -160,6 +161,13 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     /**
+     *
+     */
+    public async removeModels(ids: Id[], preserveCache?: boolean) {
+        ids.forEach((id) => this.removeModel(id, preserveCache));
+    }
+
+    /**
      * Add model to the map
      *
      * @param modelOptions The models' options
@@ -167,7 +175,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     public async addModel(modelOptions: ModelOptions) {
         await this.waitForPluginInit;
 
-        this.setLinkedIds([modelOptions]);
+        this.addLinkedIds([modelOptions]);
 
         return this.loader.loadModel(modelOptions).then(() => {
             this.modelOptions.set(String(modelOptions.modelId), modelOptions);
@@ -187,20 +195,22 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      * @param preserveCache Flag to keep the model in the cache
      */
     public removeModel(id: Id, preserveCache?: boolean) {
+        this.removeLinkedIds(id);
+
         const model = this.models.get(String(id));
-        if (model === undefined) {
-            return;
+        if (model !== undefined) {
+            this.scene.remove(model);
+            this.disposeObject(model);
+            this.map.triggerRerender();
         }
-        this.scene.remove(model);
+
         if (!preserveCache) {
             const options = this.modelOptions.get(String(id));
             if (options !== undefined && options.linkedIds !== undefined) {
                 this.map.unsetHiddenObjects(options.linkedIds);
             }
             this.models.delete(String(id));
-            this.disposeObject(model);
         }
-        this.map.triggerRerender();
     }
 
     /**
