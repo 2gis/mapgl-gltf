@@ -23,6 +23,7 @@ async function start() {
         modelsLoadStrategy: 'dontWaitAll',
         modelsBaseUrl: 'https://disk.2gis.com/digital-twin/models_s3/realty_ads/zgktechnology/',
         dracoScriptsUrl: 'libs/draco/',
+        floorsControl: { position: 'centerRight' },
         poiConfig: {
             primary: {
                 fontSize: 14,
@@ -43,12 +44,55 @@ async function start() {
     //     // floorId: '235034',
     // };
 
-    const buttonAddScene = new mapglAPI.Control(map, '<button>Add Scene</button>', {
+    (window as any).realtyScene = realtyScene;
+
+    new mapglAPI.Control(map, '<button>Add Scene</button>', {
         position: 'topLeft',
-    });
-    buttonAddScene.getContainer().addEventListener('click', () => {
-        plugin.addRealtyScene(realtyScene, { modelId: '03a234cb', floorId: '235034' });
-    });
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.addRealtyScene(realtyScene, { modelId: '03a234cb', floorId: '235034' });
+        });
+
+    new mapglAPI.Control(map, '<button>Remove Scene</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.removeRealtyScene();
+        });
+
+    new mapglAPI.Control(map, '<button>Add Model</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.addModel(realtyScene[0]);
+        });
+
+    new mapglAPI.Control(map, '<button>Remove Model</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.removeModel(realtyScene[0].modelId);
+        });
+
+    new mapglAPI.Control(map, '<button>Add Models</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.addModels(realtyScene.slice(1));
+        });
+
+    new mapglAPI.Control(map, '<button>Remove Models</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.removeModels(realtyScene.slice(1).map((m) => m.modelId));
+        });
 
     const buttonToggleTheme = new mapglAPI.Control(
         map,

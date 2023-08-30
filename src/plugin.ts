@@ -257,6 +257,15 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         return this.realtyScene.addRealtyScene(scene, state);
     }
 
+    public removeRealtyScene() {
+        if (!this.realtyScene) {
+            return;
+        }
+
+        this.realtyScene.destroy();
+        this.realtyScene = undefined;
+    }
+
     private invalidateViewport() {
         const container = this.map.getContainer();
         this.viewport = container.getBoundingClientRect();
