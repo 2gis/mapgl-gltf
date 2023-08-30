@@ -3,6 +3,8 @@ import { load } from '@2gis/mapgl';
 import { GltfPlugin } from '../src/index';
 import { realtyScene } from './realtySceneData';
 
+let isDarkTheme = false;
+
 async function start() {
     const mapglAPI = await load();
 
@@ -18,7 +20,7 @@ async function start() {
     (window as any).map = map;
 
     const plugin = new GltfPlugin(map, {
-        modelsLoadStrategy: 'waitAll',
+        modelsLoadStrategy: 'dontWaitAll',
         modelsBaseUrl: 'https://disk.2gis.com/digital-twin/models_s3/realty_ads/zgktechnology/',
         dracoScriptsUrl: 'libs/draco/',
         poiConfig: {
@@ -34,12 +36,35 @@ async function start() {
         },
     });
 
-    const defaultState = {
-        modelId: '03a234cb',
-        // floorId: '235034',
-    };
+    (window as any).gltfPlugin = plugin;
 
-    plugin.addRealtyScene(realtyScene);
+    // const defaultState = {
+    //     modelId: '03a234cb',
+    //     // floorId: '235034',
+    // };
+
+    const buttonAddScene = new mapglAPI.Control(map, '<button>Add Scene</button>', {
+        position: 'topLeft',
+    });
+    buttonAddScene.getContainer().addEventListener('click', () => {
+        plugin.addRealtyScene(realtyScene, { modelId: '03a234cb', floorId: '235034' });
+    });
+
+    const buttonToggleTheme = new mapglAPI.Control(
+        map,
+        '<button style="margin-top: 8px">Toggle Theme</button>',
+        {
+            position: 'topLeft',
+        },
+    );
+    buttonToggleTheme.getContainer().addEventListener('click', () => {
+        map.setStyleById(
+            isDarkTheme
+                ? 'c080bb6a-8134-4993-93a1-5b4d8c36a59b'
+                : 'e05ac437-fcc2-4845-ad74-b1de9ce07555',
+        );
+        isDarkTheme = !isDarkTheme;
+    });
 
     (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {
