@@ -19,10 +19,12 @@ import type { BuildingOptions } from './types/realtyScene';
 import type { GltfPluginEventTable } from './types/events';
 
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
+    private isThreeJsInitialized = false;
     private renderer = new THREE.WebGLRenderer();
     private camera = new THREE.PerspectiveCamera();
     private scene = new THREE.Scene();
     private tmpMatrix = new THREE.Matrix4();
+
     private viewport: DOMRect;
     private map: MapGL;
     private options = defaultOptions;
@@ -34,6 +36,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private models;
     private realtyScene?: RealtyScene;
     private modelOptions = new Map<string, ModelOptions>();
+
+    private linkedIds = new Set<string>();
 
     /**
      * The main class of the plugin
@@ -76,42 +80,36 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
         this.poiGroups = new PoiGroups(this.map, this.options.poiConfig);
 
-        map.once('idle', () => {
-            this.poiGroups.addIcons();
-            this.addThreeJsLayer();
+        this.map.once('idle', () => {
             this.initEventHandlers();
         });
-    }
 
-    /**
-     * Add the list of models to the map
-     * Use this method if you want to add
-     * a list of models to the map at the same time
-     *
-     * @param modelOptions An array of models' options
-     */
-    public async addModels(modelOptions: ModelOptions[]) {
-        await this.waitForPluginInit;
-
-        const loadedModels = this.startModelLoading(modelOptions);
-
-        return Promise.all(loadedModels).then(() => {
-            if (this.options.modelsLoadStrategy === 'waitAll') {
-                for (let options of modelOptions) {
-                    this.modelOptions.set(String(options.modelId), options);
-                    if (options.linkedIds) {
-                        this.map.setHiddenObjects(options.linkedIds);
-                    }
-                }
-                const ids = modelOptions.map((opt) => opt.modelId);
-                for (let id of ids) {
-                    this.addModelFromCache(id);
-                }
-                this.map.triggerRerender();
+        this.map.on('styleload', () => {
+            const hiddenIds = Array.from(this.linkedIds);
+            if (hiddenIds.length) {
+                this.map.setHiddenObjects(hiddenIds);
             }
-            this.invalidateViewport();
+
+            this.addThreeJsLayer();
+            this.poiGroups.onMapStyleUpdate();
         });
     }
+
+    private setLinkedIds(modelOptions: ModelOptions[], ids?: Id[]) {
+        modelOptions.forEach(({ modelId, linkedIds }) => {
+            if (linkedIds?.length && (!ids || ids.some((id) => id === modelId))) {
+                linkedIds.forEach((id) => this.linkedIds.add(id));
+            }
+        });
+    }
+
+    private getLinkedIds() {
+        return Array.from(this.linkedIds);
+    }
+
+    // private resetLinkedIds() {
+    //     this.linkedIds = new Set();
+    // }
 
     /**
      * Add the list of models to the map partially
@@ -126,23 +124,39 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     public async addModelsPartially(modelOptions: ModelOptions[], ids: Id[]) {
         await this.waitForPluginInit;
 
+        this.setLinkedIds(modelOptions, ids);
+
         const loadedModels = this.startModelLoading(modelOptions, ids);
 
         return Promise.all(loadedModels).then(() => {
+            for (let options of modelOptions) {
+                this.modelOptions.set(String(options.modelId), options);
+            }
+
             if (this.options.modelsLoadStrategy === 'waitAll') {
-                for (let options of modelOptions) {
-                    this.modelOptions.set(String(options.modelId), options);
-                    if (options.linkedIds) {
-                        this.map.setHiddenObjects(options.linkedIds);
-                    }
-                }
+                this.map.setHiddenObjects(this.getLinkedIds());
                 for (let id of ids) {
                     this.addModelFromCache(id);
                 }
                 this.map.triggerRerender();
             }
+
             this.invalidateViewport();
         });
+    }
+
+    /**
+     * Add the list of models to the map
+     * Use this method if you want to add
+     * a list of models to the map at the same time
+     *
+     * @param modelOptions An array of models' options
+     */
+    public async addModels(modelOptions: ModelOptions[]) {
+        return this.addModelsPartially(
+            modelOptions,
+            modelOptions.map((opt) => opt.modelId),
+        );
     }
 
     /**
@@ -152,6 +166,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      */
     public async addModel(modelOptions: ModelOptions) {
         await this.waitForPluginInit;
+
+        this.setLinkedIds([modelOptions]);
 
         return this.loader.loadModel(modelOptions).then(() => {
             this.modelOptions.set(String(modelOptions.modelId), modelOptions);
@@ -227,6 +243,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.models,
             this.options,
         );
+
         return this.realtyScene.addRealtyScene(scene, state);
     }
 
@@ -286,6 +303,12 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     private initThree() {
+        if (this.isThreeJsInitialized) {
+            return false;
+        }
+
+        this.isThreeJsInitialized = true;
+
         this.camera = new THREE.PerspectiveCamera();
 
         this.renderer = new THREE.WebGLRenderer({
@@ -306,7 +329,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
     private addThreeJsLayer() {
         this.map.addLayer({
-            id: 'threeJsLayer',
+            id: 'gltf-plugin-style-layer',
             type: 'custom',
             onAdd: () => this.initThree(),
             render: () => this.render(),
