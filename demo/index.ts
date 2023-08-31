@@ -94,27 +94,48 @@ async function start() {
             plugin.removeModels(realtyScene.slice(1).map((m) => m.modelId));
         });
 
-    const buttonToggleTheme = new mapglAPI.Control(
-        map,
-        '<button style="margin-top: 8px">Toggle Theme</button>',
-        {
-            position: 'topLeft',
-        },
-    );
-    buttonToggleTheme.getContainer().addEventListener('click', () => {
-        map.setStyleById(
-            isDarkTheme
-                ? 'c080bb6a-8134-4993-93a1-5b4d8c36a59b'
-                : 'e05ac437-fcc2-4845-ad74-b1de9ce07555',
-        );
-        isDarkTheme = !isDarkTheme;
-    });
+    new mapglAPI.Control(map, '<button>Zoom 15-17</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.setLayerOptions({ minZoom: 15, maxZoom: 17 });
+        });
+
+    new mapglAPI.Control(map, '<button style="margin-top: 8px">Toggle Theme</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            map.setStyleById(
+                isDarkTheme
+                    ? 'c080bb6a-8134-4993-93a1-5b4d8c36a59b'
+                    : 'e05ac437-fcc2-4845-ad74-b1de9ce07555',
+            );
+            isDarkTheme = !isDarkTheme;
+        });
 
     (['click'] as const).forEach((eventName) => {
         plugin.on(eventName, (e) => {
             console.log(e);
         });
     });
+
+    const statsTable = document.getElementById('stats');
+
+    const printStats = () => {
+        if (!statsTable) {
+            return;
+        }
+        statsTable.innerHTML = `<pre>${JSON.stringify(
+            plugin.getModelRendererInfo(),
+            null,
+            2,
+        )}</pre>`;
+
+        requestAnimationFrame(printStats);
+    };
+    requestAnimationFrame(printStats);
 
     /*
     const models: ModelOptions[] = [];

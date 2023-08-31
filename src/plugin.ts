@@ -39,6 +39,9 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
     private linkedIds = new Set<string>();
 
+    private minZoom = 0;
+    private maxZoom = Infinity;
+
     /**
      * The main class of the plugin
      *
@@ -81,19 +84,26 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.poiGroups = new PoiGroups(this.map, this.options.poiConfig);
 
         this.map.once('idle', () => {
+            // Важно, сперва добавить все необходимые слои,
+            // а уже потом инициализировать обработчики событий
+            this.onStyleLoad();
             this.initEventHandlers();
-        });
 
-        this.map.on('styleload', () => {
-            const hiddenIds = Array.from(this.linkedIds);
-            if (hiddenIds.length) {
-                this.map.setHiddenObjects(hiddenIds);
-            }
-
-            this.addThreeJsLayer();
-            this.poiGroups.onMapStyleUpdate();
+            // В будущем, при изменении стиля, надо снова добавить в катру нужные слои,
+            // но подписываться на события уже не надо.
+            this.map.on('styleload', this.onStyleLoad);
         });
     }
+
+    private onStyleLoad = () => {
+        const hiddenIds = Array.from(this.linkedIds);
+        if (hiddenIds.length) {
+            this.map.setHiddenObjects(hiddenIds);
+        }
+
+        this.addThreeJsLayer();
+        this.poiGroups.onMapStyleUpdate();
+    };
 
     private addLinkedIds(modelOptions: ModelOptions[], ids?: Id[]) {
         modelOptions.forEach(({ modelId, linkedIds }) => {
@@ -166,6 +176,23 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     public async removeModels(ids: Id[], preserveCache?: boolean) {
         ids.forEach((id) => this.removeModel(id, preserveCache));
     }
+
+    /**
+     *
+     */
+    public setLayerOptions({ minZoom, maxZoom }: { minZoom?: number; maxZoom?: number }) {
+        if (minZoom !== undefined) {
+            this.minZoom = minZoom;
+        }
+        if (maxZoom !== undefined) {
+            this.maxZoom = maxZoom;
+        }
+        this.map.triggerRerender();
+    }
+
+    public getModelRendererInfo = () => {
+        return this.renderer.info;
+    };
 
     /**
      * Add model to the map
@@ -266,20 +293,16 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.realtyScene = undefined;
     }
 
-    private invalidateViewport() {
+    private invalidateViewport = () => {
         const container = this.map.getContainer();
         this.viewport = container.getBoundingClientRect();
         this.eventSource?.updateViewport(this.viewport);
-    }
+    };
 
-    private initEventHandlers() {
-        this.map.on('resize', () => {
-            this.invalidateViewport();
-        });
+    private initEventHandlers = () => {
+        this.map.on('resize', this.invalidateViewport);
 
-        window.addEventListener('resize', () => {
-            this.invalidateViewport();
-        });
+        window.addEventListener('resize', this.invalidateViewport);
 
         this.eventSource = new EventSource(this.map, this.viewport, this.camera, this.scene);
         for (let eventName of this.eventSource.getEvents()) {
@@ -287,9 +310,19 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 this.emit(eventName, e);
             });
         }
-    }
+    };
 
     private render() {
+        if (
+            (this.minZoom !== undefined && this.minZoom > this.map.getStyleZoom()) ||
+            (this.maxZoom !== undefined && this.maxZoom < this.map.getStyleZoom())
+        ) {
+            this.realtyScene?.hideFloorControl();
+            return;
+        }
+
+        this.realtyScene?.showFloorControl();
+
         this.camera.projectionMatrix.fromArray(this.map.getProjectionMatrixForGltfPlugin());
         this.camera.projectionMatrixInverse.copy(this.camera.projectionMatrix).invert();
 
