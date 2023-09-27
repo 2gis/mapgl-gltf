@@ -73,7 +73,7 @@ export interface HightlightOptions {
      * Intensity of the color on the hover in the range from 0 to 1
      * @default 0.0
      */
-    intencity: number;
+    intencity: number; // TODO: Исправить опечатку в следующей мажорной версии, должно быть intensity
 }
 
 /**
@@ -118,7 +118,7 @@ export interface PluginOptions {
     /**
      * Settings of the highlighted models
      */
-    hoverHighlight?: HightlightOptions;
+    hoverHighlight?: HightlightOptions; // TODO: MAJOR. Переименовать в HighlightOptions в следующем мажорном релизе
 }
 
 /**

@@ -17,6 +17,7 @@ import type {
 } from './types/plugin';
 import type { BuildingOptions } from './types/realtyScene';
 import type { GltfPluginEventTable } from './types/events';
+import { applyOptionalDefaults, disposeObject } from './utils/common';
 
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private isThreeJsInitialized = false;
@@ -70,7 +71,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         super();
 
         this.map = map;
-        this.options = { ...this.options, ...pluginOptions };
+
+        this.options = applyOptionalDefaults(pluginOptions ?? {}, this.options);
 
         this.viewport = this.map.getContainer().getBoundingClientRect();
 
@@ -171,25 +173,19 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     /**
+     * Remove models from the map and cache or from the map only
      *
+     * @param id An array of models identifiers to delete
+     * @param preserveCache Flag to keep the model in the cache
      */
     public async removeModels(ids: Id[], preserveCache?: boolean) {
         ids.forEach((id) => this.removeModel(id, preserveCache));
     }
 
     /**
-     *
+     * @internal
+     * @hidden
      */
-    public setLayerOptions({ minZoom, maxZoom }: { minZoom?: number; maxZoom?: number }) {
-        if (minZoom !== undefined) {
-            this.minZoom = minZoom;
-        }
-        if (maxZoom !== undefined) {
-            this.maxZoom = maxZoom;
-        }
-        this.map.triggerRerender();
-    }
-
     public getModelRendererInfo = () => {
         return this.renderer.info;
     };
@@ -227,7 +223,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         const model = this.models.get(String(id));
         if (model !== undefined) {
             this.scene.remove(model);
-            this.disposeObject(model);
+            disposeObject(model);
             this.map.triggerRerender();
         }
 
@@ -284,12 +280,17 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         return this.realtyScene.addRealtyScene(scene, state);
     }
 
-    public removeRealtyScene() {
+    /**
+     * Remove interactive realty scene from the map
+     *
+     * @param preserveCache Flag to keep the model in the cache
+     */
+    public removeRealtyScene(preserveCache?: boolean) {
         if (!this.realtyScene) {
             return;
         }
 
-        this.realtyScene.destroy();
+        this.realtyScene.destroy(preserveCache);
         this.realtyScene = undefined;
     }
 
@@ -411,32 +412,5 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.scene.add(model);
         }
         return Boolean(model);
-    }
-
-    /**
-     * Delete from memory all allocated objects by Object3D
-     * https://threejs.org/docs/#manual/en/introduction/How-to-dispose-of-objects
-     */
-    private disposeObject(inputObj: THREE.Object3D) {
-        inputObj.traverse((obj) => {
-            if (obj instanceof THREE.Mesh) {
-                const geometry = obj.geometry;
-                const material = obj.material;
-
-                if (geometry) {
-                    geometry.dispose();
-                }
-
-                if (material) {
-                    const texture = material.map;
-
-                    if (texture) {
-                        texture.dispose();
-                    }
-
-                    material.dispose();
-                }
-            }
-        });
     }
 }

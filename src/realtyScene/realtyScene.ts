@@ -176,7 +176,7 @@ export class RealtyScene {
         });
     }
 
-    public destroy() {
+    public destroy(preserveCache?: boolean) {
         this.unbindRealtySceneEvents();
 
         this.plugin.removeModels(
@@ -186,6 +186,7 @@ export class RealtyScene {
 
                 return agg;
             }, []) ?? [],
+            preserveCache,
         );
 
         this.clearPoiGroups();
@@ -517,7 +518,7 @@ export class RealtyScene {
         this.activePoiGroupIds = [];
     }
 
-    // TODO: Мутируются данные пользователя — это плохо очень
+    // TODO: В этом методе мутируются данные пользователя — это о-о-очень плохо! Надо исправить.
     private makeUniqueFloorIds(scene: BuildingOptions[]) {
         for (let scenePart of scene) {
             const floors = scenePart.floors ?? [];
