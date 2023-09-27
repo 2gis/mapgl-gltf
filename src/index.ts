@@ -16,3 +16,4 @@ if (typeof window !== 'undefined') {
 }
 
 export { GltfPlugin };
+export * from './types';

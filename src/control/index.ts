@@ -105,15 +105,6 @@ export class GltfFloorControl extends Control {
         this._root.style.display = 'none';
     }
 
-    // TODO Подумать может это как-то получше сделать
-    public setInvisible() {
-        this._root.style.display = 'none';
-    }
-
-    public setVisible() {
-        this._root.style.display = 'block';
-    }
-
     public destroy() {
         this._removeButtonsEventListeners();
         super.destroy();
