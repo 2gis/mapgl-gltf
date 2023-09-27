@@ -12,8 +12,7 @@ import {
 /**
  * Tests for public methods new Gltf Plugin.
  * Only happy-path
- *
- **/
+ */
 describe('plugin', () => {
     let page: Page;
 
@@ -74,7 +73,7 @@ describe('plugin', () => {
                 dracoScriptsUrl: 'libs/draco/',
                 ambientLight: { color: '#ff0000', intencity: 2.5 },
             });
-            return window.gltfPlugin.addModel(window.OBJECTS_FOR_TESTS.models.cubeBig);
+            return window.gltfPlugin.addModel(window.MOCKS.models.cubeBig);
         });
 
         await waitForReadiness(page);
@@ -83,7 +82,7 @@ describe('plugin', () => {
 
     it('addModel', async () => {
         await page.evaluate(() => {
-            return window.gltfPlugin.addModel(window.OBJECTS_FOR_TESTS.models.cubeBig);
+            return window.gltfPlugin.addModel(window.MOCKS.models.cubeBig);
         });
 
         await waitForReadiness(page);
@@ -93,8 +92,8 @@ describe('plugin', () => {
     it('addModels', async () => {
         await page.evaluate(() => {
             return window.gltfPlugin.addModels([
-                window.OBJECTS_FOR_TESTS.models.cubeBig,
-                window.OBJECTS_FOR_TESTS.models.cubeSmall,
+                window.MOCKS.models.cubeBig,
+                window.MOCKS.models.cubeSmall,
             ]);
         });
 
@@ -104,8 +103,8 @@ describe('plugin', () => {
 
     it('addPoiGroup', async () => {
         await page.evaluate(() => {
-            window.gltfPlugin.addPoiGroup(window.OBJECTS_FOR_TESTS.poi.asciiLetters);
-            window.gltfPlugin.addPoiGroup(window.OBJECTS_FOR_TESTS.poi.engRusLetters);
+            window.gltfPlugin.addPoiGroup(window.MOCKS.poi.asciiLetters);
+            window.gltfPlugin.addPoiGroup(window.MOCKS.poi.engRusLetters);
         });
 
         await waitForReadiness(page);
@@ -114,10 +113,10 @@ describe('plugin', () => {
 
     it('removeModel', async () => {
         await page.evaluate(() => {
-            return window.gltfPlugin.addModel(window.OBJECTS_FOR_TESTS.models.cubeBig);
+            return window.gltfPlugin.addModel(window.MOCKS.models.cubeBig);
         });
         await page.evaluate(() => {
-            window.gltfPlugin.removeModel(window.OBJECTS_FOR_TESTS.models.cubeBig.modelId);
+            window.gltfPlugin.removeModel(window.MOCKS.models.cubeBig.modelId);
         });
         await waitForReadiness(page);
         await makeSnapshot(page, dirPath, 'remove_model');
@@ -125,10 +124,10 @@ describe('plugin', () => {
 
     it('removePoiGroup', async () => {
         await page.evaluate(() => {
-            window.gltfPlugin.addPoiGroup(window.OBJECTS_FOR_TESTS.poi.asciiLetters);
+            window.gltfPlugin.addPoiGroup(window.MOCKS.poi.asciiLetters);
         });
         await page.evaluate(() => {
-            window.gltfPlugin.removePoiGroup(window.OBJECTS_FOR_TESTS.poi.asciiLetters.id);
+            window.gltfPlugin.removePoiGroup(window.MOCKS.poi.asciiLetters.id);
         });
         await waitForReadiness(page);
         await makeSnapshot(page, dirPath, 'remove_poi_group');
@@ -161,7 +160,7 @@ describe('plugin', () => {
         });
         await waitForReadiness(page);
         await page.evaluate(() => {
-            return window.gltfPlugin.addRealtyScene(window.OBJECTS_FOR_TESTS.mapRealtyScene);
+            return window.gltfPlugin.addRealtyScene(window.MOCKS.realtyScene);
         });
         await waitForReadiness(page);
         await makeSnapshot(page, dirPath, 'add_realty_scene');
@@ -170,11 +169,8 @@ describe('plugin', () => {
     it('addModelsPartially', async () => {
         await page.evaluate(() => {
             return window.gltfPlugin.addModelsPartially(
-                [
-                    window.OBJECTS_FOR_TESTS.models.cubeBig,
-                    window.OBJECTS_FOR_TESTS.models.cubeSmall,
-                ],
-                [window.OBJECTS_FOR_TESTS.models.cubeBig.modelId],
+                [window.MOCKS.models.cubeBig, window.MOCKS.models.cubeSmall],
+                [window.MOCKS.models.cubeBig.modelId],
             );
         });
         await waitForReadiness(page);

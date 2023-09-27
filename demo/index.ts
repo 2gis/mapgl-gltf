@@ -1,7 +1,7 @@
 import { load } from '@2gis/mapgl';
 
 import { GltfPlugin } from '../src/index';
-import { realtyScene } from './realtySceneData';
+import { REALTY_SCENE } from './mocks';
 
 let isDarkTheme = false;
 
@@ -44,14 +44,14 @@ async function start() {
     //     // floorId: '235034',
     // };
 
-    (window as any).realtyScene = realtyScene;
+    (window as any).realtyScene = REALTY_SCENE;
 
     new mapglAPI.Control(map, '<button>Add Scene</button>', {
         position: 'topLeft',
     })
         .getContainer()
         .addEventListener('click', () => {
-            plugin.addRealtyScene(realtyScene, { modelId: '03a234cb', floorId: '235034' });
+            plugin.addRealtyScene(REALTY_SCENE, { modelId: '03a234cb', floorId: '235034' });
         });
 
     new mapglAPI.Control(map, '<button>Remove Scene</button>', {
@@ -67,7 +67,7 @@ async function start() {
     })
         .getContainer()
         .addEventListener('click', () => {
-            plugin.addModel(realtyScene[0]);
+            plugin.addModel(REALTY_SCENE[0]);
         });
 
     new mapglAPI.Control(map, '<button>Remove Model</button>', {
@@ -75,7 +75,7 @@ async function start() {
     })
         .getContainer()
         .addEventListener('click', () => {
-            plugin.removeModel(realtyScene[0].modelId);
+            plugin.removeModel(REALTY_SCENE[0].modelId);
         });
 
     new mapglAPI.Control(map, '<button>Add Models</button>', {
@@ -83,7 +83,7 @@ async function start() {
     })
         .getContainer()
         .addEventListener('click', () => {
-            plugin.addModels(realtyScene.slice(1));
+            plugin.addModels(REALTY_SCENE.slice(1));
         });
 
     new mapglAPI.Control(map, '<button>Remove Models</button>', {
@@ -91,7 +91,7 @@ async function start() {
     })
         .getContainer()
         .addEventListener('click', () => {
-            plugin.removeModels(realtyScene.slice(1).map((m) => m.modelId));
+            plugin.removeModels(REALTY_SCENE.slice(1).map((m) => m.modelId));
         });
 
     new mapglAPI.Control(map, '<button>Zoom 15-17</button>', {

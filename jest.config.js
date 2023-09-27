@@ -29,6 +29,7 @@ module.exports = {
     preset: 'ts-jest',
     globals: {
         'ts-jest': {
+            tsConfig: 'tsconfig.test.json',
             diagnostics: {
                 // Игнорируем воргинги про esModuleInterop, которые нам чинить, кажется не требуется
                 // потому что в тестах импорты работают без проблем.

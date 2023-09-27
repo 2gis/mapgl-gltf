@@ -27,6 +27,9 @@ module.exports = function (env, _argv) {
             {
                 test: /\.ts$/,
                 loader: 'ts-loader',
+                options: {
+                    configFile: env.type === 'test' ? 'tsconfig.test.json' : 'tsconfig.json',
+                },
             },
             // For CSS modules
             {
