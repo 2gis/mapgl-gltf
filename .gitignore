@@ -1,5 +1,6 @@
 dist/
 node_modules/
+__diff_output__
 
 .vscode/
 

@@ -1,7 +1,7 @@
 import { load } from '@2gis/mapgl';
 
 import { GltfPlugin } from '../src/index';
-import { REALTY_SCENE } from './mocks';
+import { REALTY_SCENE, REALTY_SCENE_1 } from './mocks';
 
 let isDarkTheme = false;
 
@@ -49,6 +49,22 @@ async function start() {
         });
 
     new mapglAPI.Control(map, '<button>Remove Scene</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.removeRealtyScene();
+        });
+
+    new mapglAPI.Control(map, '<button>Add Scene 1</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.addRealtyScene(REALTY_SCENE_1, { modelId: 'ds321ba234cb' });
+        });
+
+    new mapglAPI.Control(map, '<button>Remove Scene 1</button>', {
         position: 'topLeft',
     })
         .getContainer()

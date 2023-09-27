@@ -344,3 +344,60 @@ export const REALTY_SCENE: BuildingOptions[] = [
         interactive: false,
     },
 ];
+
+export const REALTY_SCENE_1: BuildingOptions[] = [
+    {
+        modelId: 'ds321ba234cb',
+        coordinates: [47.245286302641034, 56.134743473834099],
+        modelUrl: 'zgktechnology2.glb',
+        rotateX: 90,
+        rotateY: -15.1240072739039,
+        scale: 191.637678,
+        linkedIds: ['70030076555823021'],
+        mapOptions: {
+            center: [47.245008950283065, 56.1344698491912],
+            pitch: 45,
+            zoom: 18.7,
+            rotation: -129,
+        },
+        popupOptions: {
+            coordinates: [47.24448882381944, 56.13468481517748],
+            title: 'Корпус 1. 16 этажей',
+            description: 'Срок сдачи: IV кв. 2024 г. <br /> 15 мин. пешком до ст. м. Московская',
+        },
+        floors: [
+            {
+                id: '432aaa777',
+                text: '2-15',
+                modelUrl: 'zgktechnology2_floor2.glb',
+                mapOptions: {
+                    center: [47.24463456947374, 56.134675042798094],
+                    pitch: 35,
+                    zoom: 20,
+                    rotation: -130,
+                },
+            },
+            {
+                id: '4321bbb555',
+                text: '16',
+                modelUrl: 'zgktechnology2_floor16.glb',
+                mapOptions: {
+                    center: [47.24498428988907, 56.134514900849325],
+                    pitch: 35,
+                    zoom: 19.2,
+                    rotation: -130,
+                },
+            },
+        ],
+    },
+    {
+        modelId: '345feda234cb',
+        coordinates: [47.245286302641034, 56.134743473834099],
+        modelUrl: 'zgktechnology_construction.glb',
+        rotateX: 90,
+        rotateY: -15.1240072739039,
+        scale: 191.637678,
+        linkedIds: ['70030076561388553'],
+        interactive: false,
+    },
+];
