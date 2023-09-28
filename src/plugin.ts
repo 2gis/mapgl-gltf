@@ -344,7 +344,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
     private initThree() {
         if (this.isThreeJsInitialized) {
-            return false;
+            return;
         }
 
         this.isThreeJsInitialized = true;
