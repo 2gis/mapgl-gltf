@@ -21,7 +21,7 @@ export interface AmbientLightOptions {
      * Numeric value of the light's strength/intensity.
      * @default 3
      */
-    intencity: number; // TODO: MAJOR. Исправить опечатку в следующей мажорной версии, должно быть intensity
+    intencity: number; // TODO: MAJOR. Rename to «intensity» in the next major release.
 }
 
 /**
@@ -65,7 +65,7 @@ export interface ControlOptions {
  * Options for the highlight color of hovered models
  */
 export interface HightlightOptions {
-    // TODO: MAJOR. Переименовать в HighlightOptions в следующем мажорном релизе
+    // TODO: MAJOR. Rename to «HighlightOptions» in the next major release.
     /**
      * Color of the hover
      * @default '#ffffff'
@@ -75,7 +75,7 @@ export interface HightlightOptions {
      * Intensity of the color on the hover in the range from 0 to 1
      * @default 0.0
      */
-    intencity: number; // TODO: MAJOR. Исправить опечатку в следующей мажорной версии, должно быть intensity
+    intencity: number; // TODO: MAJOR. Rename to «intensity» in the next major release.
 }
 
 /**

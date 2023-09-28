@@ -503,7 +503,7 @@ export class RealtyScene {
         this.activePoiGroupIds = [];
     }
 
-    // TODO: В этом методе мутируются данные пользователя — это о-о-очень плохо! Надо исправить.
+    // TODO: Don't mutate scene data.
     private makeUniqueFloorIds(scene: BuildingOptions[]) {
         for (let scenePart of scene) {
             const floors = scenePart.floors ?? [];

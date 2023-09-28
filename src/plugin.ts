@@ -83,13 +83,12 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.poiGroups = new PoiGroups(this.map, this.options.poiConfig);
 
         this.map.once('idle', () => {
-            // Важно, сперва добавить все необходимые слои,
-            // а уже потом инициализировать обработчики событий
+            // It's important to add all style layers before binding even handlers.
             this.onStyleLoad();
             this.initEventHandlers();
 
-            // В будущем, при изменении стиля, надо снова добавить в катру нужные слои,
-            // но подписываться на события уже не надо.
+            // Also, we need to add all style layer again after each initialization of the new map style.
+            // But there is no need to bind event handlers.
             this.map.on('styleload', this.onStyleLoad);
         });
     }
