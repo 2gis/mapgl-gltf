@@ -34,7 +34,6 @@ export class RealtyScene {
     private prevHoveredModelId: Id | null = null;
     private popup: HtmlMarker | null = null;
     private scene: BuildingOptions[] | null = null;
-    private isControlInvisible = false;
 
     constructor(
         private plugin: GltfPlugin,
@@ -44,20 +43,6 @@ export class RealtyScene {
         private options: typeof defaultOptions,
     ) {
         this.container = map.getContainer();
-    }
-
-    public hideFloorControl() {
-        if (!this.isControlInvisible) {
-            this.isControlInvisible = true;
-            this.control?.setInvisible();
-        }
-    }
-
-    public showFloorControl() {
-        if (this.isControlInvisible) {
-            this.isControlInvisible = false;
-            this.control?.setVisible();
-        }
     }
 
     public async addRealtyScene(scene: BuildingOptions[], originalState?: BuildingState) {

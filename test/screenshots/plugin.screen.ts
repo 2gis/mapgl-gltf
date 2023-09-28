@@ -179,7 +179,7 @@ describe('GltfPlugin', () => {
             });
         });
 
-        it.only('#addRealtyScene', async () => {
+        it('#addRealtyScene', async () => {
             await page.evaluate(() => {
                 return window.gltfPlugin.addRealtyScene(window.MOCKS.realtyScene);
             });

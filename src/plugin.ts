@@ -40,9 +40,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
     private linkedIds = new Set<string>();
 
-    private minZoom = 0;
-    private maxZoom = Infinity;
-
     /**
      * The main class of the plugin
      *
@@ -125,6 +122,20 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     /**
+     * Add the list of models to the map
+     * Use this method if you want to add
+     * a list of models to the map at the same time
+     *
+     * @param modelOptions An array of models' options
+     */
+    public async addModels(modelOptions: ModelOptions[]) {
+        return this.addModelsPartially(
+            modelOptions,
+            modelOptions.map((opt) => opt.modelId),
+        );
+    }
+
+    /**
      * Add the list of models to the map partially
      * Use this method if you want to add to the map
      * some models from the list of models and want
@@ -156,20 +167,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
             this.invalidateViewport();
         });
-    }
-
-    /**
-     * Add the list of models to the map
-     * Use this method if you want to add
-     * a list of models to the map at the same time
-     *
-     * @param modelOptions An array of models' options
-     */
-    public async addModels(modelOptions: ModelOptions[]) {
-        return this.addModelsPartially(
-            modelOptions,
-            modelOptions.map((opt) => opt.modelId),
-        );
     }
 
     /**
@@ -314,16 +311,6 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     };
 
     private render() {
-        if (
-            (this.minZoom !== undefined && this.minZoom > this.map.getStyleZoom()) ||
-            (this.maxZoom !== undefined && this.maxZoom < this.map.getStyleZoom())
-        ) {
-            this.realtyScene?.hideFloorControl();
-            return;
-        }
-
-        this.realtyScene?.showFloorControl();
-
         this.camera.projectionMatrix.fromArray(this.map.getProjectionMatrixForGltfPlugin());
         this.camera.projectionMatrixInverse.copy(this.camera.projectionMatrix).invert();
 
