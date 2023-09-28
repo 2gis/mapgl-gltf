@@ -353,7 +353,7 @@ export const REALTY_SCENE_1: BuildingOptions[] = [
         rotateX: 90,
         rotateY: -15.1240072739039,
         scale: 191.637678,
-        linkedIds: ['70030076555823021'],
+        linkedIds: ['70030076555823021', '70030076555821177', '70030076555823021'],
         mapOptions: {
             center: [47.245008950283065, 56.1344698491912],
             pitch: 45,

@@ -45,6 +45,7 @@ async function start() {
     })
         .getContainer()
         .addEventListener('click', () => {
+            plugin.removeRealtyScene();
             plugin.addRealtyScene(REALTY_SCENE, { modelId: '03a234cb', floorId: '235034' });
         });
 
@@ -61,6 +62,7 @@ async function start() {
     })
         .getContainer()
         .addEventListener('click', () => {
+            plugin.removeRealtyScene();
             plugin.addRealtyScene(REALTY_SCENE_1, { modelId: 'ds321ba234cb' });
         });
 
