@@ -1,6 +1,5 @@
 import { MapOptions } from '@2gis/mapgl/types';
 
-import { PluginOptions } from '../../src/types/plugin';
 import { pageSetUp, Page } from '../puppeteer';
 import { API_KEY } from '../puppeteer/config';
 import {
@@ -10,6 +9,7 @@ import {
     waitForReadiness,
     blankStyle,
     defaultFontsPath,
+    blankDarkStyle,
 } from '../puppeteer/utils';
 
 const init = async (
@@ -198,5 +198,18 @@ describe('GltfPlugin', () => {
             await waitForReadiness(page);
             await makeSnapshot(page, dirPath, 'remove_realty_scene');
         });
+    });
+
+    it('The model does not disappear after changing the map style.', async () => {
+        await init(page);
+        await page.evaluate(() => {
+            return window.gltfPlugin.addModel(window.MOCKS.models.cubeBig);
+        });
+        await page.evaluate((style) => {
+            return (window.map as any).setStyle(style);
+        }, blankDarkStyle);
+
+        await waitForReadiness(page);
+        await makeSnapshot(page, dirPath, 'change_style');
     });
 });
