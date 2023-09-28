@@ -29,6 +29,16 @@ export const blankStyle: any = {
     layers: [],
 };
 
+// тип any, так как возможность задавать стиль напрямую не публичная
+export const blankDarkStyle: any = {
+    version: 0,
+    name: 'empty',
+    background: {
+        color: '#424242',
+    },
+    layers: [],
+};
+
 export function makeScreenshotsPath(relativePath: string) {
     return `test/screenshots/__screenshots__/${relativePath}`;
 }

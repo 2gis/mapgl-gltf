@@ -1,4 +1,4 @@
-import type { Id, ModelOptions, PoiOptions } from '../types/plugin';
+import type { Id, ModelOptions, PoiOptions } from './plugin';
 
 export type PoiGeoJsonProperties = PoiOptions & {
     /**

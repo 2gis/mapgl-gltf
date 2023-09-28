@@ -8,27 +8,29 @@
             html,
             body {
                 height: 100%;
-                padding: 0;
                 margin: 0;
+                padding: 0;
             }
 
-            .outer {
-                display: flex;
-                height: 100%;
-                align-items: center;
-                justify-content: center;
+            body {
+                padding: 12px;
             }
 
             #container {
-                height: 50%;
+                height: 400px;
                 width: 800px;
+            }
+
+            #stats {
+                background-color: rgba(255, 255, 255, 0.8);
+                max-width: 100%;
+                overflow-y: auto;
             }
         </style>
     </head>
     <body>
-        <div class="outer">
-            <div class="aux"></div>
-            <div id="container"></div>
-        </div>
+        <div id="container"></div>
+        <h2>Stats</h2>
+        <div id="stats"></div>
     </body>
 </html>

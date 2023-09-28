@@ -16,7 +16,11 @@ import type {
     PopupOptions,
 } from '../types/realtyScene';
 import type { ControlShowOptions, FloorLevel, FloorChangeEvent } from '../control/types';
-import type { PoiGeoJsonProperties } from '../types/events';
+import type {
+    GltfPluginModelEvent,
+    GltfPluginPoiEvent,
+    PoiGeoJsonProperties,
+} from '../types/events';
 
 export class RealtyScene {
     private activeBuilding?: BuildingOptions;
@@ -148,63 +152,59 @@ export class RealtyScene {
                 const controlOptions = this.createControlOptions(scene, state);
                 this.control?.show(controlOptions);
                 if (state.floorId) {
-                    this.eventSource?.setCurrentFloorId(state.floorId);
+                    this.eventSource.setCurrentFloorId(state.floorId);
                 }
             }
 
             // bind all events
-            this.bindRealtySceneEvents(scene);
+            this.bindRealtySceneEvents();
         });
     }
 
-    private bindRealtySceneEvents(scene: BuildingOptions[]) {
-        if (this.control === undefined) {
-            return;
-        }
+    public destroy(preserveCache?: boolean) {
+        this.unbindRealtySceneEvents();
 
-        this.control.on('floorChange', (ev) => {
-            this.floorChangeHandler(ev);
-        });
+        this.plugin.removeModels(
+            this.scene?.reduce<Id[]>((agg, opts) => {
+                agg.push(opts.modelId);
+                opts.floors?.forEach((floor) => agg.push(floor.id));
 
-        this.plugin.on('click', (ev) => {
-            if (ev.target.type === 'model') {
-                const id = ev.target.modelId;
-                if (this.isFacadeBuilding(id)) {
-                    this.buildingClickHandler(scene, id);
-                }
-            }
+                return agg;
+            }, []) ?? [],
+            preserveCache,
+        );
 
-            if (ev.target.type === 'poi') {
-                this.poiClickHandler(ev.target.data);
-            }
-        });
+        this.clearPoiGroups();
+        this.eventSource.setCurrentFloorId(null);
 
-        this.plugin.on('mouseover', (ev) => {
-            if (ev.target.type === 'model') {
-                const id = ev.target.modelId;
-                if (this.isFacadeBuilding(id)) {
-                    this.container.style.cursor = 'pointer';
-                    this.toggleHighlightModel(id);
-                    let popupOptions = this.getPopupOptions(id);
-                    if (popupOptions) {
-                        this.showPopup(popupOptions);
-                    }
-                }
-            }
-        });
+        this.control?.destroy();
+        this.control = undefined;
 
-        this.plugin.on('mouseout', (ev) => {
-            if (ev.target.type === 'model') {
-                const id = ev.target.modelId;
-                if (this.isFacadeBuilding(id)) {
-                    this.container.style.cursor = '';
-                    this.hidePopup();
-                    if (this.prevHoveredModelId !== null) {
-                        this.toggleHighlightModel(id);
-                    }
-                }
-            }
-        });
+        this.popup?.destroy();
+        this.popup = null;
+
+        this.activeBuilding = undefined;
+        this.activeModelId = undefined;
+        this.activePoiGroupIds = [];
+        this.buildingFacadeIds = [];
+        this.prevHoveredModelId = null;
+        this.scene = null;
+    }
+
+    private bindRealtySceneEvents() {
+        this.plugin.on('click', this.onSceneClick);
+        this.plugin.on('mouseover', this.onSceneMouseOver);
+        this.plugin.on('mouseout', this.onSceneMouseOut);
+
+        this.control?.on('floorChange', this.floorChangeHandler);
+    }
+
+    private unbindRealtySceneEvents() {
+        this.plugin.off('click', this.onSceneClick);
+        this.plugin.off('mouseover', this.onSceneMouseOver);
+        this.plugin.off('mouseout', this.onSceneMouseOut);
+
+        this.control?.off('floorChange', this.floorChangeHandler);
     }
 
     private createControlOptions(scene: BuildingOptions[], buildingState: BuildingState) {
@@ -282,7 +282,50 @@ export class RealtyScene {
         return building.popupOptions;
     }
 
-    private poiClickHandler(data: PoiGeoJsonProperties) {
+    private onSceneMouseOver = (ev: GltfPluginPoiEvent | GltfPluginModelEvent) => {
+        if (ev.target.type === 'model') {
+            const id = ev.target.modelId;
+            if (this.isFacadeBuilding(id)) {
+                this.container.style.cursor = 'pointer';
+                this.toggleHighlightModel(id);
+                let popupOptions = this.getPopupOptions(id);
+                if (popupOptions) {
+                    this.showPopup(popupOptions);
+                }
+            }
+        }
+    };
+    private onSceneMouseOut = (ev: GltfPluginPoiEvent | GltfPluginModelEvent) => {
+        if (ev.target.type === 'model') {
+            const id = ev.target.modelId;
+            if (this.isFacadeBuilding(id)) {
+                this.container.style.cursor = '';
+                this.hidePopup();
+                if (this.prevHoveredModelId !== null) {
+                    this.toggleHighlightModel(id);
+                }
+            }
+        }
+    };
+
+    private onSceneClick = (ev: GltfPluginPoiEvent | GltfPluginModelEvent) => {
+        if (this.scene === null) {
+            return;
+        }
+
+        if (ev.target.type === 'model') {
+            const id = ev.target.modelId;
+            if (this.isFacadeBuilding(id)) {
+                this.buildingClickHandler(this.scene, id);
+            }
+        }
+
+        if (ev.target.type === 'poi') {
+            this.poiClickHandler(ev.target.data);
+        }
+    };
+
+    private poiClickHandler = (data: PoiGeoJsonProperties) => {
         const url: string | undefined = data.userData.url;
         if (url !== undefined) {
             const a = document.createElement('a');
@@ -290,9 +333,9 @@ export class RealtyScene {
             a.setAttribute('target', '_blank');
             a.click();
         }
-    }
+    };
 
-    private floorChangeHandler(ev: FloorChangeEvent) {
+    private floorChangeHandler = (ev: FloorChangeEvent) => {
         const model = this.activeBuilding;
         if (model !== undefined && model.floors !== undefined) {
             if (this.popup !== null) {
@@ -346,9 +389,9 @@ export class RealtyScene {
                 }
             }
         }
-    }
+    };
 
-    private buildingClickHandler(scene: BuildingOptions[], modelId: Id) {
+    private buildingClickHandler = (scene: BuildingOptions[], modelId: Id) => {
         const selectedBuilding = scene.find((model) => model.modelId === modelId);
         if (selectedBuilding === undefined) {
             return;
@@ -428,7 +471,7 @@ export class RealtyScene {
         }
 
         this.activeBuilding = selectedBuilding;
-    }
+    };
 
     private addFloorPoi(floorOptions?: BuildingFloorOptions) {
         if (floorOptions === undefined) {
@@ -460,11 +503,14 @@ export class RealtyScene {
         this.activePoiGroupIds = [];
     }
 
+    // TODO: Don't mutate scene data.
     private makeUniqueFloorIds(scene: BuildingOptions[]) {
         for (let scenePart of scene) {
             const floors = scenePart.floors ?? [];
             for (let floor of floors) {
-                floor.id = createCompoundId(scenePart.modelId, floor.id);
+                if (!floor.id.toString().startsWith(scenePart.modelId.toString())) {
+                    floor.id = createCompoundId(scenePart.modelId, floor.id);
+                }
             }
         }
     }

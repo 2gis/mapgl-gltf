@@ -8,9 +8,7 @@
     "type": "git",
     "url": "https://github.com/2gis/mapgl-gltf.git"
   },
-  "files": [
-    "dist/*"
-  ],
+  "files": ["dist/libs", "dist/types"],
   "scripts": {
     "build": "npm run build:bundle && npm run build:typings && npm run build:transpile && npm run build:docs",
     "build:bundle": "webpack --env type=production",

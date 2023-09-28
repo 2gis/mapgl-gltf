@@ -8,10 +8,11 @@ type FeaturePoint = Feature<Point, PoiGeoJsonProperties>;
 
 export class PoiGroups {
     private poiSources = new Map<string, GeoJsonSource>();
+    private activePoiGroupOptions?: PoiGroupOptions;
 
     constructor(private map: MapGL, private poiConfig: PluginOptions['poiConfig']) {}
 
-    public addIcons() {
+    public onMapStyleUpdate() {
         this.map.addIcon('km_pillar_gray_border', {
             url: 'https://disk.2gis.com/styles/d7e8aed1-4d3f-472a-a1e4-337f4b31ab8a/km_pillar_gray_border',
             // @ts-ignore
@@ -20,9 +21,14 @@ export class PoiGroups {
             stretchX: [[4, 24]],
             stretchY: [[4, 24]],
         });
+
+        if (this.activePoiGroupOptions) {
+            this.addPoiStyleLayer(this.activePoiGroupOptions);
+        }
     }
 
     public async add(groupOptions: PoiGroupOptions, state?: BuildingState) {
+        this.activePoiGroupOptions = groupOptions;
         const { id, data } = groupOptions;
         const actualId = String(id);
         if (this.poiSources.get(actualId) !== undefined) {
@@ -47,6 +53,7 @@ export class PoiGroups {
     }
 
     public remove(origId: Id) {
+        this.activePoiGroupOptions = undefined;
         const id = String(origId);
         const source = this.poiSources.get(id);
         this.poiSources.delete(id);

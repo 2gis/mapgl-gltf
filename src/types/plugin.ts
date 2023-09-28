@@ -2,8 +2,9 @@ export type Id = string | number;
 
 export type ColorModelString = `${'rgb' | 'hsl'}(${string})`;
 export type HexColorString = `#${string}`;
+
 /**
- * Color represantation can be rgb(), hsl(), or hex value
+ * Color representation can be rgb(), hsl(), or hex value
  */
 export type ColorRepresentation = ColorModelString | HexColorString | number;
 
@@ -20,7 +21,7 @@ export interface AmbientLightOptions {
      * Numeric value of the light's strength/intensity.
      * @default 3
      */
-    intencity: number;
+    intencity: number; // TODO: MAJOR. Rename to «intensity» in the next major release.
 }
 
 /**
@@ -64,6 +65,7 @@ export interface ControlOptions {
  * Options for the highlight color of hovered models
  */
 export interface HightlightOptions {
+    // TODO: MAJOR. Rename to «HighlightOptions» in the next major release.
     /**
      * Color of the hover
      * @default '#ffffff'
@@ -73,7 +75,7 @@ export interface HightlightOptions {
      * Intensity of the color on the hover in the range from 0 to 1
      * @default 0.0
      */
-    intencity: number;
+    intencity: number; // TODO: MAJOR. Rename to «intensity» in the next major release.
 }
 
 /**

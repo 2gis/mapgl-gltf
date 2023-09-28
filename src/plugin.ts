@@ -17,12 +17,15 @@ import type {
 } from './types/plugin';
 import type { BuildingOptions } from './types/realtyScene';
 import type { GltfPluginEventTable } from './types/events';
+import { applyOptionalDefaults, disposeObject } from './utils/common';
 
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
+    private isThreeJsInitialized = false;
     private renderer = new THREE.WebGLRenderer();
     private camera = new THREE.PerspectiveCamera();
     private scene = new THREE.Scene();
     private tmpMatrix = new THREE.Matrix4();
+
     private viewport: DOMRect;
     private map: MapGL;
     private options = defaultOptions;
@@ -34,6 +37,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private models;
     private realtyScene?: RealtyScene;
     private modelOptions = new Map<string, ModelOptions>();
+
+    private linkedIds = new Set<string>();
 
     /**
      * The main class of the plugin
@@ -63,7 +68,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         super();
 
         this.map = map;
-        this.options = { ...this.options, ...pluginOptions };
+
+        this.options = applyOptionalDefaults(pluginOptions ?? {}, this.options);
 
         this.viewport = this.map.getContainer().getBoundingClientRect();
 
@@ -76,11 +82,42 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
         this.poiGroups = new PoiGroups(this.map, this.options.poiConfig);
 
-        map.once('idle', () => {
-            this.poiGroups.addIcons();
-            this.addThreeJsLayer();
+        this.map.once('idle', () => {
+            // It's important to add all style layers before binding even handlers.
+            this.onStyleLoad();
             this.initEventHandlers();
+
+            // Also, we need to add all style layer again after each initialization of the new map style.
+            // But there is no need to bind event handlers.
+            this.map.on('styleload', this.onStyleLoad);
         });
+    }
+
+    private onStyleLoad = () => {
+        const hiddenIds = Array.from(this.linkedIds);
+        if (hiddenIds.length) {
+            this.map.setHiddenObjects(hiddenIds);
+        }
+
+        this.addThreeJsLayer();
+        this.poiGroups.onMapStyleUpdate();
+    };
+
+    private addLinkedIds(modelOptions: ModelOptions[], ids?: Id[]) {
+        modelOptions.forEach(({ modelId, linkedIds }) => {
+            if (linkedIds?.length && (!ids || ids.some((id) => id === modelId))) {
+                linkedIds.forEach((id) => this.linkedIds.add(id));
+            }
+        });
+    }
+
+    private removeLinkedIds(modelId: Id) {
+        const linkedIds = this.modelOptions.get(modelId.toString())?.linkedIds;
+        linkedIds?.forEach((id) => this.linkedIds.delete(id));
+    }
+
+    private getLinkedIds() {
+        return Array.from(this.linkedIds);
     }
 
     /**
@@ -91,26 +128,10 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      * @param modelOptions An array of models' options
      */
     public async addModels(modelOptions: ModelOptions[]) {
-        await this.waitForPluginInit;
-
-        const loadedModels = this.startModelLoading(modelOptions);
-
-        return Promise.all(loadedModels).then(() => {
-            if (this.options.modelsLoadStrategy === 'waitAll') {
-                for (let options of modelOptions) {
-                    this.modelOptions.set(String(options.modelId), options);
-                    if (options.linkedIds) {
-                        this.map.setHiddenObjects(options.linkedIds);
-                    }
-                }
-                const ids = modelOptions.map((opt) => opt.modelId);
-                for (let id of ids) {
-                    this.addModelFromCache(id);
-                }
-                this.map.triggerRerender();
-            }
-            this.invalidateViewport();
-        });
+        return this.addModelsPartially(
+            modelOptions,
+            modelOptions.map((opt) => opt.modelId),
+        );
     }
 
     /**
@@ -126,24 +147,44 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     public async addModelsPartially(modelOptions: ModelOptions[], ids: Id[]) {
         await this.waitForPluginInit;
 
+        this.addLinkedIds(modelOptions, ids);
+
         const loadedModels = this.startModelLoading(modelOptions, ids);
 
         return Promise.all(loadedModels).then(() => {
+            for (let options of modelOptions) {
+                this.modelOptions.set(String(options.modelId), options);
+            }
+
             if (this.options.modelsLoadStrategy === 'waitAll') {
-                for (let options of modelOptions) {
-                    this.modelOptions.set(String(options.modelId), options);
-                    if (options.linkedIds) {
-                        this.map.setHiddenObjects(options.linkedIds);
-                    }
-                }
+                this.map.setHiddenObjects(this.getLinkedIds());
                 for (let id of ids) {
                     this.addModelFromCache(id);
                 }
                 this.map.triggerRerender();
             }
+
             this.invalidateViewport();
         });
     }
+
+    /**
+     * Remove models from the map and cache or from the map only
+     *
+     * @param id An array of models identifiers to delete
+     * @param preserveCache Flag to keep the model in the cache
+     */
+    public async removeModels(ids: Id[], preserveCache?: boolean) {
+        ids.forEach((id) => this.removeModel(id, preserveCache));
+    }
+
+    /**
+     * @internal
+     * @hidden
+     */
+    public getModelRendererInfo = () => {
+        return this.renderer.info;
+    };
 
     /**
      * Add model to the map
@@ -152,6 +193,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      */
     public async addModel(modelOptions: ModelOptions) {
         await this.waitForPluginInit;
+
+        this.addLinkedIds([modelOptions]);
 
         return this.loader.loadModel(modelOptions).then(() => {
             this.modelOptions.set(String(modelOptions.modelId), modelOptions);
@@ -171,20 +214,22 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      * @param preserveCache Flag to keep the model in the cache
      */
     public removeModel(id: Id, preserveCache?: boolean) {
+        this.removeLinkedIds(id);
+
         const model = this.models.get(String(id));
-        if (model === undefined) {
-            return;
+        if (model !== undefined) {
+            this.scene.remove(model);
+            disposeObject(model);
+            this.map.triggerRerender();
         }
-        this.scene.remove(model);
+
         if (!preserveCache) {
             const options = this.modelOptions.get(String(id));
             if (options !== undefined && options.linkedIds !== undefined) {
                 this.map.unsetHiddenObjects(options.linkedIds);
             }
             this.models.delete(String(id));
-            this.disposeObject(model);
         }
-        this.map.triggerRerender();
     }
 
     /**
@@ -227,23 +272,34 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.models,
             this.options,
         );
+
         return this.realtyScene.addRealtyScene(scene, state);
     }
 
-    private invalidateViewport() {
+    /**
+     * Remove interactive realty scene from the map
+     *
+     * @param preserveCache Flag to keep the model in the cache
+     */
+    public removeRealtyScene(preserveCache?: boolean) {
+        if (!this.realtyScene) {
+            return;
+        }
+
+        this.realtyScene.destroy(preserveCache);
+        this.realtyScene = undefined;
+    }
+
+    private invalidateViewport = () => {
         const container = this.map.getContainer();
         this.viewport = container.getBoundingClientRect();
         this.eventSource?.updateViewport(this.viewport);
-    }
+    };
 
-    private initEventHandlers() {
-        this.map.on('resize', () => {
-            this.invalidateViewport();
-        });
+    private initEventHandlers = () => {
+        this.map.on('resize', this.invalidateViewport);
 
-        window.addEventListener('resize', () => {
-            this.invalidateViewport();
-        });
+        window.addEventListener('resize', this.invalidateViewport);
 
         this.eventSource = new EventSource(this.map, this.viewport, this.camera, this.scene);
         for (let eventName of this.eventSource.getEvents()) {
@@ -251,7 +307,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 this.emit(eventName, e);
             });
         }
-    }
+    };
 
     private render() {
         this.camera.projectionMatrix.fromArray(this.map.getProjectionMatrixForGltfPlugin());
@@ -286,6 +342,12 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     private initThree() {
+        if (this.isThreeJsInitialized) {
+            return;
+        }
+
+        this.isThreeJsInitialized = true;
+
         this.camera = new THREE.PerspectiveCamera();
 
         this.renderer = new THREE.WebGLRenderer({
@@ -306,7 +368,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
     private addThreeJsLayer() {
         this.map.addLayer({
-            id: 'threeJsLayer',
+            id: 'gltf-plugin-style-layer',
             type: 'custom',
             onAdd: () => this.initThree(),
             render: () => this.render(),
@@ -336,32 +398,5 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.scene.add(model);
         }
         return Boolean(model);
-    }
-
-    /**
-     * Delete from memory all allocated objects by Object3D
-     * https://threejs.org/docs/#manual/en/introduction/How-to-dispose-of-objects
-     */
-    private disposeObject(inputObj: THREE.Object3D) {
-        inputObj.traverse((obj) => {
-            if (obj instanceof THREE.Mesh) {
-                const geometry = obj.geometry;
-                const material = obj.material;
-
-                if (geometry) {
-                    geometry.dispose();
-                }
-
-                if (material) {
-                    const texture = material.map;
-
-                    if (texture) {
-                        texture.dispose();
-                    }
-
-                    material.dispose();
-                }
-            }
-        });
     }
 }
