@@ -25,4 +25,5 @@ export const defaultOptions: Required<PluginOptions> = {
     floorsControl: {
         position: 'centerLeft',
     },
+    groundCoveringColor: '#00000000',
 };
