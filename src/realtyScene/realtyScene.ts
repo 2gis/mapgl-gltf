@@ -375,14 +375,15 @@ export class RealtyScene {
             // click to the floor button
             if (ev.floorId !== undefined) {
                 const selectedFloor = model.floors.find((floor) => floor.id === ev.floorId);
-                const activeModelId = this.activeModelId;
-                if (selectedFloor !== undefined && activeModelId !== undefined) {
+                if (selectedFloor !== undefined && this.activeModelId !== undefined) {
                     const selectedFloorModelOption = getFloorModelOptions(selectedFloor, model);
 
                     // In case of underground -> underground and ground -> ground transitions just switch floor's plan
                     if (this.isUndergroundFloorShown() === Boolean(selectedFloor.isUnderground)) {
                         this.plugin.addModel(selectedFloorModelOption).then(() => {
-                            this.plugin.removeModel(activeModelId, true);
+                            if (this.activeModelId !== undefined) {
+                                this.plugin.removeModel(this.activeModelId, true);
+                            }
                             this.addFloorPoi(selectedFloor);
                         });
 
@@ -403,7 +404,7 @@ export class RealtyScene {
                               .filter((scenePart) => scenePart.modelId !== model.modelId)
                               .map((scenePart) => scenePart.modelId);
 
-                    modelsToRemove.push(activeModelId);
+                    modelsToRemove.push(this.activeModelId);
 
                     this.plugin.addModels(modelsToAdd).then(() => {
                         this.plugin.removeModels(modelsToRemove, true);
