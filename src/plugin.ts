@@ -126,8 +126,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             switch (option) {
                 case 'groundCoveringColor': {
                     this.options.groundCoveringColor = pluginOptions.groundCoveringColor;
-                    this.map.triggerRerender;
                     this.realtyScene?.resetGroundCoveringColor();
+                    break;
                 }
             }
         });
