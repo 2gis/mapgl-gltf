@@ -10,7 +10,9 @@
   },
   "files": [
     "dist/libs",
-    "dist/types"
+    "dist/types",
+    "dist/docs.json",
+    "dist/*.LICENSE.txt"
   ],
   "scripts": {
     "build": "npm run build:bundle && npm run build:typings && npm run build:transpile && npm run build:docs",
