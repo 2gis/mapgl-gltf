@@ -50,6 +50,12 @@ export interface BuildingFloorOptions {
      * Map's options to apply after selecting the particular floor
      */
     mapOptions?: MapOptions;
+    /**
+     * Specifies whether a floor's plan is underground.
+     * If value is `true` the map will be covered with a ground geometry
+     * so that only the floor's plan will stay visible.
+     */
+    isUnderground?: boolean;
 }
 
 /**

@@ -18,6 +18,7 @@ import type {
 import type { BuildingOptions } from './types/realtyScene';
 import type { GltfPluginEventTable } from './types/events';
 import { applyOptionalDefaults, disposeObject } from './utils/common';
+import { GROUND_COVERING_LAYER } from './constants';
 
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private isThreeJsInitialized = false;
@@ -99,7 +100,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.map.setHiddenObjects(hiddenIds);
         }
 
-        this.addThreeJsLayer();
+        this.addLayers();
         this.poiGroups.onMapStyleUpdate();
     };
 
@@ -118,6 +119,18 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
     private getLinkedIds() {
         return Array.from(this.linkedIds);
+    }
+
+    public setOptions(pluginOptions: Pick<Required<PluginOptions>, 'groundCoveringColor'>) {
+        Object.keys(pluginOptions).forEach((option) => {
+            switch (option) {
+                case 'groundCoveringColor': {
+                    this.options.groundCoveringColor = pluginOptions.groundCoveringColor;
+                    this.realtyScene?.resetGroundCoveringColor();
+                    break;
+                }
+            }
+        });
     }
 
     /**
@@ -338,6 +351,10 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             this.viewport.height * window.devicePixelRatio,
         );
 
+        if (this.realtyScene?.isUndergroundFloorShown()) {
+            this.renderer.clearDepth();
+        }
+
         this.renderer.render(this.scene, this.camera);
     }
 
@@ -366,7 +383,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.onPluginInit();
     }
 
-    private addThreeJsLayer() {
+    private addLayers() {
+        this.map.addLayer(GROUND_COVERING_LAYER);
         this.map.addLayer({
             id: 'gltf-plugin-style-layer',
             type: 'custom',

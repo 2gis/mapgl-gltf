@@ -121,6 +121,10 @@ export interface PluginOptions {
      * Settings of the highlighted models
      */
     hoverHighlight?: HightlightOptions;
+    /**
+     * Color for the ground covering when an underground floor's plan is shown.
+     */
+    groundCoveringColor?: string;
 }
 
 /**

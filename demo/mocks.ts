@@ -8,7 +8,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
         rotateX: 90,
         rotateY: -15.1240072739039,
         scale: 191.637678,
-        linkedIds: ['70030076555821177'],
+        linkedIds: ['70030076555823021'],
         mapOptions: {
             center: [47.24547737708662, 56.134591508663135],
             pitch: 40,
@@ -83,6 +83,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                 id: '000034',
                 text: '11',
                 modelUrl: 'zgktechnology1_floor11.glb',
+                isUnderground: true,
                 mapOptions: {
                     center: [47.24556663327373, 56.13456998211929],
                     pitch: 40,
@@ -146,7 +147,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
         rotateX: 90,
         rotateY: -15.1240072739039,
         scale: 191.637678,
-        linkedIds: ['70030076555823021'],
+        linkedIds: ['70030076555821177'],
         mapOptions: {
             center: [47.245008950283065, 56.1344698491912],
             pitch: 45,
@@ -163,6 +164,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                 id: 'aaa777',
                 text: '2-15',
                 modelUrl: 'zgktechnology2_floor2.glb',
+                isUnderground: true,
                 mapOptions: {
                     center: [47.24463456947374, 56.134675042798094],
                     pitch: 35,
