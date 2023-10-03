@@ -1,6 +1,6 @@
 {
   "name": "@2gis/mapgl-gltf",
-  "version": "1.2.1",
+  "version": "1.3.0",
   "description": "Plugin for the rendering glTF models with MapGL",
   "main": "dist/bundle.js",
   "typings": "dist/types/index.d.ts",
@@ -8,7 +8,10 @@
     "type": "git",
     "url": "https://github.com/2gis/mapgl-gltf.git"
   },
-  "files": ["dist/libs", "dist/types"],
+  "files": [
+    "dist/libs",
+    "dist/types"
+  ],
   "scripts": {
     "build": "npm run build:bundle && npm run build:typings && npm run build:transpile && npm run build:docs",
     "build:bundle": "webpack --env type=production",
