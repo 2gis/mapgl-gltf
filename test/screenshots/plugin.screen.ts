@@ -32,6 +32,7 @@ const init = async (
         center: opts.center ?? [82.88688745100029, 54.98064452796862],
         rotation: opts.rotation ?? -111,
         pitch: 45,
+        disableAntiAliasing: true,
     });
 
     await page.evaluate(
