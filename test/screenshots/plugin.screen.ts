@@ -33,6 +33,7 @@ const init = async (
         rotation: opts.rotation ?? -111,
         pitch: 45,
         disableAntiAliasing: true,
+        webglVersion: 1,
     });
 
     await page.evaluate(
