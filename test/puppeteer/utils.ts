@@ -69,6 +69,7 @@ export function initBlankMap(page: PuppeteerPage, options?: mapgl.MapOptions) {
         key: API_KEY,
         styleZoom: MAP_ZOOM,
         center: MAP_CENTER,
+        webglVersion: 1,
         ...options,
     });
 }
