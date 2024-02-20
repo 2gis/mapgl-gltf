@@ -6,7 +6,7 @@ import { REALTY_SCENE, REALTY_SCENE_1 } from './mocks';
 let isDarkTheme = false;
 
 async function start() {
-    const mapglAPI = await load();
+    const mapglAPI = await load('https://mapgl.2gis.com/api/js/v0.0.322');
 
     const map = new mapglAPI.Map('container', {
         center: [47.245286302641034, 56.134743473834099],
@@ -22,7 +22,6 @@ async function start() {
     const plugin = new GltfPlugin(map, {
         modelsLoadStrategy: 'dontWaitAll',
         modelsBaseUrl: 'https://disk.2gis.com/digital-twin/models_s3/realty_ads/zgktechnology/',
-        dracoScriptsUrl: 'libs/draco/',
         floorsControl: { position: 'centerRight' },
         poiConfig: {
             primary: {
@@ -125,22 +124,6 @@ async function start() {
             console.log(e);
         });
     });
-
-    const statsTable = document.getElementById('stats');
-
-    const printStats = () => {
-        if (!statsTable) {
-            return;
-        }
-        statsTable.innerHTML = `<pre>${JSON.stringify(
-            plugin.getModelRendererInfo(),
-            null,
-            2,
-        )}</pre>`;
-
-        requestAnimationFrame(printStats);
-    };
-    requestAnimationFrame(printStats);
 }
 
 start();

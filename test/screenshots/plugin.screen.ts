@@ -40,11 +40,6 @@ const init = async (
         ({ modelsUrl, color }) => {
             window.gltfPlugin = new window.GltfPlugin(window.map, {
                 modelsLoadStrategy: 'dontWaitAll',
-                dracoScriptsUrl: 'libs/draco/',
-                ambientLight: {
-                    color: color || '#ffffff',
-                    intencity: 2.5,
-                },
                 modelsBaseUrl: modelsUrl || undefined,
             });
         },
