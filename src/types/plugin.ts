@@ -1,4 +1,4 @@
-export type Id = string | number;
+export type Id = string;
 
 export type ColorModelString = `${'rgb' | 'hsl'}(${string})`;
 export type HexColorString = `#${string}`;
@@ -101,21 +101,6 @@ export interface PluginOptions {
      * Color for the ground covering when an underground floor's plan is shown.
      */
     groundCoveringColor?: string;
-}
-
-/**
- * State for the building's scene
- */
-export interface BuildingState {
-    /**
-     * Identifier of the building's model
-     */
-    modelId: Id;
-
-    /**
-     * Identifier of the floor's model
-     */
-    floorId?: Id;
 }
 
 /**

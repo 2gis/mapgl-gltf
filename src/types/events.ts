@@ -31,12 +31,7 @@ export interface ModelTarget {
     /**
      * Identifier of the building's model
      */
-    modelId?: Id;
-
-    /**
-     * Identifier of the current floor
-     */
-    floorId?: Id;
+    modelId: Id;
 }
 
 export interface PoiTarget {

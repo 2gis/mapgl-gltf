@@ -7,6 +7,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
         modelUrl: 'zgktechnology1.glb',
         rotateZ: -15.1240072739039,
         linkedIds: ['70030076555823021'],
+        interactive: true,
         mapOptions: {
             center: [47.24547737708662, 56.134591508663135],
             pitch: 40,
@@ -14,7 +15,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
             rotation: -41.4,
         },
         popupOptions: {
-            coordinates: [47.24511721603574, 56.13451456056651],
+            coordinates: [47.24498128610925, 56.13451011334241],
             title: 'Корпус 1. 11 этажей',
             description: 'Срок сдачи: IV кв. 2024 г. <br />15 мин. пешком до ст. м. Московская',
         },
@@ -31,7 +32,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                 },
                 poiGroups: [
                     {
-                        id: 1111,
+                        id: '1111',
                         type: 'primary',
                         minZoom: 19.5,
                         elevation: 5,
@@ -81,7 +82,6 @@ export const REALTY_SCENE: BuildingOptions[] = [
                 id: '000034',
                 text: '11',
                 modelUrl: 'zgktechnology1_floor11.glb',
-                isUnderground: true,
                 mapOptions: {
                     center: [47.24556663327373, 56.13456998211929],
                     pitch: 40,
@@ -90,7 +90,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                 },
                 poiGroups: [
                     {
-                        id: 1111,
+                        id: '1111',
                         type: 'primary',
                         minZoom: 19,
                         elevation: 35,
@@ -142,8 +142,9 @@ export const REALTY_SCENE: BuildingOptions[] = [
         modelId: '1ba234cb',
         coordinates: [47.245286302641034, 56.134743473834099],
         modelUrl: 'zgktechnology2.glb',
-        rotateY: -15.1240072739039,
+        rotateZ: -15.1240072739039,
         linkedIds: ['70030076555821177'],
+        interactive: true,
         mapOptions: {
             center: [47.245008950283065, 56.1344698491912],
             pitch: 45,
@@ -160,7 +161,6 @@ export const REALTY_SCENE: BuildingOptions[] = [
                 id: 'aaa777',
                 text: '2-15',
                 modelUrl: 'zgktechnology2_floor2.glb',
-                isUnderground: true,
                 mapOptions: {
                     center: [47.24463456947374, 56.134675042798094],
                     pitch: 35,
@@ -169,7 +169,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                 },
                 poiGroups: [
                     {
-                        id: 1111,
+                        id: '1111',
                         type: 'primary',
                         minZoom: 19.7,
                         elevation: 7,
@@ -255,7 +255,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                 },
                 poiGroups: [
                     {
-                        id: 1111,
+                        id: '1111',
                         type: 'primary',
                         minZoom: 18.9,
                         elevation: 53,
@@ -335,7 +335,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
         modelId: 'eda234cb',
         coordinates: [47.245286302641034, 56.134743473834099],
         modelUrl: 'zgktechnology_construction.glb',
-        rotateY: -15.1240072739039,
+        rotateZ: -15.1240072739039,
         linkedIds: ['70030076561388553'],
         interactive: false,
     },
@@ -346,8 +346,9 @@ export const REALTY_SCENE_1: BuildingOptions[] = [
         modelId: 'ds321ba234cb',
         coordinates: [47.245286302641034, 56.134743473834099],
         modelUrl: 'zgktechnology2.glb',
-        rotateY: -15.1240072739039,
+        rotateZ: -15.1240072739039,
         linkedIds: ['70030076555823021', '70030076555821177', '70030076555823021'],
+        interactive: true,
         mapOptions: {
             center: [47.245008950283065, 56.1344698491912],
             pitch: 45,
@@ -388,7 +389,7 @@ export const REALTY_SCENE_1: BuildingOptions[] = [
         modelId: '345feda234cb',
         coordinates: [47.245286302641034, 56.134743473834099],
         modelUrl: 'zgktechnology_construction.glb',
-        rotateY: -15.1240072739039,
+        rotateZ: -15.1240072739039,
         linkedIds: ['70030076561388553'],
         interactive: false,
     },

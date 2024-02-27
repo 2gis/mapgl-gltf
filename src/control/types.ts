@@ -4,7 +4,9 @@ import { Id } from '../types/plugin';
  * Floor level data
  */
 export interface FloorLevel {
-    floorId?: Id;
+    originalId: Id; // пользовательский id этажа или здания
+    modelId: Id; // id модели этажа или здания
+    buildingModelId: Id; // id модели здания
     text: string;
     icon?: 'parking' | 'building' | string;
 }
@@ -13,8 +15,8 @@ export interface FloorLevel {
  * Options for the method show
  */
 export interface ControlShowOptions {
-    modelId: Id;
-    floorId?: Id;
+    buildingModelId: Id;
+    activeModelId: Id;
     floorLevels?: FloorLevel[];
 }
 
@@ -22,7 +24,7 @@ export interface ControlShowOptions {
  * Event that emitted on button presses of the control
  */
 export interface FloorChangeEvent {
-    modelId: Id;
+    buildingId: Id;
     floorId?: Id;
 }
 
@@ -30,5 +32,5 @@ export interface ControlEventTable {
     /**
      * Emitted when floor's plan was changed
      */
-    floorChange: FloorChangeEvent;
+    floorchange: FloorChangeEvent;
 }

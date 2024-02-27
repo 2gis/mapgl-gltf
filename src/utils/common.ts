@@ -4,17 +4,6 @@ export function clamp(value: number, min: number, max: number): number {
     return value;
 }
 
-export function clone<T>(obj: T): T {
-    return JSON.parse(JSON.stringify(obj));
-}
-
-export function createCompoundId(modelId: string | number, floorId?: string | number) {
-    if (floorId === undefined) {
-        return String(modelId);
-    }
-    return `${modelId}_${floorId}`;
-}
-
 export type RequiredExcept<T, K extends keyof T> = T & Required<Omit<T, K>>;
 
 type RequiredOptional<T extends object> = Exclude<

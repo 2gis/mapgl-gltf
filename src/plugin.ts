@@ -1,13 +1,14 @@
 import type { Map as MapGL } from '@2gis/mapgl/types';
 import type { BuildingOptions } from './types/realtyScene';
 import type { GltfPluginEventTable } from './types/events';
-import type { Id, PluginOptions, ModelOptions, BuildingState } from './types/plugin';
+import type { Id, PluginOptions, ModelOptions } from './types/plugin';
 
 import { applyOptionalDefaults } from './utils/common';
 import { Evented } from './external/evented';
-// import { RealtyScene } from './realtyScene/realtyScene';
 import { defaultOptions } from './defaultOptions';
 import { concatUrl, isAbsoluteUrl } from './utils/url';
+import { createModelEventData } from './utils/events';
+import { RealtyScene } from './realtyScene/realtyScene';
 
 interface Model {
     instance: any; // GltfModel
@@ -26,7 +27,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private map: MapGL;
     private options: Required<PluginOptions>;
     private models: Map<Id, Model>;
-    // private realtyScene?: RealtyScene;
+    private realtyScene?: RealtyScene;
 
     /**
      * The main class of the plugin
@@ -123,6 +124,13 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
                 return new Promise<Model>((resolve) => {
                     instance.once('modelloaded', () => resolve(model));
+                    (['click', 'mousemove', 'mouseover', 'mouseout'] as const).forEach(
+                        (eventType) => {
+                            instance.on(eventType, (ev) => {
+                                this.emit(eventType, createModelEventData(ev, options));
+                            });
+                        },
+                    );
                 });
             });
 
@@ -137,6 +145,10 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 }
             });
         });
+    }
+
+    public isModelAdded(id: Id) {
+        return this.models.has(id);
     }
 
     public removeModel(id: Id) {
@@ -167,22 +179,17 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         ids.forEach((id) => this.hideModel(id));
     }
 
-    public async addRealtyScene(scene: BuildingOptions[], state?: BuildingState) {
-        // this.realtyScene = new RealtyScene(
-        //     this,
-        //     this.map,
-        //     this.eventSource,
-        //     this.models,
-        //     this.options,
-        // );
-        // return this.realtyScene.add(scene, state);
+    public async addRealtyScene(scene: BuildingOptions[], activeModelId?: Id) {
+        this.realtyScene = new RealtyScene(this, this.map, this.options);
+        return this.realtyScene.init(scene, activeModelId);
     }
 
-    public removeRealtyScene(preserveCache?: boolean) {
-        // if (!this.realtyScene) {
-        //     return;
-        // }
-        // this.realtyScene.destroy(preserveCache);
-        // this.realtyScene = undefined;
+    public showRealtyScene() {}
+
+    public hideRealtyScene() {}
+
+    public removeRealtyScene() {
+        this.realtyScene?.destroy();
+        this.realtyScene = undefined;
     }
 }
