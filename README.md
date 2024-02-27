@@ -55,4 +55,4 @@ This guarantees the authenticity of the screenshots used.
 
 ## Documentation
 
-You can find the more information in the official [documentation](https://docs.2gis.ru/ru/mapgl/examples/gltf-plugin).
+You can find the more information in the official [documentation](https://docs.2gis.com/en/mapgl/immersive/gltf-plugin).
