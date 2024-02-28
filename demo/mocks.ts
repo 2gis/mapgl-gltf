@@ -30,6 +30,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                     zoom: 20,
                     rotation: -57.5,
                 },
+                isUnderground: true,
                 poiGroups: [
                     {
                         id: '1111',

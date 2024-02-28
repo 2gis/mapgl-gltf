@@ -34,7 +34,7 @@ async function start() {
         hoverHighlight: {
             intencity: 0.1,
         },
-        groundCoveringColor: 'rgba(233, 232, 220, 0.8)',
+        groundCoveringColor: 'rgba(0, 0, 0, 0.8)',
     });
 
     (window as any).gltfPlugin = plugin;

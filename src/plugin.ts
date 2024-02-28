@@ -9,6 +9,7 @@ import { defaultOptions } from './defaultOptions';
 import { concatUrl, isAbsoluteUrl } from './utils/url';
 import { createModelEventData } from './utils/events';
 import { RealtyScene } from './realtyScene/realtyScene';
+import { GROUND_COVERING_LAYER } from './constants';
 
 interface Model {
     instance: any; // GltfModel
@@ -44,8 +45,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      *         modelId: '03a234cb',
      *         coordinates: [82.886554, 54.980988],
      *         modelUrl: 'models/cube_draco.glb',
-     *         rotateX: 90,
-     *         scale: 1000,
+     *         rotateZ: 90,
+     *         scale: 2,
      *     },
      * ]);
      * ```
@@ -58,7 +59,14 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.map = map;
         this.options = applyOptionalDefaults(pluginOptions ?? {}, defaultOptions);
         this.models = new Map();
+
+        map.on('styleload', () => {
+            this.map.addLayer(GROUND_COVERING_LAYER); // мб унести отсюда в RealtyScene, нужно подумать
+            // this.poiGroups.onMapStyleUpdate();
+        });
     }
+
+    // public destroy() {}
 
     public setOptions(pluginOptions: Pick<Required<PluginOptions>, 'groundCoveringColor'>) {
         Object.keys(pluginOptions).forEach((option) => {
@@ -72,8 +80,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
-    public async addModel(modelToLoad: ModelOptions, showOnLoad = true) {
-        return this.addModels([modelToLoad], showOnLoad ? [modelToLoad.modelId] : []);
+    public async addModel(modelToLoad: ModelOptions, hideOnLoad = false) {
+        return this.addModels([modelToLoad], hideOnLoad ? [] : [modelToLoad.modelId]);
     }
 
     public async addModels(modelsToLoad: ModelOptions[], modelIdsToShow?: Id[]) {
@@ -184,9 +192,9 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         return this.realtyScene.init(scene, activeModelId);
     }
 
-    public showRealtyScene() {}
+    // public showRealtyScene() {}
 
-    public hideRealtyScene() {}
+    // public hideRealtyScene() {}
 
     public removeRealtyScene() {
         this.realtyScene?.destroy();

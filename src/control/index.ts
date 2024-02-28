@@ -5,6 +5,7 @@ import icon_building from 'raw-loader!./icon_building.svg';
 import icon_parking from 'raw-loader!./icon_parking.svg';
 import classes from './control.module.css';
 import { Control } from './control';
+import { Id } from '../types';
 
 const content = /* HTML */ `
     <div class="${classes.root}">
@@ -55,29 +56,28 @@ export class GltfFloorControl extends Control {
         this._contentHome.innerHTML = '';
         let currentButton: HTMLElement | undefined;
 
-        floorLevels.forEach((floorLevel) => {
-            const rootContent =
-                floorLevel.modelId === buildingModelId ? this._contentHome : this._content;
+        floorLevels.forEach(({ modelId, text, icon }) => {
+            const rootContent = modelId === buildingModelId ? this._contentHome : this._content;
             const button = document.createElement('button');
-            let buttonContent = floorLevel.text;
-            if (floorLevel.icon) {
-                buttonContent = `<img src = "${floorLevel.icon}">`;
-                if (floorLevel.icon === 'parking') {
+            let buttonContent = text;
+            if (icon) {
+                buttonContent = `<img src = "${icon}">`;
+                if (icon === 'parking') {
                     buttonContent = icon_parking;
                 }
-                if (floorLevel.icon === 'building') {
+                if (icon === 'building') {
                     buttonContent = icon_building;
                 }
             }
             button.className = classes.control;
             button.innerHTML = `<div class="${classes.label}">${buttonContent}</div>`;
-            button.name = floorLevel.modelId;
-            if (this._currentFloorId === floorLevel.modelId) {
+            button.name = modelId;
+            if (this._currentFloorId === modelId) {
                 button.disabled = true;
                 currentButton = button;
             }
 
-            const handler = this._controlHandler(floorLevel);
+            const handler = this._controlHandler(modelId);
             button.addEventListener('click', handler);
 
             this._handlers.set(button, handler);
@@ -120,16 +120,15 @@ export class GltfFloorControl extends Control {
         });
     }
 
-    private _controlHandler = (floorLevel: FloorLevel) => () => {
-        this.switchCurrentFloorLevel(floorLevel);
+    private _controlHandler = (modelId: Id) => () => {
+        this._switchCurrentFloorLevel(modelId);
 
         this.emit('floorchange', {
-            buildingId: floorLevel.buildingModelId,
-            floorId: floorLevel.originalId,
+            modelId,
         });
     };
 
-    private switchCurrentFloorLevel(floorLevel: FloorLevel) {
+    private _switchCurrentFloorLevel(modelId: Id) {
         if (this._currentFloorId === undefined) {
             return;
         }
@@ -142,12 +141,12 @@ export class GltfFloorControl extends Control {
         }
 
         const buttonToEnabled: HTMLButtonElement | null = this._wrap.querySelector(
-            `.${classes.control}[name="${floorLevel.modelId}"]`,
+            `.${classes.control}[name="${modelId}"]`,
         );
         if (buttonToEnabled) {
             buttonToEnabled.disabled = true;
         }
 
-        this._currentFloorId = floorLevel.modelId;
+        this._currentFloorId = modelId;
     }
 }

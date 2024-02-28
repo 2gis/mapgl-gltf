@@ -12,16 +12,8 @@ import type {
     PopupOptions,
 } from '../types/realtyScene';
 import type { FloorLevel, FloorChangeEvent } from '../control/types';
-import type {
-    GltfPluginModelEvent,
-    GltfPluginPoiEvent,
-    PoiGeoJsonProperties,
-} from '../types/events';
-import {
-    GROUND_COVERING_LAYER,
-    GROUND_COVERING_SOURCE_DATA,
-    GROUND_COVERING_SOURCE_PURPOSE,
-} from '../constants';
+import type { GltfPluginModelEvent, GltfPluginPoiEvent } from '../types/events';
+import { GROUND_COVERING_SOURCE_DATA, GROUND_COVERING_SOURCE_PURPOSE } from '../constants';
 
 interface RealtySceneState {
     activeModelId?: Id;
@@ -66,11 +58,6 @@ export class RealtyScene {
             attributes: {
                 purpose: GROUND_COVERING_SOURCE_PURPOSE,
             },
-        });
-
-        map.on('styleload', () => {
-            this.map.addLayer(GROUND_COVERING_LAYER);
-            // this.poiGroups.onMapStyleUpdate();
         });
     }
 
@@ -121,6 +108,7 @@ export class RealtyScene {
                 if (options) {
                     this.setMapOptions(options.mapOptions);
                     // this.addFloorPoi(activeFloor);
+                    // this.clearPoiGroups();
                 }
 
                 if (this.undergroundFloors.has(newState.activeModelId)) {
@@ -142,8 +130,6 @@ export class RealtyScene {
                         floorLevels: [
                             {
                                 modelId: buildingOptions.modelId,
-                                originalId: buildingOptions.modelId,
-                                buildingModelId: buildingOptions.modelId,
                                 icon: 'building',
                                 text: '',
                             },
@@ -170,8 +156,6 @@ export class RealtyScene {
                 const floorModelId = getFloorModelId(building.modelId, floor.id);
                 internalBuilding.floors.push({
                     modelId: floorModelId,
-                    originalId: floor.id,
-                    buildingModelId: building.modelId,
                     text: floor.text,
                     icon: floor.icon,
                 });
@@ -240,7 +224,7 @@ export class RealtyScene {
                 this.plugin.on('click', this.onSceneClick);
                 this.plugin.on('mouseover', this.onSceneMouseOver);
                 this.plugin.on('mouseout', this.onSceneMouseOut);
-                // this.control.on('floorchange', this.floorChangeHandler);
+                this.control.on('floorchange', this.floorChangeHandler);
             });
     }
 
@@ -254,18 +238,11 @@ export class RealtyScene {
         }
     }
 
-    // public isUndergroundFloorShown() {
-    //     return (
-    //         this.state.activeModelId !== undefined &&
-    //         this.undergroundFloors.has(this.state.activeModelId)
-    //     );
-    // }
-
     public destroy() {
         this.plugin.off('click', this.onSceneClick);
         this.plugin.off('mouseover', this.onSceneMouseOver);
         this.plugin.off('mouseout', this.onSceneMouseOut);
-        // this.control.off('floorChange', this.floorChangeHandler);
+        this.control.off('floorchange', this.floorChangeHandler);
 
         this.plugin.removeModels([...this.buildings.keys(), ...this.floors.keys()]);
 
@@ -310,7 +287,7 @@ export class RealtyScene {
     }
 
     private onSceneMouseOut = (ev: GltfPluginPoiEvent | GltfPluginModelEvent) => {
-        if (ev.target.type === 'poi') {
+        if (ev.target.type !== 'model') {
             return;
         }
 
@@ -351,80 +328,36 @@ export class RealtyScene {
         }
     };
 
-    // private floorChangeHandler = (ev: FloorChangeEvent) => {
-    //     const model = this.activeBuilding;
-    //     if (model !== undefined && model.floors !== undefined) {
-    //         if (this.popup !== null) {
-    //             this.popup.destroy();
-    //         }
+    private floorChangeHandler = (ev: FloorChangeEvent) => {
+        const buildingVisibility: Map<Id, ModelOptions> = new Map();
+        this.buildings.forEach((options, id) => {
+            buildingVisibility.set(id, getBuildingModelOptions(options));
+        });
+        const buildingOptions = this.buildings.get(ev.modelId);
+        if (buildingOptions) {
+            this.setState({
+                activeModelId: ev.modelId,
+                buildingVisibility,
+            });
+            return;
+        }
 
-    //         // click to the building button
-    //         if (ev.floorId === undefined) {
-    //             if (this.prevHoveredModelId !== null) {
-    //                 this.toggleHighlightModel(this.prevHoveredModelId);
-    //             }
-
-    //             this.clearPoiGroups();
-    //             const modelsToAdd: ModelOptions[] = this.isUndergroundFloorShown()
-    //                 ? (this.scene ?? []).map((scenePart) => getBuildingModelOptions(scenePart))
-    //                 : [getBuildingModelOptions(model)];
-
-    //             this.plugin.addModels(modelsToAdd).then(() => {
-    //                 if (this.activeModelId !== undefined) {
-    //                     this.plugin.removeModel(this.activeModelId, true);
-    //                     if (this.isUndergroundFloorShown()) {
-    //                         this.switchOffGroundCovering();
-    //                     }
-    //                 }
-    //                 this.setMapOptions(model?.mapOptions);
-    //                 this.activeModelId = model.modelId;
-    //             });
-    //         }
-    //         // click to the floor button
-    //         if (ev.floorId !== undefined) {
-    //             const selectedFloor = model.floors.find((floor) => floor.id === ev.floorId);
-    //             if (selectedFloor !== undefined && this.activeModelId !== undefined) {
-    //                 const selectedFloorModelOption = getFloorModelOptions(selectedFloor, model);
-
-    //                 // In case of underground -> underground and ground -> ground transitions just switch floor's plan
-    //                 if (this.isUndergroundFloorShown() === Boolean(selectedFloor.isUnderground)) {
-    //                     this.plugin.addModel(selectedFloorModelOption).then(() => {
-    //                         if (this.activeModelId !== undefined) {
-    //                             this.plugin.removeModel(this.activeModelId, true);
-    //                         }
-    //                         this.addFloorPoi(selectedFloor);
-    //                     });
-
-    //                     return;
-    //                 }
-
-    //                 const modelsToAdd: ModelOptions[] = this.isUndergroundFloorShown()
-    //                     ? (this.scene ?? [])
-    //                           .filter((scenePart) => scenePart.modelId !== model.modelId)
-    //                           .map((scenePart) => getBuildingModelOptions(scenePart))
-    //                     : [];
-
-    //                 modelsToAdd.push(selectedFloorModelOption);
-
-    //                 const modelsToRemove = this.isUndergroundFloorShown()
-    //                     ? []
-    //                     : (this.scene ?? [])
-    //                           .filter((scenePart) => scenePart.modelId !== model.modelId)
-    //                           .map((scenePart) => scenePart.modelId);
-
-    //                 modelsToRemove.push(this.activeModelId);
-
-    //                 this.plugin.addModels(modelsToAdd).then(() => {
-    //                     this.plugin.removeModels(modelsToRemove, true);
-    //                     this.isUndergroundFloorShown()
-    //                         ? this.switchOffGroundCovering()
-    //                         : this.switchOnGroundCovering();
-    //                     this.addFloorPoi(selectedFloor);
-    //                 });
-    //             }
-    //         }
-    //     }
-    // };
+        const floorOptions = this.floors.get(ev.modelId);
+        if (floorOptions) {
+            if (this.undergroundFloors.has(ev.modelId)) {
+                buildingVisibility.clear();
+            }
+            buildingVisibility.set(
+                floorOptions.buildingOptions.modelId,
+                getFloorModelOptions(floorOptions),
+            );
+            this.setState({
+                activeModelId: ev.modelId,
+                buildingVisibility,
+            });
+            return;
+        }
+    };
 
     private buildingClickHandler = (modelId: Id) => {
         const buildingOptions = this.buildings.get(modelId);
@@ -441,14 +374,17 @@ export class RealtyScene {
         // показываем самый высокий этаж здания после клика
         const floors = buildingOptions.floors ?? [];
         if (floors.length) {
-            const { modelId: floorModelId, buildingModelId } = floors[floors.length - 1];
+            const { modelId: floorModelId } = floors[floors.length - 1];
             const floorOptions = this.floors.get(floorModelId);
             if (floorOptions) {
                 activeModelId = floorModelId;
                 if (this.undergroundFloors.has(floorModelId)) {
                     buildingVisibility.clear();
                 }
-                buildingVisibility.set(buildingModelId, getFloorModelOptions(floorOptions));
+                buildingVisibility.set(
+                    floorOptions.buildingOptions.modelId,
+                    getFloorModelOptions(floorOptions),
+                );
             }
         }
 
