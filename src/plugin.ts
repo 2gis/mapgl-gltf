@@ -1,7 +1,7 @@
 import type { Map as MapGL } from '@2gis/mapgl/types';
 import type { BuildingOptions } from './types/realtyScene';
 import type { GltfPluginEventTable } from './types/events';
-import type { Id, PluginOptions, ModelOptions } from './types/plugin';
+import type { Id, PluginOptions, ModelOptions, BuildingState } from './types/plugin';
 
 import { applyOptionalDefaults } from './utils/common';
 import { Evented } from './external/evented';
@@ -187,9 +187,9 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         ids.forEach((id) => this.hideModel(id));
     }
 
-    public async addRealtyScene(scene: BuildingOptions[], activeModelId?: Id) {
+    public async addRealtyScene(scene: BuildingOptions[], state?: BuildingState) {
         this.realtyScene = new RealtyScene(this, this.map, this.options);
-        return this.realtyScene.init(scene, activeModelId);
+        return this.realtyScene.init(scene, state);
     }
 
     // public showRealtyScene() {}

@@ -29,7 +29,7 @@ export interface ModelTarget {
     data: ModelOptions;
 
     /**
-     * Identifier of the building's model
+     * Identifier of the building's or floor's model
      */
     modelId: Id;
 }

@@ -4,7 +4,7 @@ import { GltfPlugin } from '../plugin';
 import { GltfFloorControl } from '../control';
 import classes from './realtyScene.module.css';
 
-import type { Id, ModelOptions, PluginOptions } from '../types/plugin';
+import type { BuildingState, Id, ModelOptions, PluginOptions } from '../types/plugin';
 import type {
     BuildingOptions,
     MapOptions,
@@ -143,7 +143,14 @@ export class RealtyScene {
         this.state = newState;
     }
 
-    public async init(scene: BuildingOptions[], activeModelId?: string) {
+    public async init(scene: BuildingOptions[], state?: BuildingState) {
+        // Приводим стейт пользователя к внутреннему виду id
+        let activeModelId: Id | undefined = state
+            ? state.floorId
+                ? getFloorModelId(state.buildingId, state.floorId)
+                : state.buildingId
+            : undefined;
+
         scene.forEach((building) => {
             const { floors, ...buildingPart } = building;
             const internalBuilding: BuildingOptionsInternal = {
@@ -160,11 +167,6 @@ export class RealtyScene {
                     icon: floor.icon,
                 });
 
-                // Подменяем id активного этажа на внутренний формат buildingId_floorId
-                if (activeModelId === floor.id) {
-                    activeModelId = floorModelId;
-                }
-
                 this.floors.set(floorModelId, {
                     ...floor,
                     buildingOptions: buildingOptions,
@@ -178,7 +180,7 @@ export class RealtyScene {
             this.buildings.set(building.modelId, internalBuilding);
         });
 
-        // Оставляем только существующее значение из переданных modelId
+        // Оставляем только существующее значение из переданных modelId в scene
         activeModelId =
             activeModelId !== undefined &&
             (this.buildings.has(activeModelId) || this.floors.has(activeModelId))

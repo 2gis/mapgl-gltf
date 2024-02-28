@@ -46,7 +46,6 @@ async function start() {
         .getContainer()
         .addEventListener('click', () => {
             plugin.removeRealtyScene();
-            // plugin.addRealtyScene(REALTY_SCENE, '235034');
             plugin.addRealtyScene(REALTY_SCENE);
         });
 
@@ -64,7 +63,9 @@ async function start() {
         .getContainer()
         .addEventListener('click', () => {
             plugin.removeRealtyScene();
-            plugin.addRealtyScene(REALTY_SCENE_1, 'ds321ba234cb');
+            plugin.addRealtyScene(REALTY_SCENE_1, {
+                buildingId: 'ds321ba234cb',
+            });
         });
 
     new mapglAPI.Control(map, '<button>Remove Scene 1</button>', {

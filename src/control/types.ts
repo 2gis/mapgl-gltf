@@ -22,7 +22,7 @@ export interface ControlShowOptions {
  * Event that emitted on button presses of the control
  */
 export interface FloorChangeEvent {
-    modelId: Id;
+    modelId: Id; // id модели этажа или здания
 }
 
 export interface ControlEventTable {
