@@ -1,4 +1,4 @@
-export type Id = string | number;
+export type Id = string;
 
 export type ColorModelString = `${'rgb' | 'hsl'}(${string})`;
 export type HexColorString = `#${string}`;
@@ -110,12 +110,12 @@ export interface BuildingState {
     /**
      * Identifier of the building's model
      */
-    modelId: Id;
+    buildingId: string;
 
     /**
      * Identifier of the floor's model
      */
-    floorId?: Id;
+    floorId?: string;
 }
 
 /**

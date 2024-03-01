@@ -5,9 +5,11 @@ import type { Id, PluginOptions, ModelOptions, BuildingState } from './types/plu
 
 import { applyOptionalDefaults } from './utils/common';
 import { Evented } from './external/evented';
-// import { RealtyScene } from './realtyScene/realtyScene';
 import { defaultOptions } from './defaultOptions';
 import { concatUrl, isAbsoluteUrl } from './utils/url';
+import { createModelEventData } from './utils/events';
+import { RealtyScene } from './realtyScene/realtyScene';
+import { GROUND_COVERING_LAYER } from './constants';
 
 interface Model {
     instance: any; // GltfModel
@@ -26,7 +28,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private map: MapGL;
     private options: Required<PluginOptions>;
     private models: Map<Id, Model>;
-    // private realtyScene?: RealtyScene;
+    private realtyScene?: RealtyScene;
 
     /**
      * The main class of the plugin
@@ -43,8 +45,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      *         modelId: '03a234cb',
      *         coordinates: [82.886554, 54.980988],
      *         modelUrl: 'models/cube_draco.glb',
-     *         rotateX: 90,
-     *         scale: 1000,
+     *         rotateZ: 90,
+     *         scale: 2,
      *     },
      * ]);
      * ```
@@ -57,7 +59,14 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.map = map;
         this.options = applyOptionalDefaults(pluginOptions ?? {}, defaultOptions);
         this.models = new Map();
+
+        map.on('styleload', () => {
+            this.map.addLayer(GROUND_COVERING_LAYER); // мб унести отсюда в RealtyScene, нужно подумать
+            // this.poiGroups.onMapStyleUpdate();
+        });
     }
+
+    // public destroy() {}
 
     public setOptions(pluginOptions: Pick<Required<PluginOptions>, 'groundCoveringColor'>) {
         Object.keys(pluginOptions).forEach((option) => {
@@ -71,8 +80,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
-    public async addModel(modelToLoad: ModelOptions, showOnLoad = true) {
-        return this.addModels([modelToLoad], showOnLoad ? [modelToLoad.modelId] : []);
+    public async addModel(modelToLoad: ModelOptions, hideOnLoad = false) {
+        return this.addModels([modelToLoad], hideOnLoad ? [] : [modelToLoad.modelId]);
     }
 
     public async addModels(modelsToLoad: ModelOptions[], modelIdsToShow?: Id[]) {
@@ -123,6 +132,13 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
                 return new Promise<Model>((resolve) => {
                     instance.once('modelloaded', () => resolve(model));
+                    (['click', 'mousemove', 'mouseover', 'mouseout'] as const).forEach(
+                        (eventType) => {
+                            instance.on(eventType, (ev) => {
+                                this.emit(eventType, createModelEventData(ev, options));
+                            });
+                        },
+                    );
                 });
             });
 
@@ -137,6 +153,10 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 }
             });
         });
+    }
+
+    public isModelAdded(id: Id) {
+        return this.models.has(id);
     }
 
     public removeModel(id: Id) {
@@ -168,21 +188,16 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     public async addRealtyScene(scene: BuildingOptions[], state?: BuildingState) {
-        // this.realtyScene = new RealtyScene(
-        //     this,
-        //     this.map,
-        //     this.eventSource,
-        //     this.models,
-        //     this.options,
-        // );
-        // return this.realtyScene.add(scene, state);
+        this.realtyScene = new RealtyScene(this, this.map, this.options);
+        return this.realtyScene.init(scene, state);
     }
 
-    public removeRealtyScene(preserveCache?: boolean) {
-        // if (!this.realtyScene) {
-        //     return;
-        // }
-        // this.realtyScene.destroy(preserveCache);
-        // this.realtyScene = undefined;
+    // public showRealtyScene() {}
+
+    // public hideRealtyScene() {}
+
+    public removeRealtyScene() {
+        this.realtyScene?.destroy();
+        this.realtyScene = undefined;
     }
 }
