@@ -52,17 +52,7 @@ module.exports = function (env, _argv) {
         ],
     };
 
-    const productionPluginsConfig = [
-        new CleanWebpackPlugin(),
-        new CopyWebpackPlugin({
-            patterns: [
-                {
-                    from: 'node_modules/three/examples/jsm/libs/draco',
-                    to: 'libs/draco',
-                },
-            ],
-        }),
-    ];
+    const productionPluginsConfig = [new CleanWebpackPlugin()];
 
     const developmentPluginsConfig = [
         new CleanWebpackPlugin(),
@@ -72,10 +62,6 @@ module.exports = function (env, _argv) {
         }),
         new CopyWebpackPlugin({
             patterns: [
-                {
-                    from: 'node_modules/three/examples/jsm/libs/draco',
-                    to: 'libs/draco',
-                },
                 {
                     from: 'demo/models',
                     to: 'models',
@@ -142,10 +128,6 @@ module.exports = function (env, _argv) {
                 new CleanWebpackPlugin(),
                 new CopyWebpackPlugin({
                     patterns: [
-                        {
-                            from: 'node_modules/three/examples/jsm/libs/draco',
-                            to: 'libs/draco',
-                        },
                         {
                             from: 'demo/models',
                             to: 'models',

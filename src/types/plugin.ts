@@ -1,4 +1,4 @@
-export type Id = string | number;
+export type Id = string;
 
 export type ColorModelString = `${'rgb' | 'hsl'}(${string})`;
 export type HexColorString = `#${string}`;
@@ -7,22 +7,6 @@ export type HexColorString = `#${string}`;
  * Color representation can be rgb(), hsl(), or hex value
  */
 export type ColorRepresentation = ColorModelString | HexColorString | number;
-
-/**
- * Options for an ambient light
- */
-export interface AmbientLightOptions {
-    /**
-     * Color of the ambient light.
-     * @default '#ffffff'
-     */
-    color: ColorRepresentation;
-    /**
-     * Numeric value of the light's strength/intensity.
-     * @default 3
-     */
-    intencity: number; // TODO: MAJOR. Rename to «intensity» in the next major release.
-}
 
 /**
  * Configuration of the poi
@@ -83,14 +67,6 @@ export interface HightlightOptions {
  */
 export interface PluginOptions {
     /**
-     * Settings for an ambient light
-     */
-    ambientLight?: AmbientLightOptions;
-    /**
-     * The url where scripts for the draco decoder are located
-     */
-    dracoScriptsUrl?: string;
-    /**
      * The url which is used for resolving of a model's relative url
      */
     modelsBaseUrl?: string;
@@ -134,12 +110,12 @@ export interface BuildingState {
     /**
      * Identifier of the building's model
      */
-    modelId: Id;
+    buildingId: string;
 
     /**
      * Identifier of the floor's model
      */
-    floorId?: Id;
+    floorId?: string;
 }
 
 /**
