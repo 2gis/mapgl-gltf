@@ -4,7 +4,13 @@ import { GltfPlugin } from '../plugin';
 import { GltfFloorControl } from '../control';
 import classes from './realtyScene.module.css';
 
-import type { BuildingState, Id, ModelOptions, PluginOptions } from '../types/plugin';
+import {
+    ModelStatus,
+    type BuildingState,
+    type Id,
+    type ModelOptions,
+    type PluginOptions,
+} from '../types/plugin';
 import type {
     BuildingOptions,
     MapOptions,
@@ -78,44 +84,94 @@ export class RealtyScene {
 
     private setState(newState: RealtySceneState) {
         const prevState = this.state;
-
+        const buildingVisibility: RealtySceneState['buildingVisibility'] = new Map();
         this.buildings.forEach((_, buildingId) => {
             const prevModelOptions = prevState.buildingVisibility.get(buildingId);
             const newModelOptions = newState.buildingVisibility.get(buildingId);
-            if (prevModelOptions) {
+
+            if (prevModelOptions?.modelId === newModelOptions?.modelId) {
+                buildingVisibility.set(buildingId, prevModelOptions);
+                return;
+            }
+
+            if (
+                prevModelOptions &&
+                (!newModelOptions ||
+                    this.plugin.getModelStatus(newModelOptions.modelId) === ModelStatus.Loaded)
+            ) {
                 this.plugin.hideModel(prevModelOptions.modelId);
+                buildingVisibility.set(buildingId, undefined);
+
+                if (
+                    prevState.activeModelId !== undefined &&
+                    prevState.activeModelId === prevModelOptions.modelId &&
+                    this.undergroundFloors.has(prevModelOptions.modelId)
+                ) {
+                    this.switchOffGroundCovering();
+                }
             }
 
             if (newModelOptions) {
-                this.plugin.isModelAdded(newModelOptions.modelId)
-                    ? this.plugin.showModel(newModelOptions.modelId)
-                    : this.plugin.addModel(newModelOptions);
+                const modelStatus = this.plugin.getModelStatus(newModelOptions.modelId);
+                if (modelStatus === ModelStatus.Loaded) {
+                    this.plugin.showModel(newModelOptions.modelId);
+                    buildingVisibility.set(buildingId, newModelOptions);
+
+                    if (
+                        newState.activeModelId !== undefined &&
+                        newState.activeModelId === newModelOptions.modelId
+                    ) {
+                        const options =
+                            this.buildings.get(newModelOptions.modelId) ??
+                            this.floors.get(newModelOptions.modelId);
+
+                        if (options) {
+                            this.setMapOptions(options.mapOptions);
+                        }
+
+                        if (this.undergroundFloors.has(newModelOptions.modelId)) {
+                            this.switchOnGroundCovering();
+                        }
+                    }
+                } else {
+                    if (modelStatus === ModelStatus.NoModel) {
+                        this.plugin.addModel(newModelOptions, true).then(() => {
+                            if (this.state.activeModelId !== newModelOptions.modelId) {
+                                return;
+                            }
+
+                            const currModelOptions = this.state.buildingVisibility.get(buildingId);
+                            if (currModelOptions) {
+                                this.plugin.hideModel(currModelOptions.modelId);
+                                if (this.undergroundFloors.has(currModelOptions.modelId)) {
+                                    this.switchOffGroundCovering();
+                                }
+                            }
+
+                            this.plugin.showModel(newModelOptions.modelId);
+                            this.state.buildingVisibility.set(buildingId, newModelOptions);
+
+                            const options =
+                                this.buildings.get(newModelOptions.modelId) ??
+                                this.floors.get(newModelOptions.modelId);
+
+                            if (options) {
+                                this.setMapOptions(options.mapOptions);
+                            }
+
+                            if (this.undergroundFloors.has(newModelOptions.modelId)) {
+                                this.switchOnGroundCovering();
+                            }
+                        });
+                    }
+
+                    buildingVisibility.set(buildingId, prevModelOptions);
+                }
             }
         });
 
-        if (prevState.activeModelId !== newState.activeModelId) {
-            if (
-                prevState.activeModelId !== undefined &&
-                this.undergroundFloors.has(prevState.activeModelId)
-            ) {
-                this.switchOffGroundCovering();
-            }
-
-            if (newState.activeModelId !== undefined) {
-                const options =
-                    this.buildings.get(newState.activeModelId) ??
-                    this.floors.get(newState.activeModelId);
-                if (options) {
-                    this.setMapOptions(options.mapOptions);
-                    // this.addFloorPoi(activeFloor);
-                    // this.clearPoiGroups();
-                }
-
-                if (this.undergroundFloors.has(newState.activeModelId)) {
-                    this.switchOnGroundCovering();
-                }
-            }
-        }
+        // this.addFloorPoi(activeFloor);
+        // this.clearPoiGroups();
 
         const prevBuildingModelId = this.getBuildingModelId(prevState.activeModelId);
         const newBuildingModelId = this.getBuildingModelId(newState.activeModelId);
@@ -140,7 +196,10 @@ export class RealtyScene {
             }
         }
 
-        this.state = newState;
+        this.state = {
+            buildingVisibility,
+            activeModelId: newState.activeModelId,
+        };
     }
 
     public async init(scene: BuildingOptions[], state?: BuildingState) {

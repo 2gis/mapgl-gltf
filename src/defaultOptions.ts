@@ -1,9 +1,8 @@
 import type { PluginOptions } from './types/plugin';
 
 export const defaultOptions: Required<PluginOptions> = {
-    hoverHighlight: {
+    hoverOptions: {
         color: '#ffffff',
-        intencity: 0.0,
     },
     modelsBaseUrl: '',
     modelsLoadStrategy: 'waitAll',

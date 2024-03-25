@@ -10,10 +10,12 @@ import { concatUrl, isAbsoluteUrl } from './utils/url';
 import { createModelEventData } from './utils/events';
 import { RealtyScene } from './realtyScene/realtyScene';
 import { GROUND_COVERING_LAYER } from './constants';
+import { ModelStatus } from './types/plugin';
 
 interface Model {
     instance: any; // GltfModel
     options: ModelOptions;
+    isLoaded: boolean;
 }
 
 const MODEL_DEFAULTS = {
@@ -121,17 +123,25 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                     hideOnInit:
                         this.options.modelsLoadStrategy === 'waitAll' ||
                         (modelIdsToShow && !modelIdsToShow.includes(options.modelId)),
+                    hover: {
+                        color: this.options.hoverOptions.color,
+                    },
+                    disableAnimation: true,
                 });
 
-                const model = {
+                const model: Model = {
                     options,
                     instance,
+                    isLoaded: false,
                 };
 
                 this.models.set(options.modelId, model);
 
                 return new Promise<Model>((resolve) => {
-                    instance.once('modelloaded', () => resolve(model));
+                    instance.once('modelloaded', () => {
+                        model.isLoaded = true;
+                        resolve(model);
+                    });
                     (['click', 'mousemove', 'mouseover', 'mouseout'] as const).forEach(
                         (eventType) => {
                             instance.on(eventType, (ev) => {
@@ -155,8 +165,13 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
-    public isModelAdded(id: Id) {
-        return this.models.has(id);
+    public getModelStatus(id: Id) {
+        const model = this.models.get(id);
+        if (!model) {
+            return ModelStatus.NoModel;
+        }
+
+        return !model.isLoaded ? ModelStatus.Loading : ModelStatus.Loaded;
     }
 
     public removeModel(id: Id) {

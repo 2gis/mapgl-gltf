@@ -1,13 +1,5 @@
 export type Id = string;
 
-export type ColorModelString = `${'rgb' | 'hsl'}(${string})`;
-export type HexColorString = `#${string}`;
-
-/**
- * Color representation can be rgb(), hsl(), or hex value
- */
-export type ColorRepresentation = ColorModelString | HexColorString | number;
-
 /**
  * Configuration of the poi
  */
@@ -46,20 +38,14 @@ export interface ControlOptions {
 }
 
 /**
- * Options for the highlight color of hovered models
+ * Options for the hover state of models
  */
-export interface HightlightOptions {
-    // TODO: MAJOR. Rename to «HighlightOptions» in the next major release.
+export interface HoverOptions {
     /**
-     * Color of the hover
+     * Hover color
      * @default '#ffffff'
      */
-    color?: ColorRepresentation;
-    /**
-     * Intensity of the color on the hover in the range from 0 to 1
-     * @default 0.0
-     */
-    intencity: number; // TODO: MAJOR. Rename to «intensity» in the next major release.
+    color?: string;
 }
 
 /**
@@ -94,9 +80,9 @@ export interface PluginOptions {
      */
     floorsControl?: ControlOptions;
     /**
-     * Settings of the highlighted models
+     * Settings of the hovered models
      */
-    hoverHighlight?: HightlightOptions;
+    hoverOptions?: HoverOptions;
     /**
      * Color for the ground covering when an underground floor's plan is shown.
      */
@@ -234,4 +220,10 @@ export interface PoiGroupOptions {
      * Color of the poi's font
      */
     fontColor?: string;
+}
+
+export enum ModelStatus {
+    NoModel,
+    Loading,
+    Loaded,
 }
