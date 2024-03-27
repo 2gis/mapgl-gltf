@@ -6,16 +6,6 @@ export const defaultOptions: Required<PluginOptions> = {
     },
     modelsBaseUrl: '',
     modelsLoadStrategy: 'waitAll',
-    poiConfig: {
-        primary: {
-            fontSize: 14,
-            fontColor: '#000000',
-        },
-        secondary: {
-            fontSize: 14,
-            fontColor: '#000000',
-        },
-    },
     floorsControl: {
         position: 'centerLeft',
     },

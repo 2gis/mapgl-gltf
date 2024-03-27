@@ -1,18 +1,4 @@
-export type Id = string;
-
-/**
- * Configuration of the poi
- */
-export interface PoiConfigGranular {
-    /**
-     * Size of the font
-     */
-    fontSize?: number;
-    /**
-     * Color of the font
-     */
-    fontColor?: string;
-}
+import type { LabelImage } from '@2gis/mapgl/types';
 
 /**
  * Possible positions of the control.
@@ -45,7 +31,7 @@ export interface HoverOptions {
      * Hover color
      * @default '#ffffff'
      */
-    color?: string;
+    color: string;
 }
 
 /**
@@ -62,19 +48,6 @@ export interface PluginOptions {
      * - waitAll - show models only when all models are ready for the rendering
      */
     modelsLoadStrategy?: 'dontWaitAll' | 'waitAll';
-    /**
-     * Configuration of poi
-     */
-    poiConfig?: {
-        /**
-         * Configuration the primary poi
-         */
-        primary?: PoiConfigGranular;
-        /**
-         * Configuration the secondary poi
-         */
-        secondary?: PoiConfigGranular;
-    };
     /**
      * Settings for floors' control
      */
@@ -111,7 +84,7 @@ export interface ModelOptions {
     /**
      * Identifier of the model should be unique for every model
      */
-    modelId: Id;
+    modelId: string;
     /**
      * Geographical coordinates [longitude, latitude]
      */
@@ -165,7 +138,7 @@ export interface ModelOptions {
 /**
  * Options for a poi
  */
-export interface PoiOptions {
+export interface LabelOptions {
     /**
      * Coordinate of the poi
      */
@@ -177,7 +150,7 @@ export interface PoiOptions {
     /**
      * Elevation of the poi
      */
-    label: string;
+    text: string;
     /**
      * User specific data
      */
@@ -187,15 +160,11 @@ export interface PoiOptions {
 /**
  * Options for a poi group
  */
-export interface PoiGroupOptions {
+export interface LabelGroupOptions {
     /**
      * Identifier of the poi group to add
      */
-    id: Id;
-    /**
-     * Type of the poi
-     */
-    type: 'primary' | 'secondary';
+    id: string;
     /**
      * Elevation of the group of poi
      */
@@ -203,7 +172,11 @@ export interface PoiGroupOptions {
     /**
      * Array of poi to add on the map
      */
-    data: PoiOptions[];
+    labels: LabelOptions[];
+    /**
+     * Type of the poi
+     */
+    image?: LabelImage;
     /**
      * Minimum display styleZoom of the poi group
      */

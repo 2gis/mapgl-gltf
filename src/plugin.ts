@@ -1,7 +1,7 @@
-import type { Map as MapGL } from '@2gis/mapgl/types';
+import type { DynamicObjectEventTable, GltfModel, Map as MapGL } from '@2gis/mapgl/types';
 import type { BuildingOptions } from './types/realtyScene';
 import type { GltfPluginEventTable } from './types/events';
-import type { Id, PluginOptions, ModelOptions, BuildingState } from './types/plugin';
+import type { PluginOptions, ModelOptions, BuildingState, LabelGroupOptions } from './types/plugin';
 
 import { applyOptionalDefaults } from './utils/common';
 import { Evented } from './external/evented';
@@ -9,11 +9,12 @@ import { defaultOptions } from './defaultOptions';
 import { concatUrl, isAbsoluteUrl } from './utils/url';
 import { createModelEventData } from './utils/events';
 import { RealtyScene } from './realtyScene/realtyScene';
-import { GROUND_COVERING_LAYER } from './constants';
 import { ModelStatus } from './types/plugin';
+import { pluginEvents } from './constants';
+import { LabelGroups } from './labelGroups';
 
 interface Model {
-    instance: any; // GltfModel
+    instance: GltfModel;
     options: ModelOptions;
     isLoaded: boolean;
 }
@@ -29,7 +30,8 @@ const MODEL_DEFAULTS = {
 export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private map: MapGL;
     private options: Required<PluginOptions>;
-    private models: Map<Id, Model>;
+    private models: Map<string, Model>;
+    private labelGroups: LabelGroups;
     private realtyScene?: RealtyScene;
 
     /**
@@ -61,14 +63,17 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.map = map;
         this.options = applyOptionalDefaults(pluginOptions ?? {}, defaultOptions);
         this.models = new Map();
-
-        map.on('styleload', () => {
-            this.map.addLayer(GROUND_COVERING_LAYER); // мб унести отсюда в RealtyScene, нужно подумать
-            // this.poiGroups.onMapStyleUpdate();
-        });
+        this.labelGroups = new LabelGroups(this.map, this);
     }
 
-    // public destroy() {}
+    public destroy() {
+        this.models.forEach((model) => {
+            model.instance.destroy();
+        });
+        this.models.clear();
+        this.labelGroups.destroy();
+        this.realtyScene?.destroy();
+    }
 
     public setOptions(pluginOptions: Pick<Required<PluginOptions>, 'groundCoveringColor'>) {
         Object.keys(pluginOptions).forEach((option) => {
@@ -86,7 +91,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         return this.addModels([modelToLoad], hideOnLoad ? [] : [modelToLoad.modelId]);
     }
 
-    public async addModels(modelsToLoad: ModelOptions[], modelIdsToShow?: Id[]) {
+    public async addModels(modelsToLoad: ModelOptions[], modelIdsToShow?: string[]) {
         const loadingModels = modelsToLoad
             .filter((options) => {
                 if (this.models.has(options.modelId)) {
@@ -138,17 +143,15 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                 this.models.set(options.modelId, model);
 
                 return new Promise<Model>((resolve) => {
-                    instance.once('modelloaded', () => {
+                    instance.once('modelloaded' as keyof DynamicObjectEventTable, () => {
                         model.isLoaded = true;
                         resolve(model);
                     });
-                    (['click', 'mousemove', 'mouseover', 'mouseout'] as const).forEach(
-                        (eventType) => {
-                            instance.on(eventType, (ev) => {
-                                this.emit(eventType, createModelEventData(ev, options));
-                            });
-                        },
-                    );
+                    pluginEvents.forEach((eventType) => {
+                        instance.on(eventType, (ev) => {
+                            this.emit(eventType, createModelEventData(ev, options));
+                        });
+                    });
                 });
             });
 
@@ -165,7 +168,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
-    public getModelStatus(id: Id) {
+    public getModelStatus(id: string) {
         const model = this.models.get(id);
         if (!model) {
             return ModelStatus.NoModel;
@@ -174,7 +177,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         return !model.isLoaded ? ModelStatus.Loading : ModelStatus.Loaded;
     }
 
-    public removeModel(id: Id) {
+    public removeModel(id: string) {
         const model = this.models.get(id);
         if (model) {
             model.instance.destroy();
@@ -182,34 +185,38 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         }
     }
 
-    public removeModels(ids: Id[]) {
+    public removeModels(ids: string[]) {
         ids.forEach((id) => this.removeModel(id));
     }
 
-    public showModel(id: Id) {
+    public showModel(id: string) {
         this.models.get(id)?.instance.show();
     }
 
-    public showModels(ids: Id[]) {
+    public showModels(ids: string[]) {
         ids.forEach((id) => this.showModel(id));
     }
 
-    public hideModel(id: Id) {
+    public hideModel(id: string) {
         this.models.get(id)?.instance.hide();
     }
 
-    public hideModels(ids: Id[]) {
+    public hideModels(ids: string[]) {
         ids.forEach((id) => this.hideModel(id));
+    }
+
+    public addLabelGroup(options: LabelGroupOptions, state?: BuildingState) {
+        this.labelGroups.add(options, state);
+    }
+
+    public removeLabelGroup(id: string) {
+        this.labelGroups.remove(id);
     }
 
     public async addRealtyScene(scene: BuildingOptions[], state?: BuildingState) {
         this.realtyScene = new RealtyScene(this, this.map, this.options);
         return this.realtyScene.init(scene, state);
     }
-
-    // public showRealtyScene() {}
-
-    // public hideRealtyScene() {}
 
     public removeRealtyScene() {
         this.realtyScene?.destroy();

@@ -1,21 +1,4 @@
-import type { Id, ModelOptions, PoiOptions } from './plugin';
-
-export type PoiGeoJsonProperties = PoiOptions & {
-    /**
-     * Identifier of the building's model
-     */
-    modelId?: Id;
-
-    /**
-     * Identifier of the floor's model
-     */
-    floorId?: Id;
-
-    /**
-     * Type of the poi
-     */
-    type?: string;
-};
+import type { ModelOptions, LabelOptions } from './plugin';
 
 export interface ModelTarget {
     /**
@@ -31,29 +14,29 @@ export interface ModelTarget {
     /**
      * Identifier of the building's or floor's model
      */
-    modelId: Id;
+    modelId: string;
 }
 
-export interface PoiTarget {
+export interface LabelTarget {
     /**
      * Type of the target
      */
-    type: 'poi';
+    type: 'label';
 
     /**
      * The targeted poi
      */
-    data: PoiGeoJsonProperties;
+    data: LabelOptions;
 
     /**
      * Identifier of the building's model
      */
-    modelId?: Id;
+    buildingId?: string;
 
     /**
      * Identifier of the current floor
      */
-    floorId?: Id;
+    floorId?: string;
 }
 
 /**
@@ -79,11 +62,11 @@ interface GltfPluginPointerEvent {
 /**
  * The event type for pointer-related plugin events emitted by the poi
  */
-export interface GltfPluginPoiEvent extends GltfPluginPointerEvent {
+export interface GltfPluginLabelEvent extends GltfPluginPointerEvent {
     /**
      * Target of the poi event
      */
-    target: PoiTarget;
+    target: LabelTarget;
 }
 
 /**
@@ -103,17 +86,17 @@ export interface GltfPluginEventTable {
     /**
      * Emitted when model or poi are clicked
      */
-    click: GltfPluginPoiEvent | GltfPluginModelEvent;
+    click: GltfPluginLabelEvent | GltfPluginModelEvent;
     /**
      * Emitted when the user moves the pointer over the model or the poi
      */
-    mousemove: GltfPluginPoiEvent | GltfPluginModelEvent;
+    mousemove: GltfPluginLabelEvent | GltfPluginModelEvent;
     /**
      * Emitted when the user hovers over the model or the poi
      */
-    mouseover: GltfPluginPoiEvent | GltfPluginModelEvent;
+    mouseover: GltfPluginLabelEvent | GltfPluginModelEvent;
     /**
      * Emitted when the user moves the mouse away from the model or the poi
      */
-    mouseout: GltfPluginPoiEvent | GltfPluginModelEvent;
+    mouseout: GltfPluginLabelEvent | GltfPluginModelEvent;
 }

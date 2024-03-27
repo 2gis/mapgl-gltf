@@ -1,5 +1,7 @@
 import type { GeoJsonSourceOptions } from '@2gis/mapgl/types';
 
+export const PLUGIN_PREFIX = '__mapglPlugins_mapgl-gltf2';
+
 export const GROUND_COVERING_SOURCE_DATA: GeoJsonSourceOptions['data'] = {
     type: 'Feature',
     properties: {},
@@ -17,9 +19,10 @@ export const GROUND_COVERING_SOURCE_DATA: GeoJsonSourceOptions['data'] = {
     },
 };
 
-export const GROUND_COVERING_SOURCE_PURPOSE = '__mapglPlugins_mapgl-gltf';
+export const GROUND_COVERING_SOURCE_PURPOSE = `${PLUGIN_PREFIX}-covering`;
+export const GROUND_COVERING_LAYER_ID = `${PLUGIN_PREFIX}-covering`;
 export const GROUND_COVERING_LAYER = {
-    id: '__mapglPlugins_mapgl-gltf',
+    id: GROUND_COVERING_LAYER_ID,
     type: 'polygon',
     style: {
         color: ['to-color', ['sourceAttr', 'color']],
@@ -30,3 +33,5 @@ export const GROUND_COVERING_LAYER = {
         ['to-boolean', ['sourceAttr', 'color']],
     ],
 };
+
+export const pluginEvents = ['click', 'mousemove', 'mouseover', 'mouseout'] as const;

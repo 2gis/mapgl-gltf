@@ -1,4 +1,5 @@
-import type { Id, PoiGroupOptions, ModelOptions } from './plugin';
+import { FloorLevel } from '../control/types';
+import type { ModelOptions, LabelGroupOptions } from './plugin';
 
 /**
  * Options for the map
@@ -29,7 +30,7 @@ export interface BuildingFloorOptions {
     /**
      * Identifier of the floor's plan
      */
-    id: Id;
+    id: string;
     /**
      * Text to add to the floors' control
      */
@@ -45,7 +46,7 @@ export interface BuildingFloorOptions {
     /**
      * List of poi groups connected with the floor's plan
      */
-    poiGroups?: PoiGroupOptions[];
+    labelGroups?: LabelGroupOptions[];
     /**
      * Map's options to apply after selecting the particular floor
      */
@@ -93,3 +94,18 @@ export interface BuildingOptions extends ModelOptions {
      */
     popupOptions?: PopupOptions;
 }
+
+export interface RealtySceneState {
+    activeModelId?: string;
+
+    // id здания мапится на опции здания или опции этажа этого здания
+    buildingVisibility: Map<string, ModelOptions | undefined>;
+}
+
+export type BuildingOptionsInternal = Omit<BuildingOptions, 'floors'> & {
+    floors: FloorLevel[];
+};
+
+export type BuildingFloorOptionsInternal = BuildingFloorOptions & {
+    buildingOptions: ModelOptions;
+};
