@@ -15,7 +15,6 @@ async function start() {
         pitch: 45,
         rotation: 330,
         enableTrackResize: true,
-        webglVersion: 1,
     });
 
     (window as any).map = map;
