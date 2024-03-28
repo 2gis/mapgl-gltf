@@ -1,5 +1,5 @@
 /**
- * Event emitter
+ * Event emitter.
  */
 export class Evented<M> {
     private events: { [K in keyof M]?: Array<(ev: M[K]) => void> };
@@ -12,9 +12,10 @@ export class Evented<M> {
     }
 
     /**
-     * Registers event listener
-     * @param type Event type
-     * @param listener Event handler
+     * Registers event listener.
+     *
+     * @param type Event type.
+     * @param listener Event handler.
      */
     public on<K extends keyof M>(type: K, listener: (ev: M[K]) => void): this {
         let eventsByType = this.events[type];
@@ -26,9 +27,10 @@ export class Evented<M> {
     }
 
     /**
-     * Registers event listener which will be called once
-     * @param type Event type
-     * @param listener Event handler
+     * Registers event listener which will be called once.
+     *
+     * @param type Event type.
+     * @param listener Event handler.
      */
     public once<K extends keyof M>(type: K, listener: (ev: M[K]) => void): this {
         const wrapper = (data: M[K]) => {
@@ -42,9 +44,10 @@ export class Evented<M> {
     }
 
     /**
-     * Removes event listener registered with `on`
-     * @param type Event type
-     * @param listener Event handler
+     * Removes event listener registered with `on`.
+     *
+     * @param type Event type.
+     * @param listener Event handler.
      */
     public off<K extends keyof M>(type: K, listener: (ev: M[K]) => void): this {
         const eventsByType = this.events[type];
@@ -63,9 +66,10 @@ export class Evented<M> {
     }
 
     /**
-     * Calls all event listeners with event type `type`
-     * @param type Event type
-     * @param data Data transferred to events
+     * Calls all event listeners with event type `type`.
+     *
+     * @param type Event type.
+     * @param data Data transferred to events.
      */
     public emit<K extends keyof M>(type: K, data?: M[K]): this {
         const eventsByType = this.events[type];

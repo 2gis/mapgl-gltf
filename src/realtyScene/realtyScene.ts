@@ -4,45 +4,49 @@ import { GltfPlugin } from '../plugin';
 import { GltfFloorControl } from '../control';
 import classes from './realtyScene.module.css';
 
-import type { BuildingState, Id, ModelOptions, PluginOptions } from '../types/plugin';
+import {
+    ModelStatus,
+    type BuildingState,
+    type ModelOptions,
+    type PluginOptions,
+} from '../types/plugin';
 import type {
     BuildingOptions,
     MapOptions,
-    BuildingFloorOptions,
     PopupOptions,
+    BuildingOptionsInternal,
+    BuildingFloorOptionsInternal,
+    RealtySceneState,
 } from '../types/realtyScene';
-import type { FloorLevel, FloorChangeEvent } from '../control/types';
-import type { GltfPluginModelEvent, GltfPluginPoiEvent } from '../types/events';
-import { GROUND_COVERING_SOURCE_DATA, GROUND_COVERING_SOURCE_PURPOSE } from '../constants';
-
-interface RealtySceneState {
-    activeModelId?: Id;
-
-    // id здания мапится на опции здания или опции этажа этого здания
-    buildingVisibility: Map<Id, ModelOptions | undefined>;
-}
-
-type BuildingOptionsInternal = Omit<BuildingOptions, 'floors'> & {
-    floors: FloorLevel[];
-};
-type BuildingFloorOptionsInternal = BuildingFloorOptions & {
-    buildingOptions: ModelOptions;
-};
+import type { FloorChangeEvent } from '../control/types';
+import type { GltfPluginModelEvent, GltfPluginLabelEvent } from '../types/events';
+import {
+    GROUND_COVERING_SOURCE_DATA,
+    GROUND_COVERING_SOURCE_PURPOSE,
+    GROUND_COVERING_LAYER,
+    GROUND_COVERING_LAYER_ID,
+} from '../constants';
+import {
+    getBuildingModelOptions,
+    getFloorModelId,
+    getFloorModelOptions,
+    getFloorPoiGroupId,
+    isObject,
+} from '../utils/realtyScene';
 
 export class RealtyScene {
-    private buildings = new Map<Id, BuildingOptionsInternal>();
-    private floors = new Map<Id, BuildingFloorOptionsInternal>();
-    private undergroundFloors = new Set<Id>();
+    private buildings = new Map<string, BuildingOptionsInternal>();
+    private floors = new Map<string, BuildingFloorOptionsInternal>();
+    private undergroundFloors = new Set<string>();
     private state: RealtySceneState = {
         activeModelId: undefined,
         buildingVisibility: new Map(),
     };
+    private isDestroyed = false;
 
     private groundCoveringSource: GeoJsonSource;
     private control: GltfFloorControl;
     private popup?: HtmlMarker;
-
-    // private poiGroups: PoiGroups;
 
     constructor(
         private plugin: GltfPlugin,
@@ -51,7 +55,6 @@ export class RealtyScene {
     ) {
         const { position } = this.options.floorsControl;
         this.control = new GltfFloorControl(this.map, { position });
-        // this.poiGroups = new PoiGroups(this.map, this.options.poiConfig);
         this.groundCoveringSource = new mapgl.GeoJsonSource(map, {
             maxZoom: 2,
             data: GROUND_COVERING_SOURCE_DATA,
@@ -59,9 +62,12 @@ export class RealtyScene {
                 purpose: GROUND_COVERING_SOURCE_PURPOSE,
             },
         });
+
+        this.map.addLayer(GROUND_COVERING_LAYER);
+        map.on('styleload', this.onStyleLoad);
     }
 
-    private getBuildingModelId(id: Id | undefined) {
+    private getBuildingModelId(id: string | undefined) {
         if (id === undefined) {
             return;
         }
@@ -79,44 +85,109 @@ export class RealtyScene {
     private setState(newState: RealtySceneState) {
         const prevState = this.state;
 
+        // т.к. стейт может меняться асинхронно и иногда нужно показывать
+        // предыдущую модель некоторое время, реальный стейт заполняется тут,
+        // а выставление нужного будет отложено на время загрузки модели
+        const buildingVisibility: Map<string, ModelOptions | undefined> = new Map();
+
         this.buildings.forEach((_, buildingId) => {
             const prevModelOptions = prevState.buildingVisibility.get(buildingId);
             const newModelOptions = newState.buildingVisibility.get(buildingId);
+
+            // если опции не изменились, то ничего не делаем
+            if (prevModelOptions?.modelId === newModelOptions?.modelId) {
+                buildingVisibility.set(buildingId, prevModelOptions);
+                return;
+            }
+
             if (prevModelOptions) {
-                this.plugin.hideModel(prevModelOptions.modelId);
+                // если нужно отобразить подземный этаж, но его модель не готова, то ничего не скрываем
+                if (
+                    !newModelOptions &&
+                    newState.activeModelId !== undefined &&
+                    this.undergroundFloors.has(newState.activeModelId) &&
+                    this.plugin.getModelStatus(newState.activeModelId) !== ModelStatus.Loaded
+                ) {
+                    buildingVisibility.set(buildingId, prevModelOptions);
+                } else if (
+                    // если новая модель готова или предыдущую нужно просто скрыть, то скрываем ее
+                    !newModelOptions ||
+                    this.plugin.getModelStatus(newModelOptions.modelId) === ModelStatus.Loaded
+                ) {
+                    this.plugin.hideModel(prevModelOptions.modelId);
+                    buildingVisibility.set(buildingId, undefined);
+
+                    if (this.undergroundFloors.has(prevModelOptions.modelId)) {
+                        this.switchOffGroundCovering();
+                    }
+
+                    const floorOptions = this.floors.get(prevModelOptions.modelId);
+                    if (floorOptions) {
+                        floorOptions.labelGroups?.forEach((group) => {
+                            this.plugin.removeLabelGroup(group.id);
+                        });
+                    }
+                }
             }
 
             if (newModelOptions) {
-                this.plugin.isModelAdded(newModelOptions.modelId)
-                    ? this.plugin.showModel(newModelOptions.modelId)
-                    : this.plugin.addModel(newModelOptions);
+                const modelStatus = this.plugin.getModelStatus(newModelOptions.modelId);
+
+                // если новая модель готова, то показываем ее
+                if (modelStatus === ModelStatus.Loaded) {
+                    this.plugin.showModel(newModelOptions.modelId);
+                    buildingVisibility.set(buildingId, newModelOptions);
+
+                    // если модель активна, то применяем опции карты и включаем подложку, если нужно
+                    if (
+                        newState.activeModelId !== undefined &&
+                        newState.activeModelId === newModelOptions.modelId
+                    ) {
+                        const options =
+                            this.buildings.get(newModelOptions.modelId) ??
+                            this.floors.get(newModelOptions.modelId);
+
+                        if (options) {
+                            this.setMapOptions(options.mapOptions);
+                        }
+
+                        if (this.undergroundFloors.has(newModelOptions.modelId)) {
+                            this.switchOnGroundCovering();
+                        }
+
+                        const floorOptions = this.floors.get(newModelOptions.modelId);
+                        if (floorOptions) {
+                            floorOptions.labelGroups?.forEach((group) => {
+                                this.plugin.addLabelGroup(group, {
+                                    buildingId,
+                                    floorId: floorOptions.id,
+                                });
+                            });
+                        }
+                    }
+                } else {
+                    if (modelStatus === ModelStatus.NoModel) {
+                        this.plugin.addModel(newModelOptions, true).then(() => {
+                            if (this.isDestroyed) {
+                                return;
+                            }
+
+                            if (this.state.activeModelId !== newModelOptions.modelId) {
+                                return;
+                            }
+
+                            // откладываем выставление нужного стейта до момента загрузки модели
+                            this.setState(newState);
+                        });
+                    }
+
+                    // если новые модели не готовы, то пока показываем предыдущие
+                    buildingVisibility.set(buildingId, prevModelOptions);
+                }
             }
         });
 
-        if (prevState.activeModelId !== newState.activeModelId) {
-            if (
-                prevState.activeModelId !== undefined &&
-                this.undergroundFloors.has(prevState.activeModelId)
-            ) {
-                this.switchOffGroundCovering();
-            }
-
-            if (newState.activeModelId !== undefined) {
-                const options =
-                    this.buildings.get(newState.activeModelId) ??
-                    this.floors.get(newState.activeModelId);
-                if (options) {
-                    this.setMapOptions(options.mapOptions);
-                    // this.addFloorPoi(activeFloor);
-                    // this.clearPoiGroups();
-                }
-
-                if (this.undergroundFloors.has(newState.activeModelId)) {
-                    this.switchOnGroundCovering();
-                }
-            }
-        }
-
+        // контрол реагирует на изменения стейта сразу, без учета загрузки модели, т.к. завязан на здание в целом
         const prevBuildingModelId = this.getBuildingModelId(prevState.activeModelId);
         const newBuildingModelId = this.getBuildingModelId(newState.activeModelId);
 
@@ -140,12 +211,15 @@ export class RealtyScene {
             }
         }
 
-        this.state = newState;
+        this.state = {
+            buildingVisibility,
+            activeModelId: newState.activeModelId,
+        };
     }
 
     public async init(scene: BuildingOptions[], state?: BuildingState) {
         // Приводим стейт пользователя к внутреннему виду id
-        let activeModelId: Id | undefined = state
+        let activeModelId: string | undefined = state
             ? state.floorId
                 ? getFloorModelId(state.buildingId, state.floorId)
                 : state.buildingId
@@ -169,6 +243,10 @@ export class RealtyScene {
 
                 this.floors.set(floorModelId, {
                     ...floor,
+                    labelGroups: (floor.labelGroups ?? []).map((group) => ({
+                        ...group,
+                        id: getFloorPoiGroupId(building.modelId, floor.id, group.id),
+                    })),
                     buildingOptions: buildingOptions,
                 });
 
@@ -187,8 +265,8 @@ export class RealtyScene {
                 ? activeModelId
                 : undefined;
 
-        const modelsToLoad: Map<Id, ModelOptions> = new Map();
-        const buildingVisibility: Map<Id, ModelOptions> = new Map();
+        const modelsToLoad: Map<string, ModelOptions> = new Map();
+        const buildingVisibility: Map<string, ModelOptions> = new Map();
 
         this.buildings.forEach((options, id) => {
             const modelOptions = getBuildingModelOptions(options);
@@ -198,6 +276,7 @@ export class RealtyScene {
 
         if (activeModelId) {
             const floorOptions = this.floors.get(activeModelId);
+
             if (floorOptions) {
                 if (this.undergroundFloors.has(activeModelId)) {
                     buildingVisibility.clear(); // показываем только подземный этаж
@@ -218,6 +297,10 @@ export class RealtyScene {
         return this.plugin
             .addModels(Array.from(modelsToLoad.values()), Array.from(buildingVisibility.keys()))
             .then(() => {
+                if (this.isDestroyed) {
+                    return;
+                }
+
                 this.setState({
                     activeModelId,
                     buildingVisibility,
@@ -241,14 +324,20 @@ export class RealtyScene {
     }
 
     public destroy() {
+        this.isDestroyed = true;
+        this.map.off('styleload', this.onStyleLoad);
         this.plugin.off('click', this.onSceneClick);
         this.plugin.off('mouseover', this.onSceneMouseOver);
         this.plugin.off('mouseout', this.onSceneMouseOut);
         this.control.off('floorchange', this.floorChangeHandler);
 
+        this.floors.forEach(({ labelGroups }) => {
+            labelGroups?.forEach(({ id }) => {
+                this.plugin.removeLabelGroup(id);
+            });
+        });
         this.plugin.removeModels([...this.buildings.keys(), ...this.floors.keys()]);
-
-        // this.clearPoiGroups();
+        this.map.removeLayer(GROUND_COVERING_LAYER_ID);
 
         this.groundCoveringSource.destroy();
         this.undergroundFloors.clear();
@@ -288,7 +377,11 @@ export class RealtyScene {
         }
     }
 
-    private onSceneMouseOut = (ev: GltfPluginPoiEvent | GltfPluginModelEvent) => {
+    private onStyleLoad = () => {
+        this.map.addLayer(GROUND_COVERING_LAYER);
+    };
+
+    private onSceneMouseOut = (ev: GltfPluginLabelEvent | GltfPluginModelEvent) => {
         if (ev.target.type !== 'model') {
             return;
         }
@@ -296,8 +389,8 @@ export class RealtyScene {
         this.popup?.destroy();
     };
 
-    private onSceneMouseOver = ({ target }: GltfPluginPoiEvent | GltfPluginModelEvent) => {
-        if (target.type === 'poi' || target.modelId === undefined) {
+    private onSceneMouseOver = ({ target }: GltfPluginLabelEvent | GltfPluginModelEvent) => {
+        if (target.type === 'label' || target.modelId === undefined) {
             return;
         }
 
@@ -313,13 +406,13 @@ export class RealtyScene {
         });
     };
 
-    private onSceneClick = ({ target }: GltfPluginPoiEvent | GltfPluginModelEvent) => {
+    private onSceneClick = ({ target }: GltfPluginLabelEvent | GltfPluginModelEvent) => {
         if (target.type === 'model') {
             const options = this.buildings.get(target.modelId);
             if (options) {
                 this.buildingClickHandler(target.modelId);
             }
-        } else if (target.type === 'poi') {
+        } else if (target.type === 'label') {
             const userData = target.data.userData;
             if (isObject(userData) && typeof userData.url === 'string') {
                 const a = document.createElement('a');
@@ -331,7 +424,7 @@ export class RealtyScene {
     };
 
     private floorChangeHandler = (ev: FloorChangeEvent) => {
-        const buildingVisibility: Map<Id, ModelOptions> = new Map();
+        const buildingVisibility: Map<string, ModelOptions> = new Map();
         this.buildings.forEach((options, id) => {
             buildingVisibility.set(id, getBuildingModelOptions(options));
         });
@@ -361,14 +454,14 @@ export class RealtyScene {
         }
     };
 
-    private buildingClickHandler = (modelId: Id) => {
+    private buildingClickHandler = (modelId: string) => {
         const buildingOptions = this.buildings.get(modelId);
         if (!buildingOptions) {
             return;
         }
 
         let activeModelId = modelId;
-        const buildingVisibility: Map<Id, ModelOptions> = new Map();
+        const buildingVisibility: Map<string, ModelOptions> = new Map();
         this.buildings.forEach((options, id) => {
             buildingVisibility.set(id, getBuildingModelOptions(options));
         });
@@ -396,55 +489,6 @@ export class RealtyScene {
         });
     };
 
-    // private addFloorPoi(floorOptions?: BuildingFloorOptions) {
-    //     if (floorOptions === undefined) {
-    //         return;
-    //     }
-
-    //     this.activeModelId = floorOptions.id;
-
-    //     this.setMapOptions(floorOptions?.mapOptions);
-
-    //     this.clearPoiGroups();
-
-    //     floorOptions.poiGroups?.forEach((poiGroup) => {
-    //         if (this.activeBuilding?.modelId) {
-    //             this.plugin.addPoiGroup(poiGroup, {
-    //                 modelId: this.activeBuilding?.modelId,
-    //                 floorId: floorOptions.id,
-    //             });
-    //             this.activePoiGroupIds.push(poiGroup.id);
-    //         }
-    //     });
-    // }
-
-    // private clearPoiGroups() {
-    //     this.activePoiGroupIds.forEach((id) => {
-    //         this.plugin.removePoiGroup(id);
-    //     });
-
-    //     this.activePoiGroupIds = [];
-    // }
-
-    // /**
-    //  * Add the group of poi to the map
-    //  *
-    //  * @param options Options of the group of poi to add to the map
-    //  * @param state State of the active building to connect with added the group of poi
-    //  */
-    // public async addPoiGroup(options: PoiGroupOptions, state?: BuildingState) {
-    //     this.poiGroups.add(options, state);
-    // }
-
-    // /**
-    //  * Remove the group of poi from the map
-    //  *
-    //  * @param id Identifier of the group of poi to remove
-    //  */
-    // public removePoiGroup(id: Id) {
-    //     this.poiGroups.remove(id);
-    // }
-
     private switchOffGroundCovering() {
         const attrs = { ...this.groundCoveringSource.getAttributes() };
         delete attrs['color'];
@@ -459,54 +503,8 @@ export class RealtyScene {
     }
 }
 
-function getBuildingModelOptions(building: BuildingOptionsInternal): ModelOptions {
-    return {
-        modelId: building.modelId,
-        coordinates: building.coordinates,
-        modelUrl: building.modelUrl,
-        rotateX: building.rotateX,
-        rotateY: building.rotateY,
-        rotateZ: building.rotateZ,
-        offsetX: building.offsetX,
-        offsetY: building.offsetY,
-        offsetZ: building.offsetZ,
-        scale: building.scale,
-        linkedIds: building.linkedIds,
-        interactive: building.interactive,
-    };
-}
-
-function getFloorModelOptions({
-    buildingOptions,
-    id,
-    modelUrl,
-}: BuildingFloorOptionsInternal): ModelOptions {
-    return {
-        modelId: getFloorModelId(buildingOptions.modelId, id),
-        coordinates: buildingOptions.coordinates,
-        modelUrl,
-        rotateX: buildingOptions.rotateX,
-        rotateY: buildingOptions.rotateY,
-        rotateZ: buildingOptions.rotateZ,
-        offsetX: buildingOptions.offsetX,
-        offsetY: buildingOptions.offsetY,
-        offsetZ: buildingOptions.offsetZ,
-        scale: buildingOptions.scale,
-        linkedIds: buildingOptions.linkedIds,
-        interactive: buildingOptions.interactive,
-    };
-}
-
-function getFloorModelId(buildingModelId: string, floorId: string) {
-    return `${buildingModelId}_${floorId}`;
-}
-
 const getPopupHtml = ({ description, title }: PopupOptions) =>
     `<div class="${classes.popup}">
         <h2>${title}</h2>
         ${description ? `<p>${description}</p>` : ''}
     </div>`;
-
-function isObject(value: unknown): value is Record<string, unknown> {
-    return typeof value === 'object' && value !== null && !Array.isArray(value);
-}

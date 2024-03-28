@@ -8,4 +8,4 @@ export const WAIT_FOR_TIMEOUT = 150000;
 export const MAP_CENTER = [82.920412, 55.030111];
 export const MAP_ZOOM = 6;
 
-export const API_KEY = 'cb20c5bf-34d3-4f0e-9b2b-33e9b8edb57f';
+export const API_KEY = '4970330e-7f1c-4921-808c-0eb7c4e63001';

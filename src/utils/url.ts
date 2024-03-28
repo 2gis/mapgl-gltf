@@ -11,10 +11,10 @@ export function concatUrl(baseUrl: string, path: string) {
 }
 
 /**
- * Checks whether passed url is absolute, i.e. it begins
+ * Checks whether passed URL is absolute, i.e. it begins
  * with http://, https:// or //
  *
- * @param url - checked url
+ * @param url - checked URL
  */
 export function isAbsoluteUrl(url: string): boolean {
     return /^https?:\/\//i.test(url);

@@ -1,11 +1,3 @@
-export function clamp(value: number, min: number, max: number): number {
-    value = Math.max(value, min);
-    value = Math.min(value, max);
-    return value;
-}
-
-export type RequiredExcept<T, K extends keyof T> = T & Required<Omit<T, K>>;
-
 type RequiredOptional<T extends object> = Exclude<
     {
         [K in keyof T]: T extends Record<K, T[K]> ? never : K;

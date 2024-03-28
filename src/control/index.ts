@@ -5,7 +5,6 @@ import icon_building from 'raw-loader!./icon_building.svg';
 import icon_parking from 'raw-loader!./icon_parking.svg';
 import classes from './control.module.css';
 import { Control } from './control';
-import { Id } from '../types';
 
 const content = /* HTML */ `
     <div class="${classes.root}">
@@ -23,7 +22,7 @@ const content = /* HTML */ `
 `;
 
 /**
- * A control for change floor layer level on the plugin.
+ * A control for change floor layer level in the plugin.
  * It appears on the map only if you set the `floorControl` option within @type PluginOptions to `true`.
  * @hidden
  * @internal
@@ -120,7 +119,7 @@ export class GltfFloorControl extends Control {
         });
     }
 
-    private _controlHandler = (modelId: Id) => () => {
+    private _controlHandler = (modelId: string) => () => {
         this._switchCurrentFloorLevel(modelId);
 
         this.emit('floorchange', {
@@ -128,7 +127,7 @@ export class GltfFloorControl extends Control {
         });
     };
 
-    private _switchCurrentFloorLevel(modelId: Id) {
+    private _switchCurrentFloorLevel(modelId: string) {
         if (this._currentFloorId === undefined) {
             return;
         }
