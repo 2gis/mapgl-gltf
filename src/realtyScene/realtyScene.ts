@@ -42,6 +42,7 @@ export class RealtyScene {
         activeModelId: undefined,
         buildingVisibility: new Map(),
     };
+    private isDestroyed = false;
 
     private groundCoveringSource: GeoJsonSource;
     private control: GltfFloorControl;
@@ -167,6 +168,10 @@ export class RealtyScene {
                 } else {
                     if (modelStatus === ModelStatus.NoModel) {
                         this.plugin.addModel(newModelOptions, true).then(() => {
+                            if (this.isDestroyed) {
+                                return;
+                            }
+
                             if (this.state.activeModelId !== newModelOptions.modelId) {
                                 return;
                             }
@@ -292,6 +297,10 @@ export class RealtyScene {
         return this.plugin
             .addModels(Array.from(modelsToLoad.values()), Array.from(buildingVisibility.keys()))
             .then(() => {
+                if (this.isDestroyed) {
+                    return;
+                }
+
                 this.setState({
                     activeModelId,
                     buildingVisibility,
@@ -315,6 +324,7 @@ export class RealtyScene {
     }
 
     public destroy() {
+        this.isDestroyed = true;
         this.map.off('styleload', this.onStyleLoad);
         this.plugin.off('click', this.onSceneClick);
         this.plugin.off('mouseover', this.onSceneMouseOver);
@@ -367,9 +377,9 @@ export class RealtyScene {
         }
     }
 
-    private onStyleLoad() {
+    private onStyleLoad = () => {
         this.map.addLayer(GROUND_COVERING_LAYER);
-    }
+    };
 
     private onSceneMouseOut = (ev: GltfPluginLabelEvent | GltfPluginModelEvent) => {
         if (ev.target.type !== 'model') {

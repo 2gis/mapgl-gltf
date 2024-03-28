@@ -22,7 +22,7 @@ const content = /* HTML */ `
 `;
 
 /**
- * A control for change floor layer level on the plugin.
+ * A control for change floor layer level in the plugin.
  * It appears on the map only if you set the `floorControl` option within @type PluginOptions to `true`.
  * @hidden
  * @internal

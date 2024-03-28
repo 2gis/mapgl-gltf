@@ -33,15 +33,16 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     private models: Map<string, Model>;
     private labelGroups: LabelGroups;
     private realtyScene?: RealtyScene;
+    private isDestroyed = false;
 
     /**
-     * The main class of the plugin
+     * The main class of the plugin.
      *
      * Example:
      * ```js
-     * const plugin = new GltfPlugin (map, {
+     * const plugin = new GltfPlugin(map, {
      *     modelsLoadStrategy: 'waitAll',
-     *     ambientLight: { color: 'white', intencity: 2.5 },
+     *     modelsBaseUrl: 'https://url_to_models',
      * });
      *
      * plugin.addModels([
@@ -54,8 +55,8 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      *     },
      * ]);
      * ```
-     * @param map The map instance
-     * @param pluginOptions GltfPlugin initialization options
+     * @param map The map instance.
+     * @param pluginOptions GltfPlugin initialization options.
      */
     constructor(map: MapGL, pluginOptions?: PluginOptions) {
         super();
@@ -66,7 +67,11 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.labelGroups = new LabelGroups(this.map, this);
     }
 
+    /**
+     * Destroys the plugin.
+     */
     public destroy() {
+        this.isDestroyed = true;
         this.models.forEach((model) => {
             model.instance.destroy();
         });
@@ -75,6 +80,11 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.realtyScene?.destroy();
     }
 
+    /**
+     * Sets options of the plugin.
+     *
+     * @param pluginOptions Plugin options that are available for setting.
+     */
     public setOptions(pluginOptions: Pick<Required<PluginOptions>, 'groundCoveringColor'>) {
         Object.keys(pluginOptions).forEach((option) => {
             switch (option) {
@@ -87,10 +97,23 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
+    /**
+     * Adds a model to the map.
+     *
+     * @param modelToLoad Options of a model.
+     * @param hideOnLoad Set to `true` if a model should be hidden on loading completion.
+     */
     public async addModel(modelToLoad: ModelOptions, hideOnLoad = false) {
         return this.addModels([modelToLoad], hideOnLoad ? [] : [modelToLoad.modelId]);
     }
 
+    /**
+     * Adds a list of models to the map.
+     *
+     * @param modelsToLoad An array of options of models.
+     * @param modelIdsToShow An array of ids of models that should be shown. If it's not provided
+     * all models will be shown.
+     */
     public async addModels(modelsToLoad: ModelOptions[], modelIdsToShow?: string[]) {
         const loadingModels = modelsToLoad
             .filter((options) => {
@@ -156,6 +179,10 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
             });
 
         return Promise.all(loadingModels).then((loadedModels) => {
+            if (this.isDestroyed) {
+                return;
+            }
+
             if (this.options.modelsLoadStrategy !== 'waitAll') {
                 return;
             }
@@ -168,6 +195,12 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         });
     }
 
+    /**
+     * Returns a current status of a model.
+     * There can be no model or it can be loading or loaded.
+     *
+     * @param id A model id.
+     */
     public getModelStatus(id: string) {
         const model = this.models.get(id);
         if (!model) {
@@ -177,6 +210,11 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         return !model.isLoaded ? ModelStatus.Loading : ModelStatus.Loaded;
     }
 
+    /**
+     * Removes a model from the map.
+     *
+     * @param id A model id.
+     */
     public removeModel(id: string) {
         const model = this.models.get(id);
         if (model) {
@@ -185,39 +223,84 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         }
     }
 
+    /**
+     * Removes models from the map.
+     *
+     * @param id Model ids.
+     */
     public removeModels(ids: string[]) {
         ids.forEach((id) => this.removeModel(id));
     }
 
+    /**
+     * Shows a model on the map.
+     *
+     * @param id A model id.
+     */
     public showModel(id: string) {
         this.models.get(id)?.instance.show();
     }
 
+    /**
+     * Shows models on the map.
+     *
+     * @param id Model ids.
+     */
     public showModels(ids: string[]) {
         ids.forEach((id) => this.showModel(id));
     }
 
+    /**
+     * Hides a model on the map.
+     *
+     * @param id A model id.
+     */
     public hideModel(id: string) {
         this.models.get(id)?.instance.hide();
     }
 
+    /**
+     * Hides models on the map.
+     *
+     * @param id Model ids.
+     */
     public hideModels(ids: string[]) {
         ids.forEach((id) => this.hideModel(id));
     }
 
+    /**
+     * Adds a group of labels to the map.
+     *
+     * @param options Options of the group of labels.
+     * @param state A state of active building and floor a group of labels is associated with.
+     */
     public addLabelGroup(options: LabelGroupOptions, state?: BuildingState) {
         this.labelGroups.add(options, state);
     }
 
+    /**
+     * Removes a group of labels from the map.
+     *
+     * @param id A label group id.
+     */
     public removeLabelGroup(id: string) {
         this.labelGroups.remove(id);
     }
 
+    /**
+     * Adds an interactive realty scene to the map.
+     *
+     * @param scene Options of the scene to add to the map.
+     * @param state A state of building and floor that should be active on realty scene initialization.
+     */
     public async addRealtyScene(scene: BuildingOptions[], state?: BuildingState) {
         this.realtyScene = new RealtyScene(this, this.map, this.options);
         return this.realtyScene.init(scene, state);
     }
 
+    /**
+     * Removes an interactive realty scene from the map.
+     */
     public removeRealtyScene() {
         this.realtyScene?.destroy();
         this.realtyScene = undefined;

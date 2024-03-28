@@ -1,6 +1,6 @@
 import type { Map as MapGL, Label } from '@2gis/mapgl/types';
 import type { BuildingState, LabelGroupOptions } from './types/plugin';
-import { GltfPlugin } from './plugin';
+import type { GltfPlugin } from './plugin';
 // import { pluginEvents } from './constants';
 // import { createLabelEvenData } from './utils/events';
 

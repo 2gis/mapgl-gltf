@@ -2,101 +2,101 @@ import type { ModelOptions, LabelOptions } from './plugin';
 
 export interface ModelTarget {
     /**
-     * Type of the target
+     * The type of a target.
      */
     type: 'model';
 
     /**
-     * The targeted model
+     * A targeted model.
      */
     data: ModelOptions;
 
     /**
-     * Identifier of the building's or floor's model
+     * An identifier of the building's or floor's model.
      */
     modelId: string;
 }
 
 export interface LabelTarget {
     /**
-     * Type of the target
+     * The type of a target.
      */
     type: 'label';
 
     /**
-     * The targeted poi
+     * A targeted label.
      */
     data: LabelOptions;
 
     /**
-     * Identifier of the building's model
+     * An identifier of the building's model.
      */
     buildingId?: string;
 
     /**
-     * Identifier of the current floor
+     * An identifier of the current floor.
      */
     floorId?: string;
 }
 
 /**
- * The event type for pointer-related plugin events
+ * Event type for pointer-related plugin events.
  */
 interface GltfPluginPointerEvent {
     /**
-     * The original DOM event
+     * An original DOM event.
      */
     originalEvent: MouseEvent | TouchEvent;
 
     /**
-     * Geographical coordinates of the event
+     * Geographical coordinates of an event.
      */
     lngLat: number[];
 
     /**
-     * Screen coordinates of the event
+     * Screen coordinates of an event.
      */
     point: number[];
 }
 
 /**
- * The event type for pointer-related plugin events emitted by the poi
+ * Event type for pointer-related plugin events emitted by a label.
  */
 export interface GltfPluginLabelEvent extends GltfPluginPointerEvent {
     /**
-     * Target of the poi event
+     * A target of a label event.
      */
     target: LabelTarget;
 }
 
 /**
- * The event type for pointer-related plugin events emitted by the model
+ * Event type for pointer-related plugin events emitted by a model.
  */
 export interface GltfPluginModelEvent extends GltfPluginPointerEvent {
     /**
-     * Target of the model event
+     * A target of a model event.
      */
     target: ModelTarget;
 }
 
 /**
- * The list of events that can be emitted by the glTF plugin instance
+ * List of events that can be emitted by the GLTF plugin instance.
  */
 export interface GltfPluginEventTable {
     /**
-     * Emitted when model or poi are clicked
+     * Emitted when a model or a label is clicked.
      */
     click: GltfPluginLabelEvent | GltfPluginModelEvent;
     /**
-     * Emitted when the user moves the pointer over the model or the poi
+     * Emitted when user moves pointer over a model or a label.
      */
     mousemove: GltfPluginLabelEvent | GltfPluginModelEvent;
     /**
-     * Emitted when the user hovers over the model or the poi
+     * Emitted when user hovers over a model or a label.
      */
     mouseover: GltfPluginLabelEvent | GltfPluginModelEvent;
     /**
-     * Emitted when the user moves the mouse away from the model or the poi
+     * Emitted when user moves mouse away from a model or a label.
      */
     mouseout: GltfPluginLabelEvent | GltfPluginModelEvent;
 }

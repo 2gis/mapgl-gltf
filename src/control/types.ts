@@ -1,5 +1,5 @@
 /**
- * Floor level data
+ * Floor level data.
  */
 export interface FloorLevel {
     modelId: string; // id модели этажа или здания
@@ -8,7 +8,7 @@ export interface FloorLevel {
 }
 
 /**
- * Options for the method show
+ * Options for the show method.
  */
 export interface ControlShowOptions {
     buildingModelId: string;
@@ -17,7 +17,7 @@ export interface ControlShowOptions {
 }
 
 /**
- * Event that emitted on button presses of the control
+ * Event that emitted on button presses of the control.
  */
 export interface FloorChangeEvent {
     modelId: string; // id модели этажа или здания
@@ -25,7 +25,7 @@ export interface FloorChangeEvent {
 
 export interface ControlEventTable {
     /**
-     * Emitted when floor's plan was changed
+     * Emitted when floor's plan was changed.
      */
     floorchange: FloorChangeEvent;
 }
