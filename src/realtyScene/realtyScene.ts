@@ -403,7 +403,6 @@ export class RealtyScene {
             coordinates: options.popupOptions.coordinates,
             html: getPopupHtml(options.popupOptions),
             interactive: false,
-            zIndex: 1000,
         });
     };
 
