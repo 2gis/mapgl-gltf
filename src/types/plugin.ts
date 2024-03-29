@@ -1,26 +1,4 @@
-export type Id = string;
-
-export type ColorModelString = `${'rgb' | 'hsl'}(${string})`;
-export type HexColorString = `#${string}`;
-
-/**
- * Color representation can be rgb(), hsl(), or hex value
- */
-export type ColorRepresentation = ColorModelString | HexColorString | number;
-
-/**
- * Configuration of the poi
- */
-export interface PoiConfigGranular {
-    /**
-     * Size of the font
-     */
-    fontSize?: number;
-    /**
-     * Color of the font
-     */
-    fontColor?: string;
-}
+import type { LabelImage } from '@2gis/mapgl/types';
 
 /**
  * Possible positions of the control.
@@ -40,198 +18,194 @@ export type ControlPosition =
  */
 export interface ControlOptions {
     /**
-     * Position of the control.
+     * A position of the control.
      */
     position: ControlPosition;
 }
 
 /**
- * Options for the highlight color of hovered models
+ * Options for the hover state of models.
  */
-export interface HightlightOptions {
-    // TODO: MAJOR. Rename to «HighlightOptions» in the next major release.
+export interface HoverOptions {
     /**
-     * Color of the hover
-     * @default '#ffffff'
+     * A hover color.
      */
-    color?: ColorRepresentation;
-    /**
-     * Intensity of the color on the hover in the range from 0 to 1
-     * @default 0.0
-     */
-    intencity: number; // TODO: MAJOR. Rename to «intensity» in the next major release.
+    color: string;
 }
 
 /**
- * Options for the plugin
+ * Options for the plugin.
  */
 export interface PluginOptions {
     /**
-     * The url which is used for resolving of a model's relative url
+     * A URL which is used for resolving of a model's relative path.
      */
     modelsBaseUrl?: string;
     /**
-     * Strategies for the loading of models:
-     * - dontWaitAll - show models as soon as possible
-     * - waitAll - show models only when all models are ready for the rendering
+     * Strategies for loading of models:
+     * - dontWaitAll - show models as soon as possible.
+     * - waitAll - show models only when all models are ready for rendering.
      */
     modelsLoadStrategy?: 'dontWaitAll' | 'waitAll';
     /**
-     * Configuration of poi
-     */
-    poiConfig?: {
-        /**
-         * Configuration the primary poi
-         */
-        primary?: PoiConfigGranular;
-        /**
-         * Configuration the secondary poi
-         */
-        secondary?: PoiConfigGranular;
-    };
-    /**
-     * Settings for floors' control
+     * Settings for floors' control.
      */
     floorsControl?: ControlOptions;
     /**
-     * Settings of the highlighted models
+     * Settings of hovered models.
      */
-    hoverHighlight?: HightlightOptions;
+    hoverOptions?: HoverOptions;
     /**
      * Color for the ground covering when an underground floor's plan is shown.
      */
     groundCoveringColor?: string;
+    /**
+     * Draw order of plugin objects (models and labels).
+     * It may be useful when other map objects (such as markers, shapes, etc.) need to be added
+     * on the map so that user could manage draw order of the plugin and these objects.
+     */
+    zIndex?: number;
 }
 
 /**
- * State for the building's scene
+ * State for the building's scene.
  */
 export interface BuildingState {
     /**
-     * Identifier of the building's model
+     * An identifier of the building's model.
      */
     buildingId: string;
 
     /**
-     * Identifier of the floor's model
+     * An identifier of the floor's model.
      */
     floorId?: string;
 }
 
 /**
- * Options for a model
+ * Options for a model.
  */
 export interface ModelOptions {
     /**
-     * Identifier of the model should be unique for every model
+     * An identifier of a model should be unique for every model.
      */
-    modelId: Id;
+    modelId: string;
     /**
-     * Geographical coordinates [longitude, latitude]
+     * Geographical coordinates [longitude, latitude].
      */
     coordinates: number[];
     /**
-     * Url where the model is located
+     * URL where a model is located.
      */
     modelUrl: string;
     /**
-     * Rotation of the model in degrees about the X axis
+     * Rotation of a model in degrees about the X axis.
      */
     rotateX?: number;
     /**
-     * Rotation of the model in degrees about the Y axis
+     * Rotation of a model in degrees about the Y axis.
      */
     rotateY?: number;
     /**
-     * Rotation of the model in degrees about the Z axis
+     * Rotation of a model in degrees about the Z axis.
      */
     rotateZ?: number;
     /**
-     * Offset of the model along the X axis in meters
+     * Offset of a model along the X axis in meters.
      */
     offsetX?: number;
     /**
-     * Offset of the model along the Y axis in meters
+     * Offset of a model along the Y axis in meters.
      */
     offsetY?: number;
     /**
-     * Offset of the model along the Z axis in meters
+     * Offset of a model along the Z axis in meters.
      */
     offsetZ?: number;
     /**
-     * Scale of the model
+     * Scale of a model.
      */
     scale?: number;
     /**
-     * List of buildings' identifiers that should be hidden
+     * A list of buildings' identifiers that should be hidden.
      */
     linkedIds?: string[];
     /**
-     * User specific data
+     * User specific data.
      */
     userData?: any;
     /**
-     * Interactivity of model. All models are interactive by default
+     * Interactivity of model. All models are interactive by default.
      */
     interactive?: boolean;
 }
 
 /**
- * Options for a poi
+ * Options for a label.
  */
-export interface PoiOptions {
+export interface LabelOptions {
     /**
-     * Coordinate of the poi
+     * Coordinates of a label.
      */
     coordinates: [number, number];
     /**
-     * Elevation of the poi
+     * An elevation of a label.
      */
     elevation?: number;
     /**
-     * Elevation of the poi
+     * A text of a label.
      */
-    label: string;
+    text: string;
     /**
-     * User specific data
+     * User specific data.
      */
     userData?: any;
 }
 
 /**
- * Options for a poi group
+ * Options for a label group.
  */
-export interface PoiGroupOptions {
+export interface LabelGroupOptions {
     /**
-     * Identifier of the poi group to add
+     * An identifier of a label group to add.
      */
-    id: Id;
+    id: string;
     /**
-     * Type of the poi
-     */
-    type: 'primary' | 'secondary';
-    /**
-     * Elevation of the group of poi
+     * An elevation of a label group.
      */
     elevation: number;
     /**
-     * Array of poi to add on the map
+     * An array of labels to add on the map
      */
-    data: PoiOptions[];
+    labels: LabelOptions[];
     /**
-     * Minimum display styleZoom of the poi group
+     * Image settings for labels' text background.
+     */
+    image?: LabelImage | 'default';
+    /**
+     * A minimum display styleZoom of a label group.
      */
     minZoom?: number;
     /**
-     * Maximum display styleZoom of the poi group
+     * A maximum display styleZoom of a label group.
      */
     maxZoom?: number;
     /**
-     * Size of the poi's font
+     * A size of a label's font.
      */
     fontSize?: number;
     /**
-     * Color of the poi's font
+     * A color of a label's font.
      */
     fontColor?: string;
+}
+
+/**
+ * Status of a model.
+ * There can be no model or it can be loading or loaded.
+ */
+export enum ModelStatus {
+    NoModel,
+    Loading,
+    Loaded,
 }

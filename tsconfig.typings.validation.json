@@ -1,7 +1,9 @@
 {
     "compilerOptions": {
+        "target": "ES6",
         "noEmit": true,
-        "skipLibCheck": false
+        "skipLibCheck": false,
+        "moduleResolution": "node",
     },
     "include": ["./*.d.ts", "./dist/types/**/*.d.ts"]
 }

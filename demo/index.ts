@@ -6,7 +6,7 @@ import { REALTY_SCENE, REALTY_SCENE_1 } from './mocks';
 let isDarkTheme = false;
 
 async function start() {
-    const mapglAPI = await load('https://mapgl.2gis.com/api/js/v0.0.322');
+    const mapglAPI = await load();
 
     const map = new mapglAPI.Map('container', {
         center: [47.245286302641034, 56.134743473834099],
@@ -20,19 +20,11 @@ async function start() {
     (window as any).map = map;
 
     const plugin = new GltfPlugin(map, {
-        modelsLoadStrategy: 'waitAll',
+        modelsLoadStrategy: 'dontWaitAll',
         modelsBaseUrl: 'https://disk.2gis.com/digital-twin/models_s3/realty_ads/zgktechnology/',
         floorsControl: { position: 'centerRight' },
-        poiConfig: {
-            primary: {
-                fontSize: 14,
-            },
-            secondary: {
-                fontSize: 14,
-            },
-        },
-        hoverHighlight: {
-            intencity: 0.1,
+        hoverOptions: {
+            color: '#FFF3F3',
         },
         groundCoveringColor: 'rgba(0, 0, 0, 0.8)',
     });
