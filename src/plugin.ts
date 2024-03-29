@@ -64,7 +64,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
         this.map = map;
         this.options = applyOptionalDefaults(pluginOptions ?? {}, defaultOptions);
         this.models = new Map();
-        this.labelGroups = new LabelGroups(this.map, this);
+        this.labelGroups = new LabelGroups(this.map, this, this.options);
     }
 
     /**
@@ -155,6 +155,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                         color: this.options.hoverOptions.color,
                     },
                     disableAnimation: true,
+                    zIndex: this.options.zIndex,
                 });
 
                 const model: Model = {

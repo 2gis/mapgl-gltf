@@ -59,6 +59,12 @@ export interface PluginOptions {
      * Color for the ground covering when an underground floor's plan is shown.
      */
     groundCoveringColor?: string;
+    /**
+     * Draw order of plugin objects (models and labels).
+     * It may be useful when other map objects (such as markers, shapes, etc.) need to be added
+     * on the map so that user could manage draw order of the plugin and these objects.
+     */
+    zIndex?: number;
 }
 
 /**
@@ -175,7 +181,7 @@ export interface LabelGroupOptions {
     /**
      * Image settings for labels' text background.
      */
-    image?: LabelImage;
+    image?: LabelImage | 'default';
     /**
      * A minimum display styleZoom of a label group.
      */

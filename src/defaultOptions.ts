@@ -10,4 +10,5 @@ export const defaultOptions: Required<PluginOptions> = {
         position: 'centerLeft',
     },
     groundCoveringColor: '#F8F8EBCC',
+    zIndex: 0,
 };

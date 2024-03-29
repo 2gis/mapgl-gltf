@@ -199,13 +199,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                 labelGroups: [
                     {
                         id: '1111',
-                        image: {
-                            url: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHZpZXdCb3g9IjAgMCAyOCAyOCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjgiIGhlaWdodD0iMjgiIHJ4PSI0IiBmaWxsPSIjZWFlYWVhIi8+PHJlY3QgeD0iMSIgeT0iMSIgd2lkdGg9IjI2IiBoZWlnaHQ9IjI2IiByeD0iMyIgZmlsbD0id2hpdGUiLz48L3N2Zz4=',
-                            size: [38, 38],
-                            stretchX: [[4, 24]],
-                            stretchY: [[4, 24]],
-                            padding: [5, 10, 5, 10],
-                        },
+                        image: 'default',
                         minZoom: 19.7,
                         elevation: 7,
                         fontSize: 12,
