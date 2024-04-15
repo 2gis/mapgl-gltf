@@ -1,8 +1,8 @@
 import type { Map as MapGL, Label, LabelImage } from '@2gis/mapgl/types';
 import type { BuildingState, LabelGroupOptions, PluginOptions } from './types/plugin';
 import type { GltfPlugin } from './plugin';
-// import { pluginEvents } from './constants';
-// import { createLabelEvenData } from './utils/events';
+import { pluginEvents } from './constants';
+import { createLabelEvenData } from './utils/events';
 
 export const DEFAULT_FONT_SIZE = 14;
 export const DEFAULT_FONT_COLOR = '#000000';
@@ -32,13 +32,20 @@ export class LabelGroups {
             return;
         }
 
-        const { image, minZoom, maxZoom, fontColor, fontSize } = groupOptions;
+        const {
+            image,
+            minZoom,
+            maxZoom,
+            fontColor,
+            fontSize,
+            elevation: groupElevation,
+        } = groupOptions;
         const { labelGroupDefaults, zIndex } = this.options;
 
         const labels = groupOptions.labels.map((labelOptions) => {
-            const { coordinates, text, userData } = labelOptions;
+            const { coordinates, text, userData, elevation } = labelOptions;
             const label = new mapgl.Label(this.map, {
-                coordinates, // + label.elevation ?? groupOptions.elevation
+                coordinates: [...coordinates, elevation ?? groupElevation],
                 text,
                 userData,
                 image: image === 'default' ? labelGroupDefaults.image ?? DEFAULT_IMAGE : image,
@@ -48,13 +55,15 @@ export class LabelGroups {
                 fontSize: fontSize ?? labelGroupDefaults.fontSize ?? DEFAULT_FONT_SIZE,
                 relativeAnchor: [0.5, 1],
                 zIndex: zIndex + 0.00001, // чтобы были выше моделей
+                interactive: true,
+                labeling: { type: 'pointLabelsOnly' },
             });
 
-            // pluginEvents.forEach((eventType) => {
-            //     label.on(eventType, (ev) => {
-            //         this.plugin.emit(eventType, createLabelEvenData(ev, labelOptions, state));
-            //     });
-            // });
+            pluginEvents.forEach((eventType) => {
+                label.on(eventType, (ev) => {
+                    this.plugin.emit(eventType, createLabelEvenData(ev, labelOptions, state));
+                });
+            });
 
             return label;
         });

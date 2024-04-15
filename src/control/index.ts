@@ -1,5 +1,5 @@
 import type { Map as MapGL, ControlOptions } from '@2gis/mapgl/types';
-import type { ControlShowOptions, FloorLevel } from './types';
+import type { ControlShowOptions } from './types';
 
 import icon_building from 'raw-loader!./icon_building.svg';
 import icon_parking from 'raw-loader!./icon_parking.svg';
