@@ -1,3 +1,4 @@
+import { DEFAULT_FONT_COLOR, DEFAULT_FONT_SIZE, DEFAULT_IMAGE } from './labelGroups';
 import type { PluginOptions } from './types/plugin';
 
 export const defaultOptions: Required<PluginOptions> = {
@@ -6,6 +7,11 @@ export const defaultOptions: Required<PluginOptions> = {
     },
     modelsBaseUrl: '',
     modelsLoadStrategy: 'waitAll',
+    labelGroupDefaults: {
+        fontSize: DEFAULT_FONT_SIZE,
+        fontColor: DEFAULT_FONT_COLOR,
+        image: DEFAULT_IMAGE,
+    },
     floorsControl: {
         position: 'centerLeft',
     },

@@ -33,6 +33,21 @@ export interface HoverOptions {
     color: string;
 }
 
+export interface LabelGroupDefaults {
+    /**
+     * A font size of labels in a group.
+     */
+    fontSize?: number;
+    /**
+     * A font color of labels in a group.
+     */
+    fontColor?: string;
+    /**
+     * Image settings for a text background of labels in a group.
+     */
+    image?: LabelImage;
+}
+
 /**
  * Options for the plugin.
  */
@@ -47,6 +62,10 @@ export interface PluginOptions {
      * - waitAll - show models only when all models are ready for rendering.
      */
     modelsLoadStrategy?: 'dontWaitAll' | 'waitAll';
+    /**
+     * Defaults for any label group used when such options aren't specified in label group options directly.
+     */
+    labelGroupDefaults?: LabelGroupDefaults;
     /**
      * Settings for floors' control.
      */
@@ -179,10 +198,6 @@ export interface LabelGroupOptions {
      */
     labels: LabelOptions[];
     /**
-     * Image settings for labels' text background.
-     */
-    image?: LabelImage | 'default';
-    /**
      * A minimum display styleZoom of a label group.
      */
     minZoom?: number;
@@ -198,6 +213,10 @@ export interface LabelGroupOptions {
      * A color of a label's font.
      */
     fontColor?: string;
+    /**
+     * Image settings for labels' text background.
+     */
+    image?: LabelImage | 'default';
 }
 
 /**

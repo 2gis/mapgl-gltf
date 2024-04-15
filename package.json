@@ -9,7 +9,6 @@
     "url": "https://github.com/2gis/mapgl-gltf.git"
   },
   "files": [
-    "dist/libs",
     "dist/types",
     "dist/docs.json",
     "dist/*.LICENSE.txt"
