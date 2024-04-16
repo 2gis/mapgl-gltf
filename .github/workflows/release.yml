@@ -1,21 +1,26 @@
 name: Release mapgl-gltf
 
 on:
-  release:
-    types: [created]
+    release:
+        types: [created]
 
 jobs:
-
-  release-mapgl-gltf:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          registry-url: https://registry.npmjs.org/
-      - run: npm ci
-      - run: npm run build
-      - run: npm publish --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+    release-mapgl-gltf:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 16
+                  registry-url: https://registry.npmjs.org/
+            - run: npm ci
+            - run: npm run build
+            - run: echo $GITHUB_REF_NAME
+            - run: |
+                  if [[ $GITHUB_REF_NAME == v1.* ]]; then
+                    npm publish --access public --tag ver.1
+                  else
+                    npm publish --access public
+                  fi
+              env:
+                  NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

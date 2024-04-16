@@ -35,18 +35,6 @@ plugin.addModels([{
 }]);
 ```
 
-## Release
-
-1. Update the package version by running `npm version patch|minor|major`. This command returns a new package version. Let assume it's 1.2.3
-1. Push changes to github and merge them to the «master» branch
-1. Go to https://github.com/2gis/mapgl-gltf/releases/new
-1. Click the «Choose tag» button and create a new tag according to the version in package.json, for example v1.2.3
-1. Make sure the release target is the «master» branch
-1. Paste the release tag into the «Release title» field, for example v1.2.3
-1. Add a release description
-1. Click the «Publish release» button
-1. Go to https://github.com/2gis/mapgl-gltf/actions and wait for completing the release workflow
-
 ## Testing
 
 If you write screenshot tests, you will need run `npm run docker:test` after coding.
@@ -55,4 +43,4 @@ This guarantees the authenticity of the screenshots used.
 
 ## Documentation
 
-You can find the more information in the official [documentation](https://docs.2gis.ru/ru/mapgl/examples/gltf-plugin).
+You can find the more information in the official [documentation](https://docs.2gis.com/en/mapgl/immersive/gltf2-plugin).
