@@ -295,6 +295,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      * @param state A state of building and floor that should be active on realty scene initialization.
      */
     public async addRealtyScene(scene: BuildingOptions[], state?: BuildingState) {
+        this.realtyScene?.destroy();
         this.realtyScene = new RealtyScene(this, this.map, this.options);
         return this.realtyScene.init(scene, state);
     }
