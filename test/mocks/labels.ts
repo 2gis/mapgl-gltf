@@ -16,7 +16,7 @@ export const LABEL_ASCII_LETTERS: LabelGroupOptions = {
     labels: [
         {
             coordinates: [82.886454, 54.98075],
-            elevation: 30,
+            elevation: 15,
             text: '@<>?|!@#$%\n^&*()_+-=\n3к\n78.4 м²',
             userData: {
                 url: 'https://example.com/',
@@ -28,13 +28,13 @@ export const LABEL_ASCII_LETTERS: LabelGroupOptions = {
 export const LABEL_ENG_RUS_LETTERS: LabelGroupOptions = {
     id: '2',
     minZoom: 12,
-    elevation: 20,
+    elevation: 10,
     fontSize: 10,
     fontColor: '#3a3a3a',
     labels: [
         {
             coordinates: [82.886104, 54.98075],
-            elevation: 30,
+            elevation: 15,
             text: 'qwe RTY пои ГРУП',
             userData: {
                 url: 'https://example.com/',
