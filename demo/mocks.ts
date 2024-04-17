@@ -45,6 +45,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                         elevation: 5,
                         fontSize: 12,
                         fontColor: '#3a3a3a',
+                        interactive: true,
                         labels: [
                             {
                                 coordinates: [47.245048150280994, 56.134470449142164],
@@ -75,6 +76,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                         elevation: 5,
                         fontSize: 12,
                         fontColor: '#3a3a3a',
+                        interactive: true,
                         labels: [
                             {
                                 coordinates: [47.245350349632965, 56.134414208205776],
@@ -125,6 +127,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                         elevation: 35,
                         fontSize: 12,
                         fontColor: '#fff',
+                        interactive: true,
                         labels: [
                             {
                                 coordinates: [47.245048150280994, 56.134470449142164],
@@ -204,6 +207,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                         elevation: 7,
                         fontSize: 12,
                         fontColor: '#3a3a3a',
+                        interactive: true,
                         labels: [
                             {
                                 coordinates: [47.24452417991248, 56.13469284843933],
@@ -275,6 +279,7 @@ export const REALTY_SCENE: BuildingOptions[] = [
                         elevation: 53,
                         fontSize: 12,
                         fontColor: '#fff',
+                        interactive: true,
                         labels: [
                             {
                                 coordinates: [47.24452417991248, 56.13469284843933],

@@ -154,7 +154,7 @@ export interface ModelOptions {
      */
     userData?: any;
     /**
-     * Interactivity of model. All models are interactive by default.
+     * Interactivity of a model. The model isn't interactive by default.
      */
     interactive?: boolean;
 }
@@ -179,6 +179,10 @@ export interface LabelOptions {
      * User specific data.
      */
     userData?: any;
+    /**
+     * Interactivity of a label. The label isn't interactive by default.
+     */
+    interactive?: boolean;
 }
 
 /**
@@ -217,6 +221,10 @@ export interface LabelGroupOptions {
      * Image settings for labels' text background.
      */
     image?: LabelImage | 'default';
+    /**
+     * Interactivity of a label group. The label group isn't interactive by default.
+     */
+    interactive?: boolean;
 }
 
 /**

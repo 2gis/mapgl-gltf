@@ -4,6 +4,7 @@ import type { GltfPlugin } from './plugin';
 import { pluginEvents } from './constants';
 import { createLabelEvenData } from './utils/events';
 
+const DEFAULT_INTERACTIVE = false;
 export const DEFAULT_FONT_SIZE = 14;
 export const DEFAULT_FONT_COLOR = '#000000';
 export const DEFAULT_IMAGE: LabelImage = {
@@ -39,11 +40,12 @@ export class LabelGroups {
             fontColor,
             fontSize,
             elevation: groupElevation,
+            interactive: groupInteractive,
         } = groupOptions;
         const { labelGroupDefaults, zIndex } = this.options;
 
         const labels = groupOptions.labels.map((labelOptions) => {
-            const { coordinates, text, userData, elevation } = labelOptions;
+            const { coordinates, text, userData, elevation, interactive } = labelOptions;
             const label = new mapgl.Label(this.map, {
                 coordinates: [...coordinates, elevation ?? groupElevation],
                 text,
@@ -55,7 +57,7 @@ export class LabelGroups {
                 fontSize: fontSize ?? labelGroupDefaults.fontSize ?? DEFAULT_FONT_SIZE,
                 relativeAnchor: [0.5, 1],
                 zIndex: zIndex + 0.00001, // чтобы были выше моделей
-                interactive: true,
+                interactive: interactive ?? groupInteractive ?? DEFAULT_INTERACTIVE,
                 labeling: { type: 'pointLabelsOnly' },
             });
 
