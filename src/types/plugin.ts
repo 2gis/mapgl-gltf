@@ -168,7 +168,7 @@ export interface LabelOptions {
      */
     coordinates: [number, number];
     /**
-     * An elevation of a label.
+     * An elevation of a label in meters.
      */
     elevation?: number;
     /**
@@ -194,7 +194,7 @@ export interface LabelGroupOptions {
      */
     id: string;
     /**
-     * An elevation of a label group.
+     * An elevation of a label group in meters.
      */
     elevation: number;
     /**
