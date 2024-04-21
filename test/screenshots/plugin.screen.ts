@@ -16,6 +16,7 @@ const init = async (
     page: Page,
     opts: Pick<MapOptions, 'center' | 'rotation'> & {
         modelsBaseUrl?: string;
+        groundCoveringColor?: string;
     } = {},
 ) => {
     await initMapWithOptions(page, {
@@ -35,14 +36,16 @@ const init = async (
     });
 
     await page.evaluate(
-        ({ modelsBaseUrl }) => {
+        ({ modelsBaseUrl, groundCoveringColor }) => {
             window.gltfPlugin = new window.GltfPlugin(window.map, {
                 modelsLoadStrategy: 'dontWaitAll',
                 modelsBaseUrl,
+                groundCoveringColor,
             });
         },
         {
             modelsBaseUrl: opts.modelsBaseUrl ?? '',
+            groundCoveringColor: opts.groundCoveringColor ?? '#F8F8EBCC',
         },
     );
 
@@ -158,6 +161,7 @@ describe('GltfPlugin', () => {
             await init(page, {
                 center: [47.245286302641034, 56.134743473834099],
                 rotation: 330,
+                groundCoveringColor: 'rgba(0, 0, 0, 0.8)',
                 modelsBaseUrl:
                     'https://disk.2gis.com/digital-twin/models_s3/realty_ads/zgktechnology/',
             });
@@ -169,6 +173,46 @@ describe('GltfPlugin', () => {
             });
             await waitForReadiness(page);
             await makeSnapshot(page, dirPath, 'add_realty_scene');
+        });
+
+        it('Hide and show a realty scene', async () => {
+            await page.evaluate(() => {
+                return window.gltfPlugin.addRealtyScene(window.MOCKS.realtyScene);
+            });
+            await waitForReadiness(page);
+
+            await page.evaluate(() => {
+                return window.gltfPlugin.hideRealtyScene();
+            });
+            await makeSnapshot(page, dirPath, 'hide_realty_scene');
+
+            await page.evaluate(() => {
+                return window.gltfPlugin.showRealtyScene();
+            });
+            await waitForReadiness(page);
+            await makeSnapshot(page, dirPath, 'show_realty_scene');
+        });
+
+        it('Hide and show an underground realty scene', async () => {
+            await page.evaluate(() => {
+                return window.gltfPlugin.addRealtyScene(window.MOCKS.realtyScene, {
+                    buildingId: '03a234cb',
+                    floorId: '235034',
+                });
+            });
+            await waitForReadiness(page);
+
+            await page.evaluate(() => {
+                return window.gltfPlugin.hideRealtyScene();
+            });
+            await waitForReadiness(page);
+            await makeSnapshot(page, dirPath, 'hide_underground_realty_scene');
+
+            await page.evaluate(() => {
+                return window.gltfPlugin.showRealtyScene();
+            });
+            await waitForReadiness(page);
+            await makeSnapshot(page, dirPath, 'show_underground_realty_scene');
         });
 
         it('#removeRealtyScene', async () => {

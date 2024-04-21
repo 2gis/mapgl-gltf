@@ -143,64 +143,76 @@ export class RealtyScene {
             }
 
             if (newModelOptions) {
-                const modelStatus = this.plugin.getModelStatus(newModelOptions.modelId);
+                // если текущий этаж - подземный, а новая активная модель не готова,
+                // то не показываем модели, за исключанием подземного этажа
+                if (
+                    !prevModelOptions &&
+                    prevState.activeModelId !== undefined &&
+                    this.undergroundFloors.has(prevState.activeModelId) &&
+                    newState.activeModelId !== undefined &&
+                    this.plugin.getModelStatus(newState.activeModelId) !== ModelStatus.Loaded
+                ) {
+                    buildingVisibility.set(buildingId, prevModelOptions);
+                } else {
+                    const modelStatus = this.plugin.getModelStatus(newModelOptions.modelId);
 
-                // если новая модель готова, то показываем ее
-                if (modelStatus === ModelStatus.Loaded) {
-                    buildingVisibility.set(buildingId, newModelOptions);
+                    // если новая модель готова, то показываем ее
+                    if (modelStatus === ModelStatus.Loaded) {
+                        buildingVisibility.set(buildingId, newModelOptions);
 
-                    if (newState.status === 'visible') {
-                        this.plugin.showModel(newModelOptions.modelId);
+                        if (newState.status === 'visible') {
+                            this.plugin.showModel(newModelOptions.modelId);
 
-                        // если модель активна, то применяем опции карты и включаем подложку, если нужно
-                        if (
-                            newState.activeModelId !== undefined &&
-                            newState.activeModelId === newModelOptions.modelId
-                        ) {
-                            const options =
-                                this.buildings.get(newModelOptions.modelId) ??
-                                this.floors.get(newModelOptions.modelId);
+                            // если модель активна, то применяем опции карты и включаем подложку, если нужно
+                            if (
+                                newState.activeModelId !== undefined &&
+                                newState.activeModelId === newModelOptions.modelId
+                            ) {
+                                const options =
+                                    this.buildings.get(newModelOptions.modelId) ??
+                                    this.floors.get(newModelOptions.modelId);
 
-                            if (options) {
-                                this.setMapOptions(options.mapOptions);
-                            }
+                                if (options) {
+                                    this.setMapOptions(options.mapOptions);
+                                }
 
-                            if (this.undergroundFloors.has(newModelOptions.modelId)) {
-                                this.switchOnGroundCovering();
-                            }
+                                if (this.undergroundFloors.has(newModelOptions.modelId)) {
+                                    this.switchOnGroundCovering();
+                                }
 
-                            const floorOptions = this.floors.get(newModelOptions.modelId);
-                            if (floorOptions) {
-                                floorOptions.labelGroups?.forEach((group) => {
-                                    this.plugin.addLabelGroup(group, {
-                                        buildingId,
-                                        floorId: floorOptions.id,
+                                const floorOptions = this.floors.get(newModelOptions.modelId);
+                                if (floorOptions) {
+                                    floorOptions.labelGroups?.forEach((group) => {
+                                        this.plugin.addLabelGroup(group, {
+                                            buildingId,
+                                            floorId: floorOptions.id,
+                                        });
                                     });
-                                });
+                                }
                             }
                         }
-                    }
-                } else {
-                    if (modelStatus === ModelStatus.NoModel) {
-                        this.plugin.addModel(newModelOptions, true).then(() => {
-                            if (this.state.status === 'destroyed') {
-                                return;
-                            }
+                    } else {
+                        if (modelStatus === ModelStatus.NoModel) {
+                            this.plugin.addModel(newModelOptions, true).then(() => {
+                                if (this.state.status === 'destroyed') {
+                                    return;
+                                }
 
-                            if (this.state.activeModelId !== newModelOptions.modelId) {
-                                return;
-                            }
+                                if (this.state.activeModelId !== newModelOptions.modelId) {
+                                    return;
+                                }
 
-                            // откладываем выставление нужного стейта до момента загрузки модели
-                            this.setState({
-                                ...newState,
-                                status: this.state.status,
+                                // откладываем выставление нужного стейта до момента загрузки модели
+                                this.setState({
+                                    ...newState,
+                                    status: this.state.status,
+                                });
                             });
-                        });
-                    }
+                        }
 
-                    // если новые модели не готовы, то пока показываем предыдущие
-                    buildingVisibility.set(buildingId, prevModelOptions);
+                        // если новые модели не готовы, то пока показываем предыдущие
+                        buildingVisibility.set(buildingId, prevModelOptions);
+                    }
                 }
             }
         });
@@ -316,7 +328,10 @@ export class RealtyScene {
         }
 
         return this.plugin
-            .addModels(Array.from(modelsToLoad.values()), Array.from(buildingVisibility.keys()))
+            .addModels(
+                Array.from(modelsToLoad.values()),
+                Array.from(buildingVisibility).map(([_, options]) => options.modelId),
+            )
             .then(() => {
                 if (this.state.status === 'destroyed') {
                     return;
