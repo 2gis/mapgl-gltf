@@ -301,6 +301,20 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
     }
 
     /**
+     * Shows a hidden realty scene on the map.
+     */
+    public showRealtyScene() {
+        this.realtyScene?.show();
+    }
+
+    /**
+     * Hides a shown realty scene on the map.
+     */
+    public hideRealtyScene() {
+        this.realtyScene?.hide();
+    }
+
+    /**
      * Removes an interactive realty scene from the map.
      */
     public removeRealtyScene() {

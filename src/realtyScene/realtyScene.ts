@@ -41,8 +41,8 @@ export class RealtyScene {
     private state: RealtySceneState = {
         activeModelId: undefined,
         buildingVisibility: new Map(),
+        status: 'visible',
     };
-    private isDestroyed = false;
 
     private groundCoveringSource: GeoJsonSource;
     private control: GltfFloorControl;
@@ -83,6 +83,15 @@ export class RealtyScene {
     }
 
     private setState(newState: RealtySceneState) {
+        if (this.state.status === 'destroyed') {
+            return;
+        }
+
+        if (newState.status === 'destroyed') {
+            this.state = newState;
+            return;
+        }
+
         const prevState = this.state;
 
         // т.к. стейт может меняться асинхронно и иногда нужно показывать
@@ -95,7 +104,10 @@ export class RealtyScene {
             const newModelOptions = newState.buildingVisibility.get(buildingId);
 
             // если опции не изменились, то ничего не делаем
-            if (prevModelOptions?.modelId === newModelOptions?.modelId) {
+            if (
+                prevModelOptions?.modelId === newModelOptions?.modelId &&
+                prevState.status === newState.status
+            ) {
                 buildingVisibility.set(buildingId, prevModelOptions);
                 return;
             }
@@ -135,40 +147,43 @@ export class RealtyScene {
 
                 // если новая модель готова, то показываем ее
                 if (modelStatus === ModelStatus.Loaded) {
-                    this.plugin.showModel(newModelOptions.modelId);
                     buildingVisibility.set(buildingId, newModelOptions);
 
-                    // если модель активна, то применяем опции карты и включаем подложку, если нужно
-                    if (
-                        newState.activeModelId !== undefined &&
-                        newState.activeModelId === newModelOptions.modelId
-                    ) {
-                        const options =
-                            this.buildings.get(newModelOptions.modelId) ??
-                            this.floors.get(newModelOptions.modelId);
+                    if (newState.status === 'visible') {
+                        this.plugin.showModel(newModelOptions.modelId);
 
-                        if (options) {
-                            this.setMapOptions(options.mapOptions);
-                        }
+                        // если модель активна, то применяем опции карты и включаем подложку, если нужно
+                        if (
+                            newState.activeModelId !== undefined &&
+                            newState.activeModelId === newModelOptions.modelId
+                        ) {
+                            const options =
+                                this.buildings.get(newModelOptions.modelId) ??
+                                this.floors.get(newModelOptions.modelId);
 
-                        if (this.undergroundFloors.has(newModelOptions.modelId)) {
-                            this.switchOnGroundCovering();
-                        }
+                            if (options) {
+                                this.setMapOptions(options.mapOptions);
+                            }
 
-                        const floorOptions = this.floors.get(newModelOptions.modelId);
-                        if (floorOptions) {
-                            floorOptions.labelGroups?.forEach((group) => {
-                                this.plugin.addLabelGroup(group, {
-                                    buildingId,
-                                    floorId: floorOptions.id,
+                            if (this.undergroundFloors.has(newModelOptions.modelId)) {
+                                this.switchOnGroundCovering();
+                            }
+
+                            const floorOptions = this.floors.get(newModelOptions.modelId);
+                            if (floorOptions) {
+                                floorOptions.labelGroups?.forEach((group) => {
+                                    this.plugin.addLabelGroup(group, {
+                                        buildingId,
+                                        floorId: floorOptions.id,
+                                    });
                                 });
-                            });
+                            }
                         }
                     }
                 } else {
                     if (modelStatus === ModelStatus.NoModel) {
                         this.plugin.addModel(newModelOptions, true).then(() => {
-                            if (this.isDestroyed) {
+                            if (this.state.status === 'destroyed') {
                                 return;
                             }
 
@@ -177,7 +192,10 @@ export class RealtyScene {
                             }
 
                             // откладываем выставление нужного стейта до момента загрузки модели
-                            this.setState(newState);
+                            this.setState({
+                                ...newState,
+                                status: this.state.status,
+                            });
                         });
                     }
 
@@ -191,8 +209,10 @@ export class RealtyScene {
         const prevBuildingModelId = this.getBuildingModelId(prevState.activeModelId);
         const newBuildingModelId = this.getBuildingModelId(newState.activeModelId);
 
-        if (prevBuildingModelId !== newBuildingModelId) {
-            if (newBuildingModelId !== undefined && newState.activeModelId !== undefined) {
+        if (prevBuildingModelId !== newBuildingModelId || prevState.status !== newState.status) {
+            if (newState.status === 'hidden') {
+                this.control.hide();
+            } else if (newBuildingModelId !== undefined && newState.activeModelId !== undefined) {
                 const buildingOptions = this.buildings.get(newBuildingModelId);
                 if (buildingOptions) {
                     this.control.show({
@@ -214,6 +234,7 @@ export class RealtyScene {
         this.state = {
             buildingVisibility,
             activeModelId: newState.activeModelId,
+            status: newState.status,
         };
     }
 
@@ -297,13 +318,14 @@ export class RealtyScene {
         return this.plugin
             .addModels(Array.from(modelsToLoad.values()), Array.from(buildingVisibility.keys()))
             .then(() => {
-                if (this.isDestroyed) {
+                if (this.state.status === 'destroyed') {
                     return;
                 }
 
                 this.setState({
                     activeModelId,
                     buildingVisibility,
+                    status: this.state.status,
                 });
 
                 this.plugin.on('click', this.onSceneClick);
@@ -323,8 +345,34 @@ export class RealtyScene {
         }
     }
 
+    public show() {
+        if (this.state.status !== 'hidden') {
+            return;
+        }
+
+        this.setState({
+            ...this.state,
+            status: 'visible',
+        });
+    }
+
+    public hide() {
+        if (this.state.status !== 'visible') {
+            return;
+        }
+
+        this.setState({
+            ...this.state,
+            status: 'hidden',
+        });
+    }
+
     public destroy() {
-        this.isDestroyed = true;
+        if (this.state.status === 'destroyed') {
+            return;
+        }
+
+        this.setState({ ...this.state, status: 'destroyed' });
         this.map.off('styleload', this.onStyleLoad);
         this.plugin.off('click', this.onSceneClick);
         this.plugin.off('mouseover', this.onSceneMouseOver);
@@ -433,6 +481,7 @@ export class RealtyScene {
             this.setState({
                 activeModelId: ev.modelId,
                 buildingVisibility,
+                status: this.state.status,
             });
             return;
         }
@@ -449,6 +498,7 @@ export class RealtyScene {
             this.setState({
                 activeModelId: ev.modelId,
                 buildingVisibility,
+                status: this.state.status,
             });
             return;
         }
@@ -486,6 +536,7 @@ export class RealtyScene {
         this.setState({
             buildingVisibility,
             activeModelId,
+            status: this.state.status,
         });
     };
 

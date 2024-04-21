@@ -104,6 +104,9 @@ export interface RealtySceneState {
 
     // id здания мапится на опции здания или опции этажа этого здания
     buildingVisibility: Map<string, ModelOptions | undefined>;
+
+    // статус сцены недвижимости
+    status: 'visible' | 'hidden' | 'destroyed';
 }
 
 /**
