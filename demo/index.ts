@@ -37,7 +37,6 @@ async function start() {
     })
         .getContainer()
         .addEventListener('click', () => {
-            plugin.removeRealtyScene();
             plugin.addRealtyScene(REALTY_SCENE);
         });
 
@@ -54,7 +53,6 @@ async function start() {
     })
         .getContainer()
         .addEventListener('click', () => {
-            plugin.removeRealtyScene();
             plugin.addRealtyScene(REALTY_SCENE_1, {
                 buildingId: 'ds321ba234cb',
             });
@@ -66,6 +64,22 @@ async function start() {
         .getContainer()
         .addEventListener('click', () => {
             plugin.removeRealtyScene();
+        });
+
+    new mapglAPI.Control(map, '<button>Hide Any Scene</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.hideRealtyScene();
+        });
+
+    new mapglAPI.Control(map, '<button>Show Any Scene</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.showRealtyScene();
         });
 
     new mapglAPI.Control(map, '<button>Add Model</button>', {
