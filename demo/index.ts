@@ -10,7 +10,7 @@ async function start() {
 
     const map = new mapglAPI.Map('container', {
         center: [47.245286302641034, 56.134743473834099],
-        zoom: 17.9,
+        zoom: 18.9,
         key: 'cb20c5bf-34d3-4f0e-9b2b-33e9b8edb57f',
         pitch: 45,
         rotation: 330,
@@ -22,20 +22,11 @@ async function start() {
     const plugin = new GltfPlugin(map, {
         modelsLoadStrategy: 'dontWaitAll',
         modelsBaseUrl: 'https://disk.2gis.com/digital-twin/models_s3/realty_ads/zgktechnology/',
-        dracoScriptsUrl: 'libs/draco/',
         floorsControl: { position: 'centerRight' },
-        poiConfig: {
-            primary: {
-                fontSize: 14,
-            },
-            secondary: {
-                fontSize: 14,
-            },
+        hoverOptions: {
+            color: '#FFF3F3',
         },
-        hoverHighlight: {
-            intencity: 0.1,
-        },
-        groundCoveringColor: 'rgba(233, 232, 220, 0.8)',
+        groundCoveringColor: 'rgba(0, 0, 0, 0.8)',
     });
 
     (window as any).gltfPlugin = plugin;
@@ -46,8 +37,7 @@ async function start() {
     })
         .getContainer()
         .addEventListener('click', () => {
-            plugin.removeRealtyScene();
-            plugin.addRealtyScene(REALTY_SCENE, { modelId: '03a234cb', floorId: '235034' });
+            plugin.addRealtyScene(REALTY_SCENE);
         });
 
     new mapglAPI.Control(map, '<button>Remove Scene</button>', {
@@ -63,8 +53,9 @@ async function start() {
     })
         .getContainer()
         .addEventListener('click', () => {
-            plugin.removeRealtyScene();
-            plugin.addRealtyScene(REALTY_SCENE_1, { modelId: 'ds321ba234cb' });
+            plugin.addRealtyScene(REALTY_SCENE_1, {
+                buildingId: 'ds321ba234cb',
+            });
         });
 
     new mapglAPI.Control(map, '<button>Remove Scene 1</button>', {
@@ -73,6 +64,22 @@ async function start() {
         .getContainer()
         .addEventListener('click', () => {
             plugin.removeRealtyScene();
+        });
+
+    new mapglAPI.Control(map, '<button>Hide Any Scene</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.hideRealtyScene();
+        });
+
+    new mapglAPI.Control(map, '<button>Show Any Scene</button>', {
+        position: 'topLeft',
+    })
+        .getContainer()
+        .addEventListener('click', () => {
+            plugin.showRealtyScene();
         });
 
     new mapglAPI.Control(map, '<button>Add Model</button>', {
@@ -125,22 +132,6 @@ async function start() {
             console.log(e);
         });
     });
-
-    const statsTable = document.getElementById('stats');
-
-    const printStats = () => {
-        if (!statsTable) {
-            return;
-        }
-        statsTable.innerHTML = `<pre>${JSON.stringify(
-            plugin.getModelRendererInfo(),
-            null,
-            2,
-        )}</pre>`;
-
-        requestAnimationFrame(printStats);
-    };
-    requestAnimationFrame(printStats);
 }
 
 start();

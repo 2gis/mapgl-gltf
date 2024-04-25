@@ -1,42 +1,4 @@
-export type Id = string | number;
-
-export type ColorModelString = `${'rgb' | 'hsl'}(${string})`;
-export type HexColorString = `#${string}`;
-
-/**
- * Color representation can be rgb(), hsl(), or hex value
- */
-export type ColorRepresentation = ColorModelString | HexColorString | number;
-
-/**
- * Options for an ambient light
- */
-export interface AmbientLightOptions {
-    /**
-     * Color of the ambient light.
-     * @default '#ffffff'
-     */
-    color: ColorRepresentation;
-    /**
-     * Numeric value of the light's strength/intensity.
-     * @default 3
-     */
-    intencity: number; // TODO: MAJOR. Rename to «intensity» in the next major release.
-}
-
-/**
- * Configuration of the poi
- */
-export interface PoiConfigGranular {
-    /**
-     * Size of the font
-     */
-    fontSize?: number;
-    /**
-     * Color of the font
-     */
-    fontColor?: string;
-}
+import type { LabelImage } from '@2gis/mapgl/types';
 
 /**
  * Possible positions of the control.
@@ -56,206 +18,223 @@ export type ControlPosition =
  */
 export interface ControlOptions {
     /**
-     * Position of the control.
+     * A position of the control.
      */
     position: ControlPosition;
 }
 
 /**
- * Options for the highlight color of hovered models
+ * Options for the hover state of models.
  */
-export interface HightlightOptions {
-    // TODO: MAJOR. Rename to «HighlightOptions» in the next major release.
+export interface HoverOptions {
     /**
-     * Color of the hover
-     * @default '#ffffff'
+     * A hover color.
      */
-    color?: ColorRepresentation;
+    color: string;
+}
+
+export interface LabelGroupDefaults {
     /**
-     * Intensity of the color on the hover in the range from 0 to 1
-     * @default 0.0
+     * A font size of labels in a group.
      */
-    intencity: number; // TODO: MAJOR. Rename to «intensity» in the next major release.
+    fontSize?: number;
+    /**
+     * A font color of labels in a group.
+     */
+    fontColor?: string;
+    /**
+     * Image settings for a text background of labels in a group.
+     */
+    image?: LabelImage;
 }
 
 /**
- * Options for the plugin
+ * Options for the plugin.
  */
 export interface PluginOptions {
     /**
-     * Settings for an ambient light
-     */
-    ambientLight?: AmbientLightOptions;
-    /**
-     * The url where scripts for the draco decoder are located
-     */
-    dracoScriptsUrl?: string;
-    /**
-     * The url which is used for resolving of a model's relative url
+     * A URL which is used for resolving of a model's relative path.
      */
     modelsBaseUrl?: string;
     /**
-     * Strategies for the loading of models:
-     * - dontWaitAll - show models as soon as possible
-     * - waitAll - show models only when all models are ready for the rendering
+     * Strategies for loading and rendering of models:
+     * - dontWaitAll - show every model on its loading completion. In case of a realty scene it allows to download less data and
+     * show every model in the scene as soon as possible, but there will be a delay between switching floor plans if they are not loaded.
+     * - waitAll - show models only when all models are loaded. In case of a realty scene it leads to an increase in amount of
+     * loaded data and time of rendering scene, but it allows to avoid a delay between switching floor plans.
      */
     modelsLoadStrategy?: 'dontWaitAll' | 'waitAll';
     /**
-     * Configuration of poi
+     * Defaults for any label group used when such options aren't specified in label group options directly.
      */
-    poiConfig?: {
-        /**
-         * Configuration the primary poi
-         */
-        primary?: PoiConfigGranular;
-        /**
-         * Configuration the secondary poi
-         */
-        secondary?: PoiConfigGranular;
-    };
+    labelGroupDefaults?: LabelGroupDefaults;
     /**
-     * Settings for floors' control
+     * Settings for floors' control.
      */
     floorsControl?: ControlOptions;
     /**
-     * Settings of the highlighted models
+     * Settings of hovered models.
      */
-    hoverHighlight?: HightlightOptions;
+    hoverOptions?: HoverOptions;
     /**
      * Color for the ground covering when an underground floor's plan is shown.
      */
     groundCoveringColor?: string;
+    /**
+     * Draw order of plugin objects (models and labels).
+     * It may be useful when other map objects (such as markers, shapes, etc.) need to be added
+     * on the map so that user could manage draw order of the plugin and these objects.
+     */
+    zIndex?: number;
 }
 
 /**
- * State for the building's scene
+ * State for the building's scene.
  */
 export interface BuildingState {
     /**
-     * Identifier of the building's model
+     * An identifier of the building's model.
      */
-    modelId: Id;
+    buildingId: string;
 
     /**
-     * Identifier of the floor's model
+     * An identifier of the floor's model.
      */
-    floorId?: Id;
+    floorId?: string;
 }
 
 /**
- * Options for a model
+ * Options for a model.
  */
 export interface ModelOptions {
     /**
-     * Identifier of the model should be unique for every model
+     * An identifier of a model should be unique for every model.
      */
-    modelId: Id;
+    modelId: string;
     /**
-     * Geographical coordinates [longitude, latitude]
+     * Geographical coordinates [longitude, latitude].
      */
     coordinates: number[];
     /**
-     * Url where the model is located
+     * URL where a model is located.
      */
     modelUrl: string;
     /**
-     * Rotation of the model in degrees about the X axis
+     * Rotation of a model in degrees about the X axis.
      */
     rotateX?: number;
     /**
-     * Rotation of the model in degrees about the Y axis
+     * Rotation of a model in degrees about the Y axis.
      */
     rotateY?: number;
     /**
-     * Rotation of the model in degrees about the Z axis
+     * Rotation of a model in degrees about the Z axis.
      */
     rotateZ?: number;
     /**
-     * Offset of the model along the X axis in meters
+     * Offset of a model along the X axis in meters.
      */
     offsetX?: number;
     /**
-     * Offset of the model along the Y axis in meters
+     * Offset of a model along the Y axis in meters.
      */
     offsetY?: number;
     /**
-     * Offset of the model along the Z axis in meters
+     * Offset of a model along the Z axis in meters.
      */
     offsetZ?: number;
     /**
-     * Scale of the model
+     * Scale of a model.
      */
     scale?: number;
     /**
-     * List of buildings' identifiers that should be hidden
+     * A list of buildings' identifiers that should be hidden.
      */
     linkedIds?: string[];
     /**
-     * User specific data
+     * User specific data.
      */
     userData?: any;
     /**
-     * Interactivity of model. All models are interactive by default
+     * Interactivity of a model. The model isn't interactive by default.
      */
     interactive?: boolean;
 }
 
 /**
- * Options for a poi
+ * Options for a label.
  */
-export interface PoiOptions {
+export interface LabelOptions {
     /**
-     * Coordinate of the poi
+     * Coordinates of a label.
      */
     coordinates: [number, number];
     /**
-     * Elevation of the poi
+     * An elevation of a label in meters.
      */
     elevation?: number;
     /**
-     * Elevation of the poi
+     * A text of a label.
      */
-    label: string;
+    text: string;
     /**
-     * User specific data
+     * User specific data.
      */
     userData?: any;
+    /**
+     * Interactivity of a label. The label isn't interactive by default.
+     */
+    interactive?: boolean;
 }
 
 /**
- * Options for a poi group
+ * Options for a label group.
  */
-export interface PoiGroupOptions {
+export interface LabelGroupOptions {
     /**
-     * Identifier of the poi group to add
+     * An identifier of a label group to add.
      */
-    id: Id;
+    id: string;
     /**
-     * Type of the poi
-     */
-    type: 'primary' | 'secondary';
-    /**
-     * Elevation of the group of poi
+     * An elevation of a label group in meters.
      */
     elevation: number;
     /**
-     * Array of poi to add on the map
+     * An array of labels to add on the map
      */
-    data: PoiOptions[];
+    labels: LabelOptions[];
     /**
-     * Minimum display styleZoom of the poi group
+     * A minimum display styleZoom of a label group.
      */
     minZoom?: number;
     /**
-     * Maximum display styleZoom of the poi group
+     * A maximum display styleZoom of a label group.
      */
     maxZoom?: number;
     /**
-     * Size of the poi's font
+     * A size of a label's font.
      */
     fontSize?: number;
     /**
-     * Color of the poi's font
+     * A color of a label's font.
      */
     fontColor?: string;
+    /**
+     * Image settings for labels' text background.
+     */
+    image?: LabelImage | 'default';
+    /**
+     * Interactivity of a label group. The label group isn't interactive by default.
+     */
+    interactive?: boolean;
+}
+
+/**
+ * Status of a model.
+ * There can be no model or it can be loading or loaded.
+ */
+export enum ModelStatus {
+    NoModel,
+    Loading,
+    Loaded,
 }

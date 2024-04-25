@@ -15,8 +15,8 @@ import {
 const init = async (
     page: Page,
     opts: Pick<MapOptions, 'center' | 'rotation'> & {
-        ambientColor?: string;
         modelsBaseUrl?: string;
+        groundCoveringColor?: string;
     } = {},
 ) => {
     await initMapWithOptions(page, {
@@ -29,28 +29,23 @@ const init = async (
         zoomControl: false,
         key: API_KEY,
         zoom: 17.5,
-        center: opts.center ?? [82.88688745100029, 54.98064452796862],
+        center: opts.center ?? [82.88657676327911, 54.98075155383938],
         rotation: opts.rotation ?? -111,
         pitch: 45,
         disableAntiAliasing: true,
-        webglVersion: 1,
     });
 
     await page.evaluate(
-        ({ modelsUrl, color }) => {
+        ({ modelsBaseUrl, groundCoveringColor }) => {
             window.gltfPlugin = new window.GltfPlugin(window.map, {
                 modelsLoadStrategy: 'dontWaitAll',
-                dracoScriptsUrl: 'libs/draco/',
-                ambientLight: {
-                    color: color || '#ffffff',
-                    intencity: 2.5,
-                },
-                modelsBaseUrl: modelsUrl || undefined,
+                modelsBaseUrl,
+                groundCoveringColor,
             });
         },
         {
-            modelsUrl: opts.modelsBaseUrl ?? '',
-            color: opts.ambientColor ?? '',
+            modelsBaseUrl: opts.modelsBaseUrl ?? '',
+            groundCoveringColor: opts.groundCoveringColor ?? '#F8F8EBCC',
         },
     );
 
@@ -71,16 +66,6 @@ describe('GltfPlugin', () => {
 
     afterEach(async () => {
         await page.close();
-    });
-
-    // Case for verify another ambient light at the scene
-    it('#_constructor', async () => {
-        await init(page, { ambientColor: '#ff0000' });
-        await page.evaluate(() => {
-            return window.gltfPlugin.addModel(window.MOCKS.models.cubeBig);
-        });
-        await waitForReadiness(page);
-        await makeSnapshot(page, dirPath, '_constructor');
     });
 
     it('#addModel', async () => {
@@ -106,15 +91,15 @@ describe('GltfPlugin', () => {
         await makeSnapshot(page, dirPath, 'add_models');
     });
 
-    it('#addPoiGroup', async () => {
+    it('#addLabelGroup', async () => {
         await init(page);
         await page.evaluate(() => {
-            window.gltfPlugin.addPoiGroup(window.MOCKS.poi.asciiLetters);
-            window.gltfPlugin.addPoiGroup(window.MOCKS.poi.engRusLetters);
+            window.gltfPlugin.addLabelGroup(window.MOCKS.labels.asciiLetters);
+            window.gltfPlugin.addLabelGroup(window.MOCKS.labels.engRusLetters);
         });
 
         await waitForReadiness(page);
-        await makeSnapshot(page, dirPath, 'add_poi_group');
+        await makeSnapshot(page, dirPath, 'add_label_group');
     });
 
     it('#removeModel', async () => {
@@ -147,22 +132,22 @@ describe('GltfPlugin', () => {
         await makeSnapshot(page, dirPath, 'remove_models');
     });
 
-    it('#removePoiGroup', async () => {
+    it('#removeLabelGroup', async () => {
         await init(page);
         await page.evaluate(() => {
-            window.gltfPlugin.addPoiGroup(window.MOCKS.poi.asciiLetters);
+            window.gltfPlugin.addLabelGroup(window.MOCKS.labels.asciiLetters);
         });
         await page.evaluate(() => {
-            window.gltfPlugin.removePoiGroup(window.MOCKS.poi.asciiLetters.id);
+            window.gltfPlugin.removeLabelGroup(window.MOCKS.labels.asciiLetters.id);
         });
         await waitForReadiness(page);
-        await makeSnapshot(page, dirPath, 'remove_poi_group');
+        await makeSnapshot(page, dirPath, 'remove_label_group');
     });
 
-    it('#addModelsPartially', async () => {
+    it('#addModels partially', async () => {
         await init(page);
         await page.evaluate(() => {
-            return window.gltfPlugin.addModelsPartially(
+            return window.gltfPlugin.addModels(
                 [window.MOCKS.models.cubeBig, window.MOCKS.models.cubeSmall],
                 [window.MOCKS.models.cubeBig.modelId],
             );
@@ -176,6 +161,7 @@ describe('GltfPlugin', () => {
             await init(page, {
                 center: [47.245286302641034, 56.134743473834099],
                 rotation: 330,
+                groundCoveringColor: 'rgba(0, 0, 0, 0.8)',
                 modelsBaseUrl:
                     'https://disk.2gis.com/digital-twin/models_s3/realty_ads/zgktechnology/',
             });
@@ -187,6 +173,48 @@ describe('GltfPlugin', () => {
             });
             await waitForReadiness(page);
             await makeSnapshot(page, dirPath, 'add_realty_scene');
+        });
+
+        it('Hide and show a realty scene', async () => {
+            await page.evaluate(() => {
+                return window.gltfPlugin.addRealtyScene(window.MOCKS.realtyScene);
+            });
+            await waitForReadiness(page);
+
+            await page.evaluate(() => {
+                return window.gltfPlugin.hideRealtyScene();
+            });
+            await makeSnapshot(page, dirPath, 'hide_realty_scene');
+
+            await page.evaluate(() => {
+                return window.gltfPlugin.showRealtyScene();
+            });
+            await waitForReadiness(page);
+            await makeSnapshot(page, dirPath, 'show_realty_scene');
+        });
+
+        // Тест пока заскипан, т.к. на скринах появляется контрол сцены
+        // недвижимости, что приводит к падению теста на разных платформах
+        it.skip('Hide and show an underground realty scene', async () => {
+            await page.evaluate(() => {
+                return window.gltfPlugin.addRealtyScene(window.MOCKS.realtyScene, {
+                    buildingId: '03a234cb',
+                    floorId: '235034',
+                });
+            });
+            await waitForReadiness(page);
+
+            await page.evaluate(() => {
+                return window.gltfPlugin.hideRealtyScene();
+            });
+            await waitForReadiness(page);
+            await makeSnapshot(page, dirPath, 'hide_underground_realty_scene');
+
+            await page.evaluate(() => {
+                return window.gltfPlugin.showRealtyScene();
+            });
+            await waitForReadiness(page);
+            await makeSnapshot(page, dirPath, 'show_underground_realty_scene');
         });
 
         it('#removeRealtyScene', async () => {

@@ -1,29 +1,20 @@
+import { DEFAULT_FONT_COLOR, DEFAULT_FONT_SIZE, DEFAULT_IMAGE } from './labelGroups';
 import type { PluginOptions } from './types/plugin';
 
 export const defaultOptions: Required<PluginOptions> = {
-    ambientLight: {
+    hoverOptions: {
         color: '#ffffff',
-        intencity: 3,
     },
-    hoverHighlight: {
-        color: '#ffffff',
-        intencity: 0.0,
-    },
-    dracoScriptsUrl: 'https://unpkg.com/@2gis/mapgl-gltf@^1/dist/libs/draco/',
     modelsBaseUrl: '',
     modelsLoadStrategy: 'waitAll',
-    poiConfig: {
-        primary: {
-            fontSize: 14,
-            fontColor: '#000000',
-        },
-        secondary: {
-            fontSize: 14,
-            fontColor: '#000000',
-        },
+    labelGroupDefaults: {
+        fontSize: DEFAULT_FONT_SIZE,
+        fontColor: DEFAULT_FONT_COLOR,
+        image: DEFAULT_IMAGE,
     },
     floorsControl: {
         position: 'centerLeft',
     },
     groundCoveringColor: '#F8F8EBCC',
+    zIndex: 0,
 };
