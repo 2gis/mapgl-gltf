@@ -23,8 +23,9 @@ export const REALTY_SCENE: BuildingOptions[] = [
                 id: '235034',
                 text: '1-10',
                 modelUrl: 'zgktechnology1_floor2.glb',
+                isUnderground: true,
                 mapOptions: {
-                    center: [47.24524342863023, 56.13449524271827],
+                    center: [47.245244380223404, 56.13440013744883],
                     pitch: 40,
                     zoom: 20,
                     rotation: -57.5,

@@ -33,6 +33,21 @@ export interface HoverOptions {
     color: string;
 }
 
+export interface LabelGroupDefaults {
+    /**
+     * A font size of labels in a group.
+     */
+    fontSize?: number;
+    /**
+     * A font color of labels in a group.
+     */
+    fontColor?: string;
+    /**
+     * Image settings for a text background of labels in a group.
+     */
+    image?: LabelImage;
+}
+
 /**
  * Options for the plugin.
  */
@@ -42,11 +57,17 @@ export interface PluginOptions {
      */
     modelsBaseUrl?: string;
     /**
-     * Strategies for loading of models:
-     * - dontWaitAll - show models as soon as possible.
-     * - waitAll - show models only when all models are ready for rendering.
+     * Strategies for loading and rendering of models:
+     * - dontWaitAll - show every model on its loading completion. In case of a realty scene it allows to download less data and
+     * show every model in the scene as soon as possible, but there will be a delay between switching floor plans if they are not loaded.
+     * - waitAll - show models only when all models are loaded. In case of a realty scene it leads to an increase in amount of
+     * loaded data and time of rendering scene, but it allows to avoid a delay between switching floor plans.
      */
     modelsLoadStrategy?: 'dontWaitAll' | 'waitAll';
+    /**
+     * Defaults for any label group used when such options aren't specified in label group options directly.
+     */
+    labelGroupDefaults?: LabelGroupDefaults;
     /**
      * Settings for floors' control.
      */
@@ -135,7 +156,7 @@ export interface ModelOptions {
      */
     userData?: any;
     /**
-     * Interactivity of model. All models are interactive by default.
+     * Interactivity of a model. The model isn't interactive by default.
      */
     interactive?: boolean;
 }
@@ -149,7 +170,7 @@ export interface LabelOptions {
      */
     coordinates: [number, number];
     /**
-     * An elevation of a label.
+     * An elevation of a label in meters.
      */
     elevation?: number;
     /**
@@ -160,6 +181,10 @@ export interface LabelOptions {
      * User specific data.
      */
     userData?: any;
+    /**
+     * Interactivity of a label. The label isn't interactive by default.
+     */
+    interactive?: boolean;
 }
 
 /**
@@ -171,17 +196,13 @@ export interface LabelGroupOptions {
      */
     id: string;
     /**
-     * An elevation of a label group.
+     * An elevation of a label group in meters.
      */
     elevation: number;
     /**
      * An array of labels to add on the map
      */
     labels: LabelOptions[];
-    /**
-     * Image settings for labels' text background.
-     */
-    image?: LabelImage | 'default';
     /**
      * A minimum display styleZoom of a label group.
      */
@@ -198,6 +219,14 @@ export interface LabelGroupOptions {
      * A color of a label's font.
      */
     fontColor?: string;
+    /**
+     * Image settings for labels' text background.
+     */
+    image?: LabelImage | 'default';
+    /**
+     * Interactivity of a label group. The label group isn't interactive by default.
+     */
+    interactive?: boolean;
 }
 
 /**

@@ -48,7 +48,7 @@ export async function pageSetUp(): Promise<puppeteer.Page> {
     page.setDefaultTimeout(WAIT_FOR_TIMEOUT);
 
     page.on('console', async (msg) => {
-        const args = await Promise.all(msg.args().map((arg) => describeLog(arg)));
+        await Promise.all(msg.args().map((arg) => describeLog(arg)));
     });
 
     await page.goto(REFERENCE_DEMO);
