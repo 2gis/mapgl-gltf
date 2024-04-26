@@ -103,12 +103,23 @@ export class RealtyScene {
             const prevModelOptions = prevState.buildingVisibility.get(buildingId);
             const newModelOptions = newState.buildingVisibility.get(buildingId);
 
-            // если опции не изменились, то ничего не делаем
+            // если опции не изменились, то выставляем только опции карты, если модель активна
             if (
                 prevModelOptions?.modelId === newModelOptions?.modelId &&
                 prevState.status === newState.status
             ) {
                 buildingVisibility.set(buildingId, prevModelOptions);
+
+                if (prevModelOptions && prevModelOptions.modelId === newState.activeModelId) {
+                    const options =
+                        this.buildings.get(prevModelOptions.modelId) ??
+                        this.floors.get(prevModelOptions.modelId);
+
+                    if (options) {
+                        this.setMapOptions(options.mapOptions);
+                    }
+                }
+
                 return;
             }
 
@@ -230,14 +241,16 @@ export class RealtyScene {
                     this.control.show({
                         buildingModelId: buildingOptions.modelId,
                         activeModelId: newState.activeModelId,
-                        floorLevels: [
-                            {
-                                modelId: buildingOptions.modelId,
-                                icon: 'building',
-                                text: '',
-                            },
-                            ...buildingOptions.floors,
-                        ],
+                        floorLevels: buildingOptions.floors.length
+                            ? [
+                                  {
+                                      modelId: buildingOptions.modelId,
+                                      icon: 'building',
+                                      text: '',
+                                  },
+                                  ...buildingOptions.floors,
+                              ]
+                            : [],
                     });
                 }
             }

@@ -15,6 +15,10 @@ export const DEFAULT_IMAGE: LabelImage = {
     padding: [5, 10, 5, 10],
 };
 
+/**
+ * @hidden
+ * @internal
+ */
 export class LabelGroups {
     private labelsByGroupId: Map<string, Label[]> = new Map();
 
