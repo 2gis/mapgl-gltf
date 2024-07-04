@@ -17,4 +17,6 @@ export const defaultOptions: Required<PluginOptions> = {
     },
     groundCoveringColor: '#F8F8EBCC',
     zIndex: 0,
+    minZoom: -Infinity,
+    maxZoom: Infinity,
 };

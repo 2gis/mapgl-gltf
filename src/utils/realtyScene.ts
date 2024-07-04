@@ -14,6 +14,8 @@ export function getBuildingModelOptions(building: BuildingOptionsInternal): Mode
         scale: building.scale,
         linkedIds: building.linkedIds,
         interactive: building.interactive,
+        minZoom: building.minZoom,
+        maxZoom: building.maxZoom,
     };
 }
 
@@ -35,6 +37,8 @@ export function getFloorModelOptions({
         scale: buildingOptions.scale,
         linkedIds: buildingOptions.linkedIds,
         interactive: buildingOptions.interactive,
+        minZoom: buildingOptions.minZoom,
+        maxZoom: buildingOptions.maxZoom,
     };
 }
 
