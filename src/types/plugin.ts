@@ -86,6 +86,9 @@ export interface PluginOptions {
      * on the map so that user could manage draw order of the plugin and these objects.
      */
     zIndex?: number;
+
+    minZoom?: number;
+    maxZoom?: number;
 }
 
 /**
@@ -159,6 +162,9 @@ export interface ModelOptions {
      * Interactivity of a model. The model isn't interactive by default.
      */
     interactive?: boolean;
+
+    minZoom?: number;
+    maxZoom?: number;
 }
 
 /**
