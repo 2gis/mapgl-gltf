@@ -89,6 +89,7 @@ export interface PluginOptions {
 
     minZoom?: number;
     maxZoom?: number;
+    modelsNearCameraFade?: number;
 }
 
 /**

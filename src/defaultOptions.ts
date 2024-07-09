@@ -7,6 +7,7 @@ export const defaultOptions: Required<PluginOptions> = {
     },
     modelsBaseUrl: '',
     modelsLoadStrategy: 'waitAll',
+    modelsNearCameraFade: 2500,
     labelGroupDefaults: {
         fontSize: DEFAULT_FONT_SIZE,
         fontColor: DEFAULT_FONT_COLOR,
