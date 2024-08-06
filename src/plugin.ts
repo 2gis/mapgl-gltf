@@ -156,6 +156,9 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                     },
                     disableAnimation: true,
                     zIndex: this.options.zIndex,
+                    minZoom: options.minZoom ?? this.options.minZoom,
+                    maxZoom: options.maxZoom ?? this.options.maxZoom,
+                    nearCameraFade: this.options.modelsNearCameraFade,
                 });
 
                 const model: Model = {
