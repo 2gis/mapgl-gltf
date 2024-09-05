@@ -24,7 +24,7 @@ jobs:
         steps:
             - uses: actions/checkout@v3
             - name: Build container and run tests
-              run: docker-compose up --build --exit-code-from test test
+              run: docker compose up --build --exit-code-from test test
             - uses: actions/upload-artifact@v3
               if: ${{ failure() }}
               with:
