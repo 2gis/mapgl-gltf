@@ -256,6 +256,29 @@ export class RealtyScene {
             }
         }
 
+        if (prevState.activeModelId !== newState.activeModelId) {
+            let buildingModelId: string | undefined;
+            let floorModelId: string | undefined;
+
+            if (newState.activeModelId !== undefined) {
+                const building = this.buildings.get(newState.activeModelId);
+                if (building) {
+                    buildingModelId = building.modelId;
+                } else {
+                    const floor = this.floors.get(newState.activeModelId);
+                    if (floor) {
+                        buildingModelId = floor.buildingOptions.modelId;
+                        floorModelId = floor.id;
+                    }
+                }
+            }
+
+            this.plugin.emit('activemodelchange', {
+                buildingModelId,
+                floorModelId,
+            });
+        }
+
         this.state = {
             buildingVisibility,
             activeModelId: newState.activeModelId,
