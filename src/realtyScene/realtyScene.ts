@@ -256,6 +256,29 @@ export class RealtyScene {
             }
         }
 
+        if (prevState.activeModelId !== newState.activeModelId) {
+            let buildingModelId: string | undefined;
+            let floorModelId: string | undefined;
+
+            if (newState.activeModelId !== undefined) {
+                const building = this.buildings.get(newState.activeModelId);
+                if (building) {
+                    buildingModelId = building.modelId;
+                } else {
+                    const floor = this.floors.get(newState.activeModelId);
+                    if (floor) {
+                        buildingModelId = floor.buildingOptions.modelId;
+                        floorModelId = floor.id;
+                    }
+                }
+            }
+
+            this.plugin.emit('activemodelchange', {
+                buildingModelId,
+                floorModelId,
+            });
+        }
+
         this.state = {
             buildingVisibility,
             activeModelId: newState.activeModelId,
@@ -395,7 +418,7 @@ export class RealtyScene {
         });
     }
 
-    public destroy() {
+    public destroy(keepModels?: boolean) {
         if (this.state.status === 'destroyed') {
             return;
         }
@@ -412,7 +435,7 @@ export class RealtyScene {
                 this.plugin.removeLabelGroup(id);
             });
         });
-        this.plugin.removeModels([...this.buildings.keys(), ...this.floors.keys()]);
+        this.plugin.removeModels([...this.buildings.keys(), ...this.floors.keys()], keepModels);
         this.map.removeLayer(GROUND_COVERING_LAYER_ID);
 
         this.groundCoveringSource.destroy();
@@ -439,16 +462,16 @@ export class RealtyScene {
             duration: 500,
         };
 
-        if (options.center) {
+        if (options.center !== undefined) {
             this.map.setCenter(options.center, animationOptions);
         }
-        if (options.pitch) {
+        if (options.pitch !== undefined) {
             this.map.setPitch(options.pitch, animationOptions);
         }
-        if (options.rotation) {
+        if (options.rotation !== undefined) {
             this.map.setRotation(options.rotation, animationOptions);
         }
-        if (options.zoom) {
+        if (options.zoom !== undefined) {
             this.map.setZoom(options.zoom, animationOptions);
         }
     }

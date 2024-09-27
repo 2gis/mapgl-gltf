@@ -27,6 +27,9 @@ async function start() {
             color: '#FFF3F3',
         },
         groundCoveringColor: 'rgba(0, 0, 0, 0.8)',
+        minZoom: 15,
+        maxZoom: 20,
+        modelsNearCameraFade: 0,
     });
 
     (window as any).gltfPlugin = plugin;
