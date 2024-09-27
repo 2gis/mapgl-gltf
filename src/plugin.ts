@@ -218,11 +218,12 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      * Removes a model from the map.
      *
      * @param id A model id.
+     * @param keepModel Specifies whether model data should be cached for future use.
      */
-    public removeModel(id: string) {
+    public removeModel(id: string, keepModel?: boolean) {
         const model = this.models.get(id);
         if (model) {
-            model.instance.destroy();
+            model.instance.destroy(keepModel);
             this.models.delete(id);
         }
     }
@@ -231,9 +232,10 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
      * Removes models from the map.
      *
      * @param id Model ids.
+     * @param keepModels Specifies whether model data should be cached for future use.
      */
-    public removeModels(ids: string[]) {
-        ids.forEach((id) => this.removeModel(id));
+    public removeModels(ids: string[], keepModels?: boolean) {
+        ids.forEach((id) => this.removeModel(id, keepModels));
     }
 
     /**
@@ -319,9 +321,11 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
 
     /**
      * Removes an interactive realty scene from the map.
+     *
+     * @param keepModels Specifies whether model data should be cached for future use.
      */
-    public removeRealtyScene() {
-        this.realtyScene?.destroy();
+    public removeRealtyScene(keepModels?: boolean) {
+        this.realtyScene?.destroy(keepModels);
         this.realtyScene = undefined;
     }
 }
