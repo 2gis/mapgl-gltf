@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "types": ["jest", "node"],
+    "types": ["jest", "node", "sinon"],
     "lib": ["dom", "es6"],
     "target": "es6",
     "module": "es6",

@@ -86,9 +86,18 @@ export interface PluginOptions {
      * on the map so that user could manage draw order of the plugin and these objects.
      */
     zIndex?: number;
-
+    /**
+     * Minimum display styleZoom for all models.
+     */
     minZoom?: number;
+    /**
+     * Maximum display styleZoom for all models.
+     */
     maxZoom?: number;
+    /**
+     * A distance to the camera the models get transparent from.
+     * It's set in units along Z axis of the WebGL space.
+     */
     modelsNearCameraFade?: number;
 }
 
@@ -163,8 +172,13 @@ export interface ModelOptions {
      * Interactivity of a model. The model isn't interactive by default.
      */
     interactive?: boolean;
-
+    /**
+     * Minimum display styleZoom of the model.
+     */
     minZoom?: number;
+    /**
+     * Maximum display styleZoom of the model.
+     */
     maxZoom?: number;
 }
 
