@@ -99,4 +99,13 @@ export interface GltfPluginEventTable {
      * Emitted when user moves mouse away from a model or a label.
      */
     mouseout: GltfPluginLabelEvent | GltfPluginModelEvent;
+    /**
+     * Emitted when an active model has changed on the realty scene.
+     * @hidden
+     * @internal
+     */
+    activemodelchange: {
+        buildingModelId?: string;
+        floorModelId?: string;
+    };
 }

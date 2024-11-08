@@ -7,6 +7,7 @@ export const defaultOptions: Required<PluginOptions> = {
     },
     modelsBaseUrl: '',
     modelsLoadStrategy: 'waitAll',
+    modelsNearCameraFade: 2500,
     labelGroupDefaults: {
         fontSize: DEFAULT_FONT_SIZE,
         fontColor: DEFAULT_FONT_COLOR,
@@ -17,4 +18,6 @@ export const defaultOptions: Required<PluginOptions> = {
     },
     groundCoveringColor: '#F8F8EBCC',
     zIndex: 0,
+    minZoom: -Infinity,
+    maxZoom: Infinity,
 };

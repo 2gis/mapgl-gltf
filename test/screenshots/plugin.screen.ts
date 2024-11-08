@@ -11,13 +11,16 @@ import {
     defaultFontsPath,
     blankDarkStyle,
 } from '../puppeteer/utils';
+import { PluginOptions } from '../../src/types/plugin';
+
+type TestPluginOptions = Pick<
+    PluginOptions,
+    'minZoom' | 'maxZoom' | 'modelsBaseUrl' | 'groundCoveringColor' | 'modelsNearCameraFade'
+>;
 
 const init = async (
     page: Page,
-    opts: Pick<MapOptions, 'center' | 'rotation'> & {
-        modelsBaseUrl?: string;
-        groundCoveringColor?: string;
-    } = {},
+    opts: Pick<MapOptions, 'styleZoom' | 'center' | 'rotation' | 'pitch'> & TestPluginOptions = {},
 ) => {
     await initMapWithOptions(page, {
         style: blankStyle,
@@ -28,26 +31,23 @@ const init = async (
         copyright: false,
         zoomControl: false,
         key: API_KEY,
-        zoom: 17.5,
+        styleZoom: opts.styleZoom ?? 17.5,
         center: opts.center ?? [82.88657676327911, 54.98075155383938],
         rotation: opts.rotation ?? -111,
-        pitch: 45,
+        pitch: opts.pitch ?? 45,
         disableAntiAliasing: true,
     });
 
-    await page.evaluate(
-        ({ modelsBaseUrl, groundCoveringColor }) => {
-            window.gltfPlugin = new window.GltfPlugin(window.map, {
-                modelsLoadStrategy: 'dontWaitAll',
-                modelsBaseUrl,
-                groundCoveringColor,
-            });
-        },
-        {
-            modelsBaseUrl: opts.modelsBaseUrl ?? '',
-            groundCoveringColor: opts.groundCoveringColor ?? '#F8F8EBCC',
-        },
-    );
+    await page.evaluate((options: TestPluginOptions) => {
+        window.gltfPlugin = new window.GltfPlugin(window.map, {
+            modelsLoadStrategy: 'dontWaitAll',
+            modelsBaseUrl: options.modelsBaseUrl,
+            groundCoveringColor: options.groundCoveringColor,
+            modelsNearCameraFade: options.modelsNearCameraFade,
+            minZoom: options.minZoom,
+            maxZoom: options.maxZoom,
+        });
+    }, opts);
 
     await waitForReadiness(page);
 };
@@ -71,7 +71,7 @@ describe('GltfPlugin', () => {
     it('#addModel', async () => {
         await init(page);
         await page.evaluate(() => {
-            return window.gltfPlugin.addModel(window.MOCKS.models.cubeBig);
+            return window.gltfPlugin.addModel(window.MOCKS.models.cubeMid);
         });
 
         await waitForReadiness(page);
@@ -82,7 +82,7 @@ describe('GltfPlugin', () => {
         await init(page);
         await page.evaluate(() => {
             return window.gltfPlugin.addModels([
-                window.MOCKS.models.cubeBig,
+                window.MOCKS.models.cubeMid,
                 window.MOCKS.models.cubeSmall,
             ]);
         });
@@ -105,10 +105,10 @@ describe('GltfPlugin', () => {
     it('#removeModel', async () => {
         await init(page);
         await page.evaluate(() => {
-            return window.gltfPlugin.addModel(window.MOCKS.models.cubeBig);
+            return window.gltfPlugin.addModel(window.MOCKS.models.cubeMid);
         });
         await page.evaluate(() => {
-            window.gltfPlugin.removeModel(window.MOCKS.models.cubeBig.modelId);
+            window.gltfPlugin.removeModel(window.MOCKS.models.cubeMid.modelId);
         });
         await waitForReadiness(page);
         await makeSnapshot(page, dirPath, 'remove_model');
@@ -118,13 +118,13 @@ describe('GltfPlugin', () => {
         await init(page);
         await page.evaluate(() => {
             return window.gltfPlugin.addModels([
-                window.MOCKS.models.cubeBig,
+                window.MOCKS.models.cubeMid,
                 window.MOCKS.models.cubeSmall,
             ]);
         });
         await page.evaluate(() => {
             window.gltfPlugin.removeModels([
-                window.MOCKS.models.cubeBig.modelId,
+                window.MOCKS.models.cubeMid.modelId,
                 window.MOCKS.models.cubeSmall.modelId,
             ]);
         });
@@ -148,12 +148,148 @@ describe('GltfPlugin', () => {
         await init(page);
         await page.evaluate(() => {
             return window.gltfPlugin.addModels(
-                [window.MOCKS.models.cubeBig, window.MOCKS.models.cubeSmall],
-                [window.MOCKS.models.cubeBig.modelId],
+                [window.MOCKS.models.cubeMid, window.MOCKS.models.cubeSmall],
+                [window.MOCKS.models.cubeMid.modelId],
             );
         });
         await waitForReadiness(page);
         await makeSnapshot(page, dirPath, 'add_models_partially');
+    });
+
+    describe('Plugin options', () => {
+        describe('modelsNearCameraFade', () => {
+            it('default modelsNearCameraFade', async () => {
+                await init(page, { styleZoom: 19.65 });
+                await page.evaluate(() => {
+                    return window.gltfPlugin.addModel(window.MOCKS.models.cubeBig);
+                });
+
+                await waitForReadiness(page);
+                await makeSnapshot(page, dirPath, 'plugin_options_default_modelsNearCameraFade');
+            });
+
+            it('no modelsNearCameraFade', async () => {
+                await init(page, { styleZoom: 19.65, modelsNearCameraFade: 0 });
+                await page.evaluate(() => {
+                    return window.gltfPlugin.addModel(window.MOCKS.models.cubeBig);
+                });
+
+                await waitForReadiness(page);
+                await makeSnapshot(page, dirPath, 'plugin_options_no_modelsNearCameraFade');
+            });
+
+            it('great modelsNearCameraFade', async () => {
+                await init(page, { styleZoom: 19.65, modelsNearCameraFade: 50000 });
+                await page.evaluate(() => {
+                    return window.gltfPlugin.addModel(window.MOCKS.models.cubeBig);
+                });
+
+                await waitForReadiness(page);
+                await makeSnapshot(page, dirPath, 'plugin_options_great_modelsNearCameraFade');
+            });
+        });
+
+        describe('minZoom, maxZoom', () => {
+            beforeEach(async () => {
+                await page.setViewport({
+                    width: 300,
+                    height: 300,
+                });
+                const center = [82.88454852999983, 54.904795707733356];
+                await init(page, {
+                    center,
+                    styleZoom: 15.8,
+                    rotation: 0,
+                    pitch: 0,
+                    minZoom: 16,
+                    maxZoom: 18,
+                });
+                await page.evaluate((coordinates) => {
+                    return window.gltfPlugin.addModels([
+                        { ...window.MOCKS.models.cubeMid, coordinates },
+                        { ...window.MOCKS.models.palm, minZoom: 16.5, maxZoom: 17.25 },
+                        { ...window.MOCKS.models.pine, minZoom: 17, maxZoom: 17.5 },
+                    ]);
+                }, center);
+                await waitForReadiness(page);
+            });
+
+            it('no visible models', async () => {
+                await makeSnapshot(
+                    page,
+                    dirPath,
+                    'plugin_options_minZoom_maxZoom_no_visible_models',
+                );
+            });
+
+            it('cube is only visible', async () => {
+                await page.evaluate(() => {
+                    window.map.setStyleZoom(16.2, { animate: false });
+                });
+                await waitForReadiness(page);
+                await makeSnapshot(page, dirPath, 'plugin_options_minZoom_maxZoom_visible_cube');
+            });
+
+            it('cube and palm are visible', async () => {
+                await page.evaluate(() => {
+                    window.map.setStyleZoom(16.7, { animate: false });
+                });
+                await waitForReadiness(page);
+                await makeSnapshot(
+                    page,
+                    dirPath,
+                    'plugin_options_minZoom_maxZoom_visible_cube_and_palm',
+                );
+            });
+
+            it('all models are visible', async () => {
+                await page.evaluate(() => {
+                    window.map.setStyleZoom(17, { animate: false });
+                });
+                await waitForReadiness(page);
+                await makeSnapshot(
+                    page,
+                    dirPath,
+                    'plugin_options_minZoom_maxZoom_visible_all_models',
+                );
+            });
+
+            it('cube and pine are visible', async () => {
+                await page.evaluate(() => {
+                    window.map.setStyleZoom(17.4, { animate: false });
+                });
+                await waitForReadiness(page);
+                await makeSnapshot(
+                    page,
+                    dirPath,
+                    'plugin_options_minZoom_maxZoom_visible_cube_and_pine',
+                );
+            });
+
+            it('cube is only visible again', async () => {
+                await page.evaluate(() => {
+                    window.map.setStyleZoom(17.7, { animate: false });
+                });
+                await waitForReadiness(page);
+                await makeSnapshot(
+                    page,
+                    dirPath,
+                    'plugin_options_minZoom_maxZoom_visible_cube_again',
+                );
+            });
+
+            it('all models are invisible', async () => {
+                await page.evaluate(() => {
+                    window.map.setStyleZoom(18, { animate: false });
+                });
+                await waitForReadiness(page);
+                await makeSnapshot(
+                    page,
+                    dirPath,
+                    'plugin_options_minZoom_maxZoom_invisible_all_models',
+                );
+            });
+        });
     });
 
     describe('Realty scene', () => {
@@ -233,7 +369,7 @@ describe('GltfPlugin', () => {
     it('The model does not disappear after changing the map style.', async () => {
         await init(page);
         await page.evaluate(() => {
-            return window.gltfPlugin.addModel(window.MOCKS.models.cubeBig);
+            return window.gltfPlugin.addModel(window.MOCKS.models.cubeMid);
         });
         await page.evaluate((style) => {
             return (window.map as any).setStyle(style);
