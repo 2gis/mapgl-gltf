@@ -159,6 +159,7 @@ export class GltfPlugin extends Evented<GltfPluginEventTable> {
                     minZoom: options.minZoom ?? this.options.minZoom,
                     maxZoom: options.maxZoom ?? this.options.maxZoom,
                     nearCameraFade: this.options.modelsNearCameraFade,
+                    colorTextureUvIndex: this.options.modelsColorTextureUvIndex,
                 });
 
                 const model: Model = {
