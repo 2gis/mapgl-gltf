@@ -99,6 +99,12 @@ export interface PluginOptions {
      * It's set in units along Z axis of the WebGL space.
      */
     modelsNearCameraFade?: number;
+    /**
+     * Index of the color texture to be used for all models.
+     * @hidden
+     * @internal
+     */
+    modelsColorTextureUvIndex?: number;
 }
 
 /**
