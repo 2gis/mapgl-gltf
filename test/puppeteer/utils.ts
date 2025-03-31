@@ -46,10 +46,6 @@ export function makeScreenshotsPath(relativePath: string) {
 export async function initMapWithOptions(page: PuppeteerPage, options?: Partial<mapgl.MapOptions>) {
     await page.evaluate((opts) => {
         window.map = new mapgl.Map('map', opts ?? {});
-        window.map.on('idle', () => {
-            window.ready = true;
-        });
-        window.ready = false;
     }, options as any);
 }
 
@@ -99,6 +95,5 @@ export async function makeSnapshot(
 }
 
 export async function waitForReadiness(page: PuppeteerPage) {
-    await page.waitForFunction(() => window.ready);
-    await page.evaluate(() => (window.ready = false));
+    await page.waitForFunction(() => window.map.isIdle());
 }
