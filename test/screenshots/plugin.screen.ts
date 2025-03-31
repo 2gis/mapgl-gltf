@@ -224,9 +224,8 @@ describe('GltfPlugin', () => {
 
             it('cube is only visible', async () => {
                 await page.evaluate(() => {
-                    window.map.setStyleZoom(16.2, { animate: false });
+                    window.map.setStyleZoom(16.2);
                 });
-                await new Promise(resolve => setTimeout(resolve, 100));
                 await waitForReadiness(page);
                 await makeSnapshot(page, dirPath, 'plugin_options_minZoom_maxZoom_visible_cube');
             });
