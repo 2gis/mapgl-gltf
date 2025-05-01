@@ -12,6 +12,7 @@
     "dist/libs",
     "dist/types",
     "dist/docs.json",
+    "dist/docs/*",
     "dist/*.LICENSE.txt"
   ],
   "scripts": {
