@@ -41,7 +41,7 @@
     "three": "~0.151.3"
   },
   "devDependencies": {
-    "@2gis/js-docs-generator": "^0.0.3",
+    "@2gis/ts-docs-generator": "^0.0.2",
     "@2gis/mapgl": "1.37.2",
     "@types/geojson": "^7946.0.10",
     "@types/jest": "^27.4.0",

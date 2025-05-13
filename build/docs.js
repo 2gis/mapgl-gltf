@@ -1,4 +1,4 @@
-const { generateDocs } = require('@2gis/js-docs-generator');
+const { generateDocs } = require('@2gis/ts-docs-generator');
 const { mkdirSync, writeFileSync } = require('fs');
 const { join } = require('path');
 
@@ -18,6 +18,7 @@ const excludePaths = [
 
 generateDocs({
     version,
+    project: 'gltf',
     defaultReference: 'GltfPlugin',
     docsHost: 'https://unpkg.com/@2gis/mapgl-gltf@^1/dist/docs',
     excludePaths,
