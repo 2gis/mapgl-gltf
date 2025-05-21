@@ -16,7 +16,7 @@ jobs:
             - run: npm ci
             - run: npm run build
               env:
-                  VERSION: $GITHUB_REF_NAME
+                  VERSION: ${{github.ref_name}}
             - run: echo $GITHUB_REF_NAME
             - run: |
                   if [[ $GITHUB_REF_NAME == v1.* ]]; then
