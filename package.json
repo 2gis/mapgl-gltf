@@ -37,7 +37,7 @@
   "author": "2GIS WebMaps Team",
   "license": "BSD-2-Clause",
   "devDependencies": {
-    "@2gis/ts-docs-generator": "^0.0.2",
+    "@2gis/ts-docs-generator": "^0.1.0",
     "@2gis/mapgl": "^1.52.0",
     "@types/geojson": "^7946.0.10",
     "@types/jest": "^27.4.0",
