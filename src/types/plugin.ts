@@ -78,6 +78,17 @@ export interface HightlightOptions {
     intencity: number; // TODO: MAJOR. Rename to «intensity» in the next major release.
 }
 
+export interface PoiConfig {
+    /**
+     * Configuration the primary poi
+     */
+    primary?: PoiConfigGranular;
+    /**
+     * Configuration the secondary poi
+     */
+    secondary?: PoiConfigGranular;
+}
+
 /**
  * Options for the plugin
  */
@@ -103,16 +114,7 @@ export interface PluginOptions {
     /**
      * Configuration of poi
      */
-    poiConfig?: {
-        /**
-         * Configuration the primary poi
-         */
-        primary?: PoiConfigGranular;
-        /**
-         * Configuration the secondary poi
-         */
-        secondary?: PoiConfigGranular;
-    };
+    poiConfig?: PoiConfig;
     /**
      * Settings for floors' control
      */
